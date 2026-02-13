@@ -65,7 +65,7 @@
 
 **Principais decisões técnicas**:
 
-1. **Três categorias de drones**: UGV (terrestre), UAV (aéreo), USV (pluvial/aquático)
+1. **Três categorias de drones**: UGV (terrestre), UAV (aéreo), USV (aquático)
 2. **Stack de software**: ROS2 Humble/Iron + Python/C++/Rust + TensorFlow Lite/YOLOv8
 3. **Hardware de referência**: Raspberry Pi 5 / Jetson Nano (UGV), Jetson Orin Nano (UAV)
 4. **Comunicação redundante**: Wi-Fi 5GHz (principal) → Wi-Fi 2.4GHz → LoRa/Meshtastic (fallback)

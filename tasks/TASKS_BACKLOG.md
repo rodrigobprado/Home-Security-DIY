@@ -12,77 +12,45 @@
 
 ## Categoria: Levantamento de requisitos
 
-> **Tarefas T-001, T-002, T-003, T-007 concluídas em 2026-02-12** – Movidas para `TASKS_DONE.md`
-
-| ID | Título | Descrição | Responsável | Prioridade | PRD relacionado |
-|----|--------|-----------|-------------|------------|-----------------|
-| T-004 | Levantar requisitos de segurança ativa – cenário rural | Definir sensores, câmeras e alarmes adequados para perímetros extensos e áreas abertas. | Agente_Arquiteto_Tecnico | Alta | PRD_PERIMETER_RURAL |
-| T-005 | Levantar requisitos de segurança ativa – casa urbana | Definir sensores para muros, quintal, portas e janelas de casa urbana. | Agente_Arquiteto_Tecnico | Alta | PRD_PERIMETER_URBAN_HOUSE, PRD_HOUSE_ENVELOPE |
-| T-006 | Levantar requisitos de segurança ativa – apartamento | Definir sensores e controle de acesso para porta de apartamento e janelas (se aplicável). | Agente_Arquiteto_Tecnico | Alta | PRD_APARTMENT_SECURITY |
+> ✅ Todas as 7 tarefas concluídas em 2026-02-12 – Detalhes em `TASKS_DONE.md`
 
 ---
 
 ## Categoria: Arquitetura e design
 
-> **Tarefas T-008, T-009, T-010 concluídas em 2026-02-12** – Movidas para `TASKS_DONE.md`
-
-| ID | Título | Descrição | Responsável | Prioridade | PRD relacionado |
-|----|--------|-----------|-------------|------------|-----------------|
-| T-011 | Desenhar arquitetura lógica de integração | Definir fluxo de dados entre sensores, câmeras, NVR, central de automação e dashboard. | Agente_Arquiteto_Tecnico | Alta | PRD_SENSORS_AND_ALARMS_PLATFORM, PRD_VIDEO_SURVEILLANCE_AND_NVR |
-| T-012 | Definir arquitetura de rede segura | Projetar segmentação de rede (VLANs), firewall, VPN e isolamento de dispositivos IoT. | Agente_Arquiteto_Tecnico | Alta | PRD_NETWORK_SECURITY |
+> ✅ Todas as 5 tarefas concluídas em 2026-02-12 – Detalhes em `TASKS_DONE.md`
 
 ---
 
 ## Categoria: Seleção de tecnologias
 
-| ID | Título | Descrição | Responsável | Prioridade | PRD relacionado |
-|----|--------|-----------|-------------|------------|-----------------|
-| T-013 | Avaliar plataformas de automação open source | Comparar Home Assistant, openHAB e outras plataformas. Documentar prós/contras, curva de aprendizado, comunidade. | Agente_Arquiteto_Tecnico | Alta | PRD_LOCAL_PROCESSING_HUB |
-| T-014 | Avaliar NVRs open source | Comparar ZoneMinder, Frigate, Shinobi, Viseron. Avaliar detecção de objetos, consumo de recursos, facilidade de uso. | Agente_Arquiteto_Tecnico | Alta | PRD_VIDEO_SURVEILLANCE_AND_NVR |
-| T-015 | Avaliar protocolos de sensores | Comparar Zigbee, Z-Wave, Wi-Fi, 433MHz, Thread/Matter. Documentar alcance, consumo, custo, disponibilidade. | Agente_Arquiteto_Tecnico | Média | PRD_SENSORS_AND_ALARMS_PLATFORM |
-| T-016 | Pesquisar hardware de processamento acessível | Levantar opções de hardware (Raspberry Pi 4/5, mini PC, NUC, etc.) com requisitos e custos estimados. | Agente_Arquiteto_Tecnico | Média | PRD_LOCAL_PROCESSING_HUB |
-| T-017 | Pesquisar câmeras IP compatíveis | Listar câmeras com suporte a RTSP/ONVIF, PoE, visão noturna, adequadas para uso residencial open source. | Agente_Arquiteto_Tecnico | Média | PRD_VIDEO_SURVEILLANCE_AND_NVR |
+> ✅ Todas as 5 tarefas concluídas em 2026-02-12 – Detalhes em `TASKS_DONE.md`
 
 ---
 
 ## Categoria: Normas e compliance
 
-> **Tarefas T-018 a T-021, T-028 a T-030 concluídas em 2026-02-12** – Movidas para `TASKS_DONE.md`
-
-| ID | Título | Descrição | Responsável | Prioridade | PRD relacionado |
-|----|--------|-----------|-------------|------------|-----------------|
-| | | | | | |
-
-> ✅ Todas as tarefas de pesquisa de normas foram concluídas.
+> ✅ Todas as 7 tarefas concluídas em 2026-02-12 – Detalhes em `TASKS_DONE.md`
 
 ---
 
 ## Categoria: Documentação e PRDs
 
-> **Tarefas T-022, T-023, T-024, T-025 concluídas em 2026-02-12** – Movidas para `TASKS_DONE.md`
-
-| ID | Título | Descrição | Responsável | Prioridade | PRD relacionado |
-|----|--------|-----------|-------------|------------|-----------------|
-| | | | | | |
-
-> Todas as tarefas prioritárias de documentação foram concluídas. PRDs restantes podem ser criados conforme demanda.
+> ✅ Todas as 4 tarefas prioritárias concluídas em 2026-02-12 – Detalhes em `TASKS_DONE.md`
+>
+> PRDs restantes podem ser criados conforme demanda.
 
 ---
 
 ## Categoria: Privacidade e segurança da informação
 
-| ID | Título | Descrição | Responsável | Prioridade | PRD relacionado |
-|----|--------|-----------|-------------|------------|-----------------|
-| T-026 | Definir requisitos de privacidade por design | Documentar como garantir processamento local, criptografia, controle de acesso e minimização de dados. | Agente_Arquiteto_Tecnico | Alta | PRD_NETWORK_SECURITY, RULES_COMPLIANCE_AND_STANDARDS |
-| T-027 | Definir política de retenção de gravações | Estabelecer períodos de retenção, rotação automática, backup seguro de evidências. | Agente_Arquiteto_Tecnico | Média | PRD_VIDEO_SURVEILLANCE_AND_NVR |
-
----
+> ✅ Tarefas T-026, T-027 concluídas em 2026-02-12 – Detalhes em `TASKS_DONE.md`
 
 ---
 
 ## Categoria: Drones autônomos (módulo reativo avançado)
 
-> **NOVO**: Tarefas para desenvolvimento do sistema de drones autônomos modulares.
+> Tarefas para desenvolvimento do sistema de drones autônomos modulares.
 
 | ID | Título | Descrição | Responsável | Prioridade | PRD relacionado |
 |----|--------|-----------|-------------|------------|-----------------|
@@ -97,45 +65,108 @@
 | T-039 | Desenvolver dashboard de frota | Criar interface de monitoramento e controle para múltiplos drones no Home Assistant. | Agente_Arquiteto_Drones | Média | PRD_DRONE_FLEET_MANAGEMENT |
 | T-040 | Elaborar PRD do módulo de defesa | Detalhar requisitos funcionais e não funcionais do sistema de defesa não letal. | Agente_Documentador | Média | PRD_DRONE_DEFENSE_MODULE |
 | T-041 | Elaborar PRD de comunicação de drones | Detalhar requisitos de rede, protocolos, failover e streaming para drones. | Agente_Documentador | Média | PRD_DRONE_COMMUNICATION |
-| ~~T-042~~ | ~~Pesquisar normas ANAC/DECEA para drones~~ | ~~Levantar requisitos legais para operação de drones no Brasil (RBAC-E nº 94, SISANT).~~ | ~~Agente_Arquiteto_Drones~~ | ~~Alta~~ | ✅ CONCLUÍDO 2026-02-12 |
-| ~~T-043~~ | ~~Pesquisar legislação de defesa não letal~~ | ~~Levantar regulamentação estadual/federal para uso de spray de pimenta em propriedade privada.~~ | ~~Agente_Arquiteto_Drones~~ | ~~Média~~ | ✅ CONCLUÍDO 2026-02-12 |
 | T-044 | Criar guia de montagem UGV | Documentar passo a passo de montagem do drone terrestre com BOM e instruções. | Agente_Documentador | Baixa | PRD_AUTONOMOUS_DRONES |
 | T-045 | Criar guia de montagem UAV | Documentar passo a passo de montagem do drone aéreo com BOM e instruções. | Agente_Documentador | Baixa | PRD_AUTONOMOUS_DRONES |
+
+> ✅ T-042 (Pesquisar normas ANAC/DECEA) e T-043 (Pesquisar legislação defesa não letal) concluídas em 2026-02-12
+
+---
+
+## Categoria: Revisão e melhorias (nova – identificadas na revisão de 2026-02-12)
+
+> Tarefas originadas da revisão completa do projeto, cobrindo falhas, pontos cegos e melhorias.
+
+### Correções
+
+| ID | Título | Descrição | Prioridade | Status |
+|----|--------|-----------|------------|--------|
+| ~~T-046~~ | ~~Corrigir/remover dependabot.yml~~ | ~~Arquivo com package-ecosystem vazio~~ | ~~Média~~ | ✅ CONCLUÍDO |
+| T-047 | Criar SECURITY.md funcional | Política de divulgação de vulnerabilidades para projeto open source | Média | Pendente |
+| T-048 | Reescrever README.md | README atual descreve template genérico, não o projeto real | Alta | Pendente |
+| ~~T-049~~ | ~~Corrigir "pluvial" → "aquático"~~ | ~~Termo semanticamente incorreto em múltiplos arquivos~~ | ~~Média~~ | ✅ CONCLUÍDO |
+| T-050 | Resolver conflito legal VLOS vs. operação autônoma | REGRA-DRONE-02 exige VLOS mas arquitetura é BVLOS | Alta | Pendente |
+
+### Lacunas de segurança
+
+| ID | Título | Descrição | Prioridade | Status |
+|----|--------|-----------|------------|--------|
+| T-051 | Criar threat model formal (STRIDE) | Enumerar adversários, vetores e cenários de ataque | Alta | Pendente |
+| T-052 | Detecção/proteção contra jamming de RF | Jammer de Zigbee/Wi-Fi derruba todos os sensores wireless | Alta | Pendente |
+| T-053 | Proteção contra tamper/destruição do servidor | Mini PC é ponto único de falha; 4G como requisito | Alta | Pendente |
+| T-054 | Engenharia social e ameaças internas | Pretextos, insiders, duress code | Média | Pendente |
+| T-055 | Gestão de falsos positivos e fadiga de alerta | Confirmação multi-sensor, auto-tuning | Média | Pendente |
+| T-056 | Modos de operação degradada | Comportamento quando componentes falham | Alta | Pendente |
+| T-057 | Plano de resposta a incidentes cibernéticos | IR plan para hack do sistema, camera comprometida | Alta | Pendente |
+
+### Ética e legal
+
+| ID | Título | Descrição | Prioridade | Status |
+|----|--------|-----------|------------|--------|
+| T-058 | Reavaliar módulo de defesa autônoma | Remover/restringir modo automático; risco legal grave | Alta | Pendente |
+
+### Operação e usabilidade
+
+| ID | Título | Descrição | Prioridade | Status |
+|----|--------|-----------|------------|--------|
+| T-059 | Plano de manutenção e ciclo de vida | Calendário de manutenção, EOL de hardware, troca de baterias | Média | Pendente |
+| T-060 | Requisitos de acessibilidade e usabilidade | Perfis de usuário, idosos, crianças, interface de pânico | Média | Pendente |
+| T-061 | Análise de custos operacionais | Custos mensais/anuais por cenário (energia, internet, baterias) | Média | Pendente |
+
+### Documentação e processo
+
+| ID | Título | Descrição | Prioridade | Status |
+|----|--------|-----------|------------|--------|
+| T-062 | Criar ADRs (Architecture Decision Records) | Formalizar decisões já tomadas (HA, Frigate, Zigbee, etc.) | Média | Pendente |
+| T-063 | Estratégia de backup do NVR | RAID, edge recording, backup offsite | Média | Pendente |
+| T-064 | Criar CONTRIBUTING.md | Guia de contribuição para projeto open source | Baixa | Pendente |
+| T-065 | Avaliar adoção Matter/Thread | Plano de migração futuro Zigbee → Matter | Baixa | Pendente |
+| T-066 | Converter diagramas ASCII → Mermaid | GitHub renderiza Mermaid nativamente | Baixa | Pendente |
+| T-067 | Criar risk matrix (prob. × impacto) | Complemento ao threat model | Baixa | Pendente |
+| T-068 | Documentar alternativas comerciais compatíveis | Fallback quando DIY não funciona | Baixa | Pendente |
 
 ---
 
 ## Resumo do backlog
 
-| Categoria | Total de tarefas | Concluídas |
-|-----------|-----------------|------------|
-| Levantamento de requisitos | 7 | 7 (T-001 a T-007) |
-| Arquitetura e design | 5 | 5 (T-008 a T-012) |
-| Seleção de tecnologias | 5 | 5 (T-013 a T-017) |
-| Normas e compliance | 7 | 7 (T-018 a T-021, T-028 a T-030) |
-| Documentação e PRDs | 4 | 4 (T-022 a T-025) |
-| Privacidade e segurança | 2 | 2 (T-026, T-027) |
-| **Drones autônomos** | **15** | **2 (T-042, T-043)** |
-| **Total** | **45** | **32 concluídas (71%)** |
+| Categoria | Total de tarefas | Concluídas | Pendentes |
+|-----------|-----------------|------------|-----------|
+| Levantamento de requisitos | 7 | 7 | 0 |
+| Arquitetura e design | 5 | 5 | 0 |
+| Seleção de tecnologias | 5 | 5 | 0 |
+| Normas e compliance | 7 | 7 | 0 |
+| Documentação e PRDs | 4 | 4 | 0 |
+| Privacidade e segurança | 2 | 2 | 0 |
+| Drones autônomos | 15 | 2 | 13 |
+| **Revisão e melhorias** | **23** | **2** | **21** |
+| **Total** | **68** | **34** | **34** |
 
 ---
 
 ## Próximas tarefas prioritárias
 
-### Módulo de drones autônomos
+### 1. Revisão e melhorias (alta prioridade)
 
-| Ordem | ID | Título | Justificativa | Status |
-|-------|----|----|---------------|--------|
-| ~~1~~ | ~~T-042~~ | ~~Pesquisar normas ANAC/DECEA~~ | ~~Requisito legal~~ | ✅ Concluído |
-| 1 | T-031 | Arquitetura de hardware UGV | Base para desenvolvimento de firmware e ROS2 | Pendente |
-| 2 | T-033 | Firmware de controle baixo nível | Pré-requisito para navegação | Pendente |
-| 3 | T-034 | Stack ROS2 para navegação | Core do sistema autônomo | Pendente |
-| 4 | T-036 | Sistema de comunicação redundante | Crítico para operação remota | Pendente |
-| 5 | T-035 | Pipeline de visão computacional | Essencial para detecção e tracking | Pendente |
-| 6 | T-038 | Integração com Home Assistant | Conexão com sistema principal | Pendente |
+| Ordem | ID | Título | Justificativa |
+|-------|----|--------|---------------|
+| 1 | T-051 | Threat model formal | Desbloqueia T-052, T-054, T-067 |
+| 2 | T-048 | Reescrever README.md | Primeira impressão do repositório |
+| 3 | T-050 | Resolver conflito VLOS/BVLOS | Viabilidade legal de drones aéreos |
+| 4 | T-058 | Reavaliar defesa autônoma | Risco legal e ético grave |
+| 5 | T-053 | Proteção contra tamper | Ponto único de falha |
+| 6 | T-056 | Modos degradados | Resiliência do sistema |
+| 7 | T-057 | Resposta a incidentes ciber | Complemento ao IR físico |
+
+### 2. Módulo de drones autônomos
+
+| Ordem | ID | Título | Justificativa |
+|-------|----|--------|---------------|
+| 1 | T-031 | Arquitetura de hardware UGV | Base para firmware e ROS2 |
+| 2 | T-033 | Firmware de controle baixo nível | Pré-requisito para navegação |
+| 3 | T-034 | Stack ROS2 para navegação | Core do sistema autônomo |
+| 4 | T-036 | Sistema de comunicação redundante | Crítico para operação remota |
+| 5 | T-035 | Pipeline de visão computacional | Essencial para detecção e tracking |
+| 6 | T-038 | Integração com Home Assistant | Conexão com sistema principal |
 
 ---
 
-> TODO (Agente_Gestor_Tarefas): Revisar e manter este backlog atualizado conforme novas necessidades surgirem.
-
-> TODO (humano): Priorizar e aprovar a ordem de execução das tarefas de drones antes de iniciar o trabalho.
-
+> Última atualização: 2026-02-12 (revisão completa do projeto)

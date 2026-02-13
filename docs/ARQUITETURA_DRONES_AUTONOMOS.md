@@ -32,7 +32,7 @@ Desenvolver um ecossistema open source/open hardware de **drones autônomos modu
 ┌─────────────────────────────────────────────────────────────────────────┐
 │                     FROTA DE DRONES AUTÔNOMOS                           │
 ├─────────────────────┬─────────────────────┬─────────────────────────────┤
-│    TERRESTRES       │      AÉREOS         │        PLUVIAIS             │
+│    TERRESTRES       │      AÉREOS         │        AQUÁTICOS            │
 │                     │                     │                             │
 │  ┌─────────────┐    │  ┌─────────────┐    │  ┌─────────────┐           │
 │  │   Rodas     │    │  │ Multirrotor │    │  │  Barco RC   │           │
@@ -117,7 +117,7 @@ Desenvolver um ecossistema open source/open hardware de **drones autônomos modu
 | **Telemetria** | Longo alcance | SiK Radio 915MHz, RFD900 |
 | **Bateria** | LiPo 4S-6S, 5000-8000mAh | Autonomia: 20-40 min |
 
-#### 2.2.3 Drone Pluvial (USV - Unmanned Surface Vehicle)
+#### 2.2.3 Drone Aquático (USV - Unmanned Surface Vehicle)
 
 | Componente | Especificação | Opções recomendadas |
 |------------|---------------|---------------------|
@@ -158,6 +158,172 @@ Desenvolver um ecossistema open source/open hardware de **drones autônomos modu
 | **GPS padrão** | ±2-5m | Navegação geral |
 | **DGPS** | ±0.5-1m | Navegação melhorada |
 | **RTK** | ±2cm | Navegação de precisão |
+
+### 2.4 Análise de viabilidade legal: VLOS vs. BVLOS
+
+> **Documento de referência**: `rules/RULES_COMPLIANCE_AND_STANDARDS.md` — REGRA-DRONE-02
+
+#### 2.4.1 Descrição do conflito
+
+Existe uma contradição fundamental entre a arquitetura proposta e a regulamentação vigente no Brasil:
+
+- **REGRA-DRONE-02** (derivada do RBAC-E nº 94 da ANAC e da ICA 100-40 do DECEA) determina que a operação de aeronaves não tripuladas deve ser conduzida em **VLOS (Visual Line of Sight)**, ou seja, o piloto remoto deve manter contato visual direto com a aeronave durante todo o voo.
+- Toda a arquitetura de **patrulha autônoma por UAV** descrita neste documento pressupõe operação **BVLOS (Beyond Visual Line of Sight)**: o drone decola, executa rotas predefinidas, toma decisões autônomas via IA e retorna à base — tudo sem observador visual humano permanente.
+
+Essa contradição torna a operação autônoma de drones aéreos (UAV) **ilegal sob a regulamentação atual**, a menos que se obtenha uma autorização especial de BVLOS junto à ANAC/DECEA — algo extremamente restrito no Brasil, conforme detalhado abaixo.
+
+| Aspecto | VLOS (obrigatório) | BVLOS (necessário para patrulha) |
+|---------|-------------------|----------------------------------|
+| **Definição** | Piloto mantém contato visual direto com o drone | Drone opera fora do alcance visual do piloto |
+| **Regulamentação BR** | Operação padrão permitida (Classe 3) | Requer autorização especial ANAC + DECEA |
+| **Alcance típico** | 200-500m do operador | Ilimitado (limitado por bateria/comunicação) |
+| **Autonomia real** | Operador deve estar presente e atento | Operação verdadeiramente autônoma |
+| **Compatibilidade com patrulha** | Inviável para patrulha real | Compatível com a arquitetura proposta |
+
+#### 2.4.2 Análise das opções
+
+##### Opção A: Operar apenas em VLOS
+
+Manter um operador humano com contato visual direto durante toda a operação do drone aéreo.
+
+| Aspecto | Avaliação |
+|---------|-----------|
+| **Legalidade** | Totalmente legal |
+| **Viabilidade técnica** | Trivial — basta ter um operador |
+| **Impacto na utilidade** | **Severo** — destrói o propósito do sistema |
+| **Custo operacional** | Alto — requer presença humana permanente |
+| **Avaliação** | Inviável como solução de segurança autônoma |
+
+A exigência de um operador visual permanente contradiz fundamentalmente o objetivo do projeto: segurança **autônoma**. Se alguém precisa estar presente para vigiar o drone, esse alguém poderia simplesmente vigiar a propriedade diretamente.
+
+##### Opção B: Buscar autorização BVLOS junto à ANAC/DECEA
+
+Solicitar autorização especial para operação BVLOS em área privada residencial.
+
+| Aspecto | Avaliação |
+|---------|-----------|
+| **Legalidade** | Legal se aprovado |
+| **Processo** | Requer projeto de segurança operacional (SORA ou equivalente), demonstração de detect-and-avoid, análise de risco aeronáutico |
+| **Prazo estimado** | 6-18 meses (sem garantia) |
+| **Custo estimado** | R$ 10.000-50.000 (consultoria aeronáutica + taxas) |
+| **Probabilidade de aprovação** | **Muito baixa** para uso residencial privado |
+| **Avaliação** | Inviável no curto/médio prazo |
+
+A ANAC tem concedido autorizações BVLOS quase exclusivamente para operações agrícolas, inspeção de infraestrutura (linhas de transmissão, dutos) e pesquisa acadêmica — sempre com requisitos rigorosos de detect-and-avoid e operação em espaço aéreo controlado. Não há precedente público de autorização BVLOS para vigilância residencial privada no Brasil.
+
+##### Opção C: Argumentar operação em propriedade privada abaixo de 120m
+
+Interpretar que a operação autônoma sobre propriedade privada própria, abaixo de 120m AGL e em área não controlada, constitui uma zona cinzenta regulatória que poderia ser explorada.
+
+| Aspecto | Avaliação |
+|---------|-----------|
+| **Argumento jurídico** | O RBAC-E nº 94 foca em segurança de espaço aéreo. Sobre propriedade privada, sem risco a terceiros, poder-se-ia argumentar que o risco é assumido pelo proprietário |
+| **Precedentes** | Não há jurisprudência consolidada no Brasil |
+| **Risco legal** | **Médio-alto** — multas ANAC de R$ 2.000 a R$ 50.000 por infração |
+| **Risco de seguro** | Sinistros envolvendo drone não autorizado podem ter cobertura negada |
+| **Avaliação** | Possível objetivo futuro, mas arriscado sem mudança regulatória |
+
+Pontos a considerar nesta opção:
+- A ANAC tem focado sua fiscalização em espaço aéreo compartilhado e áreas urbanas densas, não em propriedades rurais privadas.
+- Porém, a regulamentação NÃO faz distinção entre espaço aéreo sobre propriedade privada e pública — todo espaço aéreo é controlado pela União.
+- Uma mudança regulatória (em discussão em vários países) poderia eventualmente criar categorias simplificadas para operação autônoma em propriedade privada.
+
+##### Opção D: Limitar MVP a UGV (Veículo Terrestre Não Tripulado)
+
+Priorizar drones terrestres (UGV) no MVP, que **não estão sujeitos à regulamentação da ANAC**.
+
+| Aspecto | Avaliação |
+|---------|-----------|
+| **Legalidade** | **Totalmente legal** — UGVs não são regulados pela ANAC/DECEA |
+| **Viabilidade técnica** | Alta — toda a arquitetura de IA, comunicação e navegação se aplica |
+| **Cobertura** | Limitada ao nível do solo, mas suficiente para patrulha de perímetro |
+| **Custo** | Menor que UAV (R$ 2.150-4.100 vs. R$ 4.600-9.400) |
+| **Autonomia de bateria** | Superior (2-4 horas vs. 20-40 min) |
+| **Complexidade regulatória** | Nenhuma para a plataforma em si |
+| **Avaliação** | **Melhor opção para MVP** |
+
+Vantagens adicionais do UGV para o MVP:
+- Não há risco de queda sobre pessoas ou propriedade.
+- Operação silenciosa (não perturba vizinhança como hélices).
+- Pode operar 24/7 com estação de recarga automática.
+- Toda a stack de software (ROS2, Nav2, IA de detecção, comunicação) é diretamente reutilizável quando o UAV for viabilizado.
+- Regulamentação aplicável se limita ao Código Civil (uso em propriedade privada própria) e LGPD (captura de imagens).
+
+#### 2.4.3 Decisão recomendada
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                    DECISÃO: ESTRATÉGIA EM DUAS FASES                    │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                         │
+│  ┌─────────────────────────────────────────────────────────────────┐    │
+│  │  FASE 1 (MVP): OPÇÃO D — UGV como plataforma principal         │    │
+│  │                                                                 │    │
+│  │  • Drone terrestre com toda a stack de IA e comunicação         │    │
+│  │  • Sem restrição regulatória aeronáutica                        │    │
+│  │  • Patrulha de perímetro autônoma                               │    │
+│  │  • Integração com Home Security                                 │    │
+│  └─────────────────────────────────────────────────────────────────┘    │
+│                              │                                          │
+│                              ▼                                          │
+│  ┌─────────────────────────────────────────────────────────────────┐    │
+│  │  FASE 2 (FUTURO): OPÇÃO C — UAV com análise regulatória        │    │
+│  │                                                                 │    │
+│  │  • Acompanhar evolução regulatória ANAC para BVLOS             │    │
+│  │  • Avaliar viabilidade de operação em propriedade privada       │    │
+│  │  • Consultar advogado aeronáutico antes de operar               │    │
+│  │  • Implementar UAV apenas quando houver segurança jurídica      │    │
+│  └─────────────────────────────────────────────────────────────────┘    │
+│                                                                         │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+#### 2.4.4 Impacto na arquitetura
+
+A priorização do UGV impacta a arquitetura nos seguintes pontos:
+
+| Componente | Impacto | Ação necessária |
+|------------|---------|-----------------|
+| **Camada mecânica** | Chassis terrestre (rodas/esteiras) em vez de frame aéreo | Priorizar especificações da seção 2.2.1 |
+| **Controlador de voo** | Não necessário — substituído por controlador de motor | Usar L298N/BTS7960/ODrive em vez de Pixhawk |
+| **Navegação** | Nav2 com SLAM 2D em vez de navegação 3D | RPLidar + odometria (mais simples que GPS RTK) |
+| **Sensores** | Lidar 2D e ultrassônico em vez de barômetro e altímetro | Foco em RPLidar A1/A2 e sensores de proximidade |
+| **Energia** | Bateria com autonomia de horas em vez de minutos | LiPo 4S-6S 5000-10000mAh (2-4h de operação) |
+| **Comunicação** | Mesma arquitetura (Wi-Fi + LoRa) | Sem alteração |
+| **IA e visão** | Mesma stack (YOLO, tracking, SLAM) | Sem alteração |
+| **ROS2** | Mesma arquitetura de nós | Substituir nós de voo por nós de navegação terrestre |
+| **Módulo de defesa** | Funciona igualmente em UGV | Sem alteração |
+| **Dashboard/integração** | Funciona igualmente | Sem alteração |
+| **Custo total** | **Redução de ~50%** (R$ 2.150-4.100 vs. R$ 4.600-9.400) | Orçamento mais acessível para MVP |
+
+**Componentes que NÃO mudam** (reutilizáveis quando UAV for viabilizado):
+- Toda a camada de IA (visão computacional, detecção, tracking, decisão).
+- Toda a camada de comunicação (Wi-Fi, LoRa, Meshtastic, MQTT).
+- Toda a arquitetura de software (ROS2, Docker, APIs).
+- Integração com Home Assistant e Frigate.
+- Módulo de defesa não letal.
+- Protocolos de segurança e autenticação.
+
+**Estimativa**: ~80% do software desenvolvido para UGV é diretamente reutilizável no UAV.
+
+#### 2.4.5 Roadmap legal para operação de UAV
+
+| Etapa | Ação | Prazo estimado | Dependência |
+|-------|------|----------------|-------------|
+| **1** | Monitorar publicações da ANAC sobre regulamentação BVLOS simplificada | Contínuo | — |
+| **2** | Acompanhar consultas públicas da ANAC sobre drones autônomos | Contínuo | — |
+| **3** | Consultar advogado especialista em direito aeronáutico sobre viabilidade da Opção C | Antes de qualquer operação UAV | MVP do UGV concluído |
+| **4** | Desenvolver protótipo UAV em ambiente de teste controlado (indoor ou área restrita) | Após etapa 3 | Parecer jurídico favorável |
+| **5** | Obter registro ANAC e cadastro SISANT para o protótipo | Antes de qualquer voo outdoor | Protótipo funcional |
+| **6** | Solicitar autorização BVLOS (se necessária) com documentação completa de segurança | Após etapa 5 | Registro ANAC ativo |
+| **7** | Implementar detect-and-avoid e sistema de encerramento de voo de emergência | Requisito para BVLOS | Desenvolvimento paralelo |
+| **8** | Operar UAV em conformidade com autorização obtida | Após aprovação | Aprovação ANAC/DECEA |
+
+**Marcos regulatórios a monitorar**:
+- Evolução do RBAC-E nº 94 (revisões periódicas da ANAC).
+- Regulamentação da U-Space/UTM brasileira (sistema de gerenciamento de tráfego de drones).
+- Experiências internacionais: FAA (EUA), EASA (Europa) e CASA (Austrália) estão avançando em frameworks BVLOS simplificados que podem influenciar a ANAC.
+- Projetos-piloto de BVLOS aprovados pela ANAC (precedentes que podem abrir caminho).
 
 ---
 
@@ -229,9 +395,90 @@ Desenvolver um ecossistema open source/open hardware de **drones autônomos modu
 | **Desativado** | Sistema de defesa completamente desligado | Nenhuma |
 | **Standby** | Pronto, mas requer autorização manual | Autenticação 2FA |
 | **Semi-automático** | IA detecta, humano autoriza | Confirmação via app |
-| **Automático** | IA detecta e dispara autonomamente | Modo de emergência, logs extensivos |
+| **Automático** | ~~IA detecta e dispara autonomamente~~ **DESCONTINUADO** – Removido por risco legal e ético. Ver análise abaixo. | N/A |
 
-> **RECOMENDAÇÃO**: O modo automático deve ser usado apenas em situações extremas e onde legalmente permitido.
+> **RECOMENDAÇÃO ATUALIZADA**: O modo automático foi **descontinuado permanentemente**. O modo máximo permitido é o **semi-automático**, no qual um humano deve confirmar explicitamente cada ação de defesa.
+
+#### 3.1.5 Análise de riscos do módulo de defesa
+
+> **Seção adicionada em 2026-02-12** após revisão ética e legal do projeto.
+
+##### 3.1.5.1 Riscos de falso positivo da IA
+
+O sistema de visão computacional, mesmo com modelos de alta acurácia (YOLOv8, MoveNet), está sujeito a **falsos positivos** que podem causar danos a pessoas inocentes. Cenários identificados:
+
+| Cenário de falso positivo | Risco | Gravidade |
+|---------------------------|-------|-----------|
+| **Entregadores** (Correios, iFood, Rappi, etc.) | Identificados erroneamente como invasores | **Alta** |
+| **Crianças** (filhos, vizinhos, visitantes) | Tamanho, movimentação e comportamento atípicos confundem a IA | **Crítica** |
+| **Animais domésticos** (cães, gatos) | Movimento pode acionar detecção de intrusão | **Alta** |
+| **Vizinhos e familiares** | Não cadastrados na whitelist ou falha no reconhecimento facial | **Alta** |
+| **Funcionários autorizados** (jardineiro, diarista, manutenção) | Presença legítima em horários variáveis | **Alta** |
+| **Condições ambientais adversas** | Chuva, neblina, sombras e iluminação precária degradam a acurácia | **Média** |
+
+##### 3.1.5.2 Responsabilidade civil e criminal do proprietário
+
+O proprietário do sistema é **civil e criminalmente responsável** por todos os danos causados pelo módulo de defesa, independentemente do modo de operação:
+
+- **Código Civil (Art. 927, parágrafo único)**: Responsabilidade objetiva por atividade de risco. O proprietário responde por danos mesmo sem comprovação de culpa.
+- **Código Penal (Art. 129)**: Lesão corporal, mesmo que leve, causada por disparo indevido configura crime.
+- **Código de Defesa do Consumidor**: Entregadores e prestadores de serviço atingidos indevidamente podem acionar o proprietário.
+- **Estatuto da Criança e do Adolescente (ECA)**: Danos a menores de idade acarretam agravantes legais severas.
+
+> **AVISO**: Nenhuma configuração de software, log ou registro exime o proprietário de responsabilidade. A decisão de instalar e operar o módulo de defesa é inteiramente do proprietário, que assume todos os riscos legais.
+
+##### 3.1.5.3 Proporcionalidade da resposta
+
+O princípio da **proporcionalidade** exige que a resposta defensiva seja compatível com o nível real de ameaça:
+
+| Situação | Resposta proporcional | Spray de pimenta é proporcional? |
+|----------|-----------------------|----------------------------------|
+| Pessoa desconhecida no perímetro | Alerta sonoro e visual | **Não** |
+| Pessoa tentando abrir porta/janela | Alerta + notificação ao proprietário | **Não** |
+| Invasão confirmada com dano patrimonial | Alerta + acionamento de autoridades | **Possivelmente, com confirmação humana** |
+| Ameaça física iminente a moradores | Defesa ativa autorizada | **Sim, com confirmação humana** |
+
+O uso desproporcional de spray de pimenta pode configurar **exercício arbitrário das próprias razões** (Art. 345, Código Penal) ou **lesão corporal** (Art. 129, Código Penal).
+
+##### 3.1.5.4 Recomendação formal
+
+**O modo semi-automático (humano confirma) é o máximo permitido para operação do módulo de defesa.**
+
+Justificativas:
+1. A IA atual não possui acurácia suficiente para decisões autônomas de disparo sem risco inaceitável de danos a inocentes.
+2. A legislação brasileira não prevê excludente de responsabilidade para sistemas autônomos de defesa.
+3. O princípio da proporcionalidade exige avaliação humana do contexto antes de qualquer ação de força.
+4. O risco de falsos positivos torna o modo automático eticamente inaceitável.
+
+##### 3.1.5.5 Salvaguardas obrigatórias
+
+As seguintes salvaguardas são **obrigatórias** e devem estar ativas em todos os modos de operação:
+
+| Salvaguarda | Descrição | Implementação |
+|-------------|-----------|---------------|
+| **Detecção de crianças** | Sistema deve identificar crianças e **bloquear disparo automaticamente** | Modelo de classificação etária (pose + proporções corporais) |
+| **Detecção de animais** | Sistema deve identificar animais domésticos e **bloquear disparo automaticamente** | YOLOv8 treinado com classes de animais |
+| **Cooldown obrigatório** | Intervalo mínimo de 30 segundos entre disparos | Firmware com timer hardware |
+| **Limite diário de disparos** | Máximo de 3 disparos por período de 24 horas | Contador com reset automático |
+| **Zona de exclusão** | Áreas onde o disparo é permanentemente bloqueado (entradas de serviço, calçada) | Geofence por software |
+| **Registro audiovisual completo** | Gravação obrigatória de 30 segundos antes e 60 segundos após qualquer disparo | Buffer circular em memória |
+
+##### 3.1.5.6 Disclaimer legal
+
+> **DISCLAIMER LEGAL**
+>
+> Este módulo é fornecido "como está" (as-is), sem qualquer garantia de adequação legal para qualquer jurisdição específica. Os desenvolvedores e contribuidores deste projeto open source **NÃO se responsabilizam** por:
+>
+> - Danos físicos, morais ou materiais causados pelo uso do módulo de defesa;
+> - Consequências legais (civis ou criminais) decorrentes da instalação ou operação do sistema;
+> - Falhas de detecção, falsos positivos ou falsos negativos do sistema de IA;
+> - Uso indevido, modificação ou operação do sistema fora dos parâmetros documentados.
+>
+> **O proprietário é o único responsável** por verificar a legalidade do uso em sua jurisdição (município, estado e país), obter todas as autorizações necessárias e operar o sistema de forma ética e legal.
+>
+> **Recomenda-se fortemente** consultar um advogado especializado antes de instalar ou operar o módulo de defesa.
+>
+> Ver também: `rules/RULES_COMPLIANCE_AND_STANDARDS.md`, seção 8.4 – Módulo de defesa não letal.
 
 ---
 
@@ -613,7 +860,7 @@ REGRA-DRONE-10: Whitelist de pessoas autorizadas deve ser configurável.
 | Telemetria + LoRa | R$ 200-400 |
 | **Total** | **R$ 4.600-9.400** |
 
-### 8.3 Drone pluvial (USV)
+### 8.3 Drone aquático (USV)
 
 | Componente | Custo estimado |
 |------------|----------------|

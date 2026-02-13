@@ -58,7 +58,7 @@ Criar uma frota de drones autônomos que:
 |----|-----------|------------|
 | RF-001 | Suportar drone terrestre (UGV) com rodas ou esteiras | Alta |
 | RF-002 | Suportar drone aéreo (UAV) multirrotor | Média |
-| RF-003 | Suportar drone pluvial (USV) para áreas aquáticas | Baixa |
+| RF-003 | Suportar drone aquático (USV) para áreas aquáticas | Baixa |
 | RF-004 | Arquitetura modular para troca de componentes | Alta |
 | RF-005 | Design open hardware com peças acessíveis | Alta |
 

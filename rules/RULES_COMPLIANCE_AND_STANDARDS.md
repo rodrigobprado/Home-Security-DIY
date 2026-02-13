@@ -2,7 +2,7 @@
 
 > Comentário: Este arquivo consolida normas e padrões relevantes para segurança residencial física e digital, com regras derivadas acionáveis.
 
-> **Última atualização**: 2026-02-12 por Agente_Arquiteto_Drones (regras de drones REGRA-DRONE-01 a 22)
+> **Última atualização**: 2026-02-12 por Agente_Arquiteto_Drones (regras de drones REGRA-DRONE-01 a 25; REGRA-DRONE-17 atualizada; REGRA-DRONE-23/24/25 adicionadas – revisão ética e legal do módulo de defesa)
 
 ## Objetivo
 
@@ -277,6 +277,10 @@ REGRA-ILUM-10: Refletores reativos (com sensor) devem ter potência adequada par
 REGRA-DRONE-01: Drones com peso > 250g devem ser registrados na ANAC e cadastrados no SISANT/DECEA.
 
 REGRA-DRONE-02: Operação VLOS (Visual Line of Sight) é obrigatória. Operação BVLOS requer autorização especial.
+    ⚠ NOTA: Esta regra entra em conflito direto com a arquitetura de patrulha autônoma por UAV.
+    Análise completa do conflito VLOS/BVLOS e decisão recomendada (priorizar UGV no MVP)
+    disponível em: docs/ARQUITETURA_DRONES_AUTONOMOS.md — Seção 2.4
+    "Análise de viabilidade legal: VLOS vs. BVLOS"
 
 REGRA-DRONE-03: Altura máxima de voo: 120m (400 pés) AGL em área não controlada.
 
@@ -314,7 +318,13 @@ REGRA-DRONE-15: Todo disparo deve ser registrado com: timestamp, localização G
 
 REGRA-DRONE-16: Aviso sonoro/visual obrigatório antes de disparo (mínimo 5 segundos).
 
-REGRA-DRONE-17: Modo automático de disparo só pode ser ativado em ausência confirmada de moradores.
+REGRA-DRONE-17: Modo automático de disparo é PROIBIDO. O modo foi descontinuado por risco legal e ético inaceitável. O modo máximo permitido é o semi-automático, com confirmação humana explícita obrigatória antes de cada disparo. Ver docs/ARQUITETURA_DRONES_AUTONOMOS.md, seção 3.1.5.
+
+REGRA-DRONE-23: Modo automático de disparo é PROIBIDO. Toda ativação do módulo de defesa requer confirmação humana explícita. Nenhum disparo pode ser efetuado sem que um operador humano avalie o contexto em tempo real e autorize a ação por meio do aplicativo ou interface de controle.
+
+REGRA-DRONE-24: Sistema deve detectar presença de crianças e animais e BLOQUEAR disparo quando detectados. A detecção deve utilizar modelos de IA específicos (classificação etária por proporções corporais e pose; detecção de animais via YOLOv8). O bloqueio deve ser implementado em nível de firmware e não pode ser desabilitado por software.
+
+REGRA-DRONE-25: Proprietário é civil e criminalmente responsável por todo uso do módulo de defesa, independentemente do modo de operação. Esta responsabilidade abrange danos físicos, morais e materiais causados a terceiros, incluindo mas não se limitando a: entregadores, visitantes, vizinhos, crianças e animais. Ver Código Civil Art. 927 (responsabilidade objetiva) e Código Penal Art. 129 (lesão corporal).
 ```
 
 ### 8.5 Segurança e fail-safe
@@ -351,6 +361,8 @@ REGRA-DRONE-22: Logs de operação devem ser imutáveis (append-only) com hash d
 - [ ] Verificar zonas de voo permitidas (AIS DECEA)
 - [ ] Homologar módulos de rádio (Wi-Fi, LoRa) junto à ANATEL
 - [ ] Verificar legislação estadual sobre spray de pimenta
+- [ ] Confirmar que modo automático de disparo está DESABILITADO (REGRA-DRONE-17/23)
+- [ ] Consultar advogado sobre responsabilidade civil e criminal do módulo de defesa (REGRA-DRONE-25)
 
 ### Durante a instalação
 
@@ -369,6 +381,9 @@ REGRA-DRONE-22: Logs de operação devem ser imutáveis (append-only) com hash d
 - [ ] Configurar RTH (Return To Home) automático
 - [ ] Configurar limites de bateria para retorno (20%)
 - [ ] Configurar autenticação 2FA para módulo de defesa
+- [ ] Verificar que detecção de crianças e animais está ativa e bloqueando disparo (REGRA-DRONE-24)
+- [ ] Confirmar que modo semi-automático é o máximo configurado (REGRA-DRONE-23)
+- [ ] Configurar zonas de exclusão de disparo (entradas de serviço, calçada)
 - [ ] Testar failover de comunicação (Wi-Fi → LoRa)
 
 ### Após a instalação

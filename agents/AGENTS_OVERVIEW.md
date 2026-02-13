@@ -107,7 +107,7 @@ Descrever o ecossistema de agentes que atuam neste projeto, seus papéis especia
 **Papel**: Especialista em drones autônomos modulares (open hardware/open source)
 
 **Responsabilidades**:
-- Definir arquitetura de hardware para drones terrestres (UGV), aéreos (UAV) e pluviais (USV).
+- Definir arquitetura de hardware para drones terrestres (UGV), aéreos (UAV) e aquáticos (USV).
 - Projetar stack de software com ROS2 (Humble/Iron), Python, C++ e Rust.
 - Especificar sensores embarcados (câmeras, lidar, IMU, GPS/RTK).
 - Desenvolver pipelines de visão computacional com TensorFlow Lite e YOLOv8.

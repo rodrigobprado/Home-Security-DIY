@@ -40,7 +40,7 @@ Procedimentos e mecanismos de resposta a incidentes:
 - Planos de ação pré-definidos por tipo de incidente
 - Integração com serviços de emergência e vizinhança
 - Backup de alimentação (nobreak, bateria)
-- **Frota de drones autônomos modulares** (terrestre, aéreo, pluvial) para patrulha, vigilância e resposta ativa
+- **Frota de drones autônomos modulares** (terrestre, aéreo, aquático) para patrulha, vigilância e resposta ativa
 
 ### Módulo reativo avançado: Drones autônomos
 
@@ -52,7 +52,7 @@ O sistema inclui uma **frota modular de drones autônomos** projetados para vigi
 |------|-----------|-----------|
 | **Terrestres** | Drones com rodas ou esteiras motorizadas | Patrulha de perímetro, inspeção de áreas de difícil acesso |
 | **Aéreos** | Multirrotores ou asa fixa | Vigilância aérea, resposta rápida, mapeamento |
-| **Pluviais** | Drones aquáticos ou anfíbios | Monitoramento de espelhos d'água, áreas alagadas |
+| **Aquáticos** | Drones aquáticos ou anfíbios | Monitoramento de espelhos d'água, áreas alagadas |
 
 #### Sensores e módulos embarcados
 - Câmeras visuais e infravermelhas
@@ -156,7 +156,7 @@ O projeto abrange:
 | Notificações | Envia alertas para usuários | Push (app), SMS, e-mail, Telegram |
 | **Drones terrestres** | Patrulha de perímetro com rodas/esteiras | Raspberry Pi, ESP32-CAM, ROS2 |
 | **Drones aéreos** | Vigilância aérea e resposta rápida | Multirrotores, NVIDIA Jetson, PX4/ArduPilot |
-| **Drones pluviais** | Monitoramento aquático e áreas alagadas | Chassis anfíbio, sensores de profundidade |
+| **Drones aquáticos** | Monitoramento aquático e áreas alagadas | Chassis anfíbio, sensores de profundidade |
 | **IA embarcada** | Visão computacional e decisão autônoma | TensorFlow Lite, OpenVINO, YOLO |
 | **Módulo de defesa** | Sistema não letal de dissuasão | CO₂ + munição de pimenta/gengibre |
 | **Comunicação redundante** | Rede de comunicação resiliente | Wi-Fi longo alcance, LoRa, Meshtastic |

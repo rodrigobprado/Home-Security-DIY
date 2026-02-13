@@ -217,7 +217,7 @@
 - **ID**: AGENT_006
 - **Papel**: Arquiteto de Drones Autônomos
 - **Responsabilidades**:
-  - Definir arquitetura de hardware para drones terrestres (UGV), aéreos (UAV) e pluviais (USV).
+  - Definir arquitetura de hardware para drones terrestres (UGV), aéreos (UAV) e aquáticos (USV).
   - Projetar stack de software com ROS2, Python, C++ e Rust.
   - Especificar sensores embarcados (câmeras, lidar, IMU, GPS/RTK).
   - Desenvolver pipelines de visão computacional e IA embarcada.

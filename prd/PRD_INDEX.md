@@ -48,7 +48,7 @@
 
 | PRD | Título | Descrição |
 |-----|--------|-----------|
-| `PRD_AUTONOMOUS_DRONES.md` | Drones autônomos modulares | PRD principal: requisitos para frota de drones terrestres (UGV), aéreos (UAV) e pluviais (USV) com navegação autônoma, IA embarcada, sensoriamento e integração com Home Security. |
+| `PRD_AUTONOMOUS_DRONES.md` | Drones autônomos modulares | PRD principal: requisitos para frota de drones terrestres (UGV), aéreos (UAV) e aquáticos (USV) com navegação autônoma, IA embarcada, sensoriamento e integração com Home Security. |
 | `PRD_DRONE_DEFENSE_MODULE.md` | Módulo de defesa não letal | Requisitos para sistema de disparo CO₂ + OC (pimenta), autenticação de 2 fatores, auditoria completa, modos de operação e protocolos de segurança. |
 | `PRD_DRONE_COMMUNICATION.md` | Comunicação de drones | Requisitos para rede de comunicação redundante: Wi-Fi longo alcance, LoRa/Meshtastic, failover automático, streaming de vídeo, telemetria e comandos. |
 | `PRD_DRONE_FLEET_MANAGEMENT.md` | Gerenciamento de frota | Requisitos para coordenação de múltiplos drones: divisão de áreas, balanceamento de carga, substituição automática por bateria baixa, resposta coordenada a incidentes. |
