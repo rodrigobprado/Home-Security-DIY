@@ -1,0 +1,26 @@
+[
+    {
+        "id": "T-031",
+        "description": "Definir arquitetura de hardware UGV (Chassis, Motores, ESP32)",
+        "status": "completed",
+        "file": "docs/ARQUITETURA_HARDWARE_UGV.md"
+    },
+    {
+        "id": "T-033",
+        "description": "Criar firmware base (ESP32) para controle de motores",
+        "status": "completed",
+        "directory": "src/drones/ugv/firmware"
+    },
+    {
+        "id": "T-034",
+        "description": "Configurar ambiente ROS2 (Docker) para navegação",
+        "status": "completed",
+        "file": "src/drones/ugv/docker-compose.ugv.yml"
+    },
+    {
+        "id": "T-038",
+        "description": "Criar integração MQTT UGV <-> Home Assistant",
+        "status": "completed",
+        "file": "src/drones/ugv/app/ugv_control.py"
+    }
+]

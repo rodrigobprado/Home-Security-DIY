@@ -105,8 +105,11 @@ Home-Security-DIY/
 
 O projeto inclui uma camada reativa avançada com **frota modular de drones autônomos** (terrestres e aéreos) para patrulha de perímetro.
 
-> ⚠️ **Status**: Em fase de pesquisa e prova de conceito.
-> Consulte [`docs/ARQUITETURA_DRONES_AUTONOMOS.md`](docs/ARQUITETURA_DRONES_AUTONOMOS.md).
+**Documentação do Módulo Drones:**
+- 📄 [Arquitetura UGV (Terrestre)](docs/ARQUITETURA_HARDWARE_UGV.md)
+- 📄 [Arquitetura UAV (Aéreo)](docs/ARQUITETURA_HARDWARE_UAV.md)
+- 🛠️ [Guia de Montagem UGV](docs/GUIA_MONTAGEM_UGV.md)
+- 🛡️ [Módulo de Defesa e Segurança](prd/PRD_DRONE_DEFENSE_MODULE.md)
 
 ---
 
@@ -115,8 +118,9 @@ O projeto inclui uma camada reativa avançada com **frota modular de drones aut�
 | Área | Status | Progresso |
 |------|--------|-----------|
 | **Base System** | ✅ Configuração Pronta | Stack Docker e K3s funcionais. |
-| **Documentação**| 🟡 Em revisão | PRDs completos, guias em construção. |
-| **Drones** | 🔴 Pesquisa | Definição de hardware e análise legal. |
+| **Documentação**| ✅ Completa | PRDs, Arquitetura e Guias de Montagem. |
+| **Drones (UGV)**| 🟠 Protótipo | Hardware/Firmware definidos, Simulação OK. |
+| **Drones (UAV)**| 🔴 Planejamento | Arquitetura definida. |
 
 ---
 
@@ -131,3 +135,5 @@ Contribuições são bem-vindas! Por favor, leia o [CONTRIBUTING.md](CONTRIBUTIN
 Este projeto é licenciado sob a [GPL v3](LICENSE).
 
 **Aviso Legal**: O usuário é o único responsável por verificar e cumprir a legislação local sobre videovigilância, segurança privada, uso de drones e proteção de dados. Os autores não se responsabilizam pelo uso indevido deste software.
+
+> ⚠️ **Atenção sobre Drones (Brasil)**: A operação de drones autônomos aéreos sem contato visual direto (BVLOS) requer autorização especial da ANAC/DECEA. O software fornecido neste repositório para UAVs é destinado apenas para **voo assistido (VLOS)** ou pesquisa em ambiente confinado. Consulte [LEGAL_AND_ETHICS.md](docs/LEGAL_AND_ETHICS.md) para detalhes.

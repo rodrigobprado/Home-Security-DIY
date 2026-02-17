@@ -1,0 +1,39 @@
+version: "3.8"
+
+services:
+  # ---------------------------------------------------------------------------
+  # UGV Brain (ROS 2 Humble)
+  # ---------------------------------------------------------------------------
+  ugv-brain:
+    image: osrf/ros:humble-desktop
+    container_name: ugv-brain
+    restart: unless-stopped
+    command: python3 /app/ugv_control.py
+    volumes:
+      - ./app:/app
+      - ../common:/app/common
+      - /dev:/dev
+    devices:
+      - /dev/ttyUSB0:/dev/ttyUSB0 # ESP32
+      - /dev/video0:/dev/video0 # Camera
+    network_mode: host # For easy communication with HA and other devices
+    environment:
+      - ROS_DOMAIN_ID=0
+      - MQTT_BROKER=192.168.1.100 # Replace with actual broker IP
+      - MQTT_PORT=1883
+      - MQTT_USER=homeassistant
+      - MQTT_PASSWORD=CHANGE_ME
+      - RTSP_URI=rtsp://localhost:8554/cam
+
+  # ---------------------------------------------------------------------------
+  # RTSP Server (MediaMTX) - Low Latency Streaming
+  # ---------------------------------------------------------------------------
+  mediamtx:
+    image: bluenviron/mediamtx:latest
+    container_name: ugv-mediamtx
+    restart: unless-stopped
+    network_mode: host
+    environment:
+      - MTX_PROTOCOLS=tcp
+      - MTX_WEBRTC=no # Disable WebRTC to save resources if not needed
+

@@ -243,11 +243,8 @@
   action:
     - service: notify.notify
       data:
-        title: "⚠️ Bateria baixa"
-        message: >
-          O sensor {{ trigger.to_state.attributes.friendly_name | default(trigger.entity_id) }}
-          está com {{ trigger.to_state.state }}% de bateria.
-          Troque a bateria em breve.
+        title: "⚠️ BATERIA FRACA!"
+        message: "O dispositivo {{ trigger.to_state.name }} está com bateria abaixo de 20%."
 
 # ---------------------------------------------------------------------------
 # Alerta de câmera offline
@@ -325,3 +322,85 @@
     - service: alarm_control_panel.alarm_disarm
       target:
         entity_id: alarm_control_panel.alarmo
+
+# ---------------------------------------------------------------------------
+# Detecção de Potencial Jamming / Falha Crítica Zigbee
+# PRD: T-052 (TASKS_BACKLOG)
+# ---------------------------------------------------------------------------
+- id: security_zigbee_integrity
+  alias: "Segurança - Monitor de Integridade Zigbee (Bridge Offline)"
+  description: "Detecta se o coordenador Zigbee ficou offline ou desconectado"
+  trigger:
+    - platform: state
+      entity_id: sensor.zigbee2mqtt_bridge_state
+      to: "offline"
+      for:
+        seconds: 30
+    - platform: state
+      entity_id: binary_sensor.zigbee2mqtt_connection_state
+      to: "off"
+      for:
+        seconds: 30
+  action:
+    - service: notify.notify
+      data:
+        title: "🚨 FALHA CRÍTICA / JAMMING ZIGBEE"
+        message: >
+          O sistema Zigbee parou de responder.
+          Possível interferência (Jamming), desconexão do USB ou falha do servico.
+          Verifique o servidor IMEDIATAMENTE.
+        data:
+          push:
+            sound:
+              name: default
+              critical: 1
+              volume: 1.0
+    - service: persistent_notification.create
+      data:
+        title: "🚨 FALHA ZIGBEE"
+        message: "Coordenador Zigbee offline. Sensores inoperantes."
+
+# ---------------------------------------------------------------------------
+# Detecção Avançada de Jamming (Queda Simultânea de Sensores)
+# PRD: T-052 (TASKS_BACKLOG)
+# ---------------------------------------------------------------------------
+- id: security_zigbee_mass_failure
+  alias: "Segurança - Detecção de Jamming RF (Queda Massiva)"
+  description: "Detecta se múltiplos sensores Zigbee ficam indisponíveis ao mesmo tempo, indicando Jamming de RF."
+  trigger:
+    - platform: time_pattern
+      minutes: "/1" # Checa a cada minuto
+  condition:
+    - condition: template
+      value_template: >
+        {% set sensors = [
+          'sensor.porta_frente_battery',
+          'sensor.porta_fundos_battery',
+          'sensor.janela_sala_battery',
+          'sensor.janela_quarto_battery',
+          'sensor.pir_sala_battery',
+          'sensor.pir_corredor_battery'
+        ] %}
+        {{ states | selectattr('entity_id', 'in', sensors) | selectattr('state', 'in', ['unavailable', 'unknown']) | list | count >= 3 }}
+  action:
+    - service: notify.notify
+      data:
+        title: "🚨 ALERTA DE JAMMING DETECTADO"
+        message: >
+          Múltiplos sensores (3+) perderam conexão simultaneamente.
+          Isso indica forte interferência ou ataque de Jamming.
+          O sistema pode estar comprometido.
+        data:
+          push:
+            sound:
+              name: default
+              critical: 1
+              volume: 1.0
+
+    # Opcional: Ativar sirene preventiva ou luzes
+    - service: light.turn_on
+      target:
+        entity_id: light.luzes_externas
+      data:
+        brightness: 255
+        rgb_color: [255, 0, 0] # Vermelho

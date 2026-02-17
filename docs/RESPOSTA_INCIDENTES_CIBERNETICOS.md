@@ -328,7 +328,7 @@ Para cada cenario sao apresentados: descricao, indicadores de comprometimento (I
 
 1. Implementar controle de acesso por MAC (whitelist) no switch e access point
 2. Desabilitar portas Ethernet nao utilizadas no switch
-3. Implementar 802.1X para autenticacao de dispositivos na rede cabeada
+3. Implementar 802.1X (autenticacao de porta) se o switch suportar
 4. Configurar rede Wi-Fi com WPA3 e, opcionalmente, SSID oculto para rede IoT
 5. Manter scan periodico da rede (nmap) com alerta para novos dispositivos
 6. Criar e manter inventario atualizado de dispositivos autorizados (ver `RULES_TECHNICAL.md`, secao de inventario)
@@ -606,34 +606,24 @@ O framework PICERL (Preparation, Identification, Containment, Eradication, Recov
 
 **Objetivo**: Detectar e confirmar que um incidente esta ocorrendo.
 
-```
-                    ┌──────────────┐
-                    │   ALERTA     │
-                    │  RECEBIDO    │
-                    └──────┬───────┘
-                           │
-                    ┌──────▼───────┐
-                    │  E um falso  │───── SIM ──── Documentar e
-                    │  positivo?   │               ajustar regra
-                    └──────┬───────┘
-                           │ NAO
-                    ┌──────▼───────┐
-                    │  Qual a      │
-                    │  severidade? │
-                    └──────┬───────┘
-                           │
-              ┌────────────┼────────────────┐
-              │            │                │
-        ┌─────▼────┐ ┌────▼─────┐   ┌──────▼─────┐
-        │ CRITICA  │ │  ALTA    │   │  MEDIA     │
-        │ (2.1,    │ │ (2.2,   │   │ (2.6)      │
-        │  2.4,    │ │  2.3,   │   │            │
-        │  2.7)    │ │  2.5)   │   │            │
-        └─────┬────┘ └────┬────┘   └──────┬─────┘
-              │            │               │
-              ▼            ▼               ▼
-         Contencao    Contencao       Contencao
-         IMEDIATA     em 1 hora      em 24 horas
+```mermaid
+flowchart TD
+    ALERTA[ALERTA RECEBIDO] --> Falso{É um falso<br>positivo?}
+    Falso -->|SIM| Documentar[Documentar e<br>ajustar regra]
+    Falso -->|NÃO| Severidade{Qual a<br>severidade?}
+    
+    Severidade --> CRITICA[CRÍTICA<br>2.1, 2.4, 2.7]
+    Severidade --> ALTA[ALTA<br>2.2, 2.3, 2.5]
+    Severidade --> MEDIA[MÉDIA<br>2.6]
+    
+    CRITICA --> Contencao1[Contenção<br>IMEDIATA]
+    ALTA --> Contencao2[Contenção<br>em 1 hora]
+    MEDIA --> Contencao3[Contenção<br>em 24 horas]
+    
+    style ALERTA fill:#f9f9f9,stroke:#333
+    style CRITICA fill:#ffcdd2,stroke:#f44336
+    style ALTA fill:#ffcc80,stroke:#ff9800
+    style MEDIA fill:#fff9c4,stroke:#fbc02d
 ```
 
 **Passos para identificacao**:
@@ -798,26 +788,3 @@ deve ser mantido em MEMORY_EVOLUTION_LOG.md por no minimo 2 anos.
 
 - [Zigbee Alliance - Security Overview](https://csa-iot.org/developer-resource/specifications-download-request/)
 - [Mirai Botnet - Analise e prevencao (CISA)](https://www.cisa.gov/news-events/alerts/2016/10/14/heightened-ddos-threat-posed-mirai-and-other-botnets)
-- [Home Assistant Security - Documentacao oficial](https://www.home-assistant.io/docs/authentication/)
-- [Frigate - Security Best Practices](https://docs.frigate.video/)
-
-### Ferramentas de monitoramento
-
-- [Suricata - Open Source IDS/IPS](https://suricata.io/)
-- [ntopng - Network Traffic Monitoring](https://www.ntop.org/products/traffic-analysis/ntopng/)
-- [arpwatch - Ethernet/IP Address Pairing Monitor](https://linux.die.net/man/8/arpwatch)
-- [AIDE - Advanced Intrusion Detection Environment](https://aide.github.io/)
-- [Pi-hole - Network-wide Ad Blocking](https://pi-hole.net/)
-
-### Documentos internos do projeto
-
-- `docs/ARQUITETURA_TECNICA.md` - Arquitetura de rede, VLANs, hardware e software
-- `docs/ARQUITETURA_SEGURANCA_FISICA.md` - Plano de resposta a incidentes fisicos
-- `rules/RULES_TECHNICAL.md` - Regras tecnicas gerais do projeto
-- `PROJECT_OVERVIEW.md` - Visao geral do projeto
-
----
-
-> **Nota**: Este documento foi criado durante a revisao do projeto em 2026-02-12. Deve ser revisado e atualizado semestralmente ou apos qualquer incidente cibernetico, o que ocorrer primeiro.
-
-> **Proximos passos**: Integrar as regras REGRA-CIBER-01 a REGRA-CIBER-10 ao documento `rules/RULES_TECHNICAL.md` e criar automacoes no Home Assistant para os alertas de seguranca descritos nas secoes 3 e 4.

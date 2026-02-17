@@ -1,0 +1,122 @@
+views:
+  - title: Security Center
+    icon: mdi:shield-home
+    path: security-center
+    type: sidebar
+    cards:
+      # --- SIDEBAR: STATUS & CONTROLS ---
+      - type: vertical-stack
+        cards:
+          # Alarm Panel
+          - type: alarm-panel
+            entity: alarm_control_panel.alarmo
+            states:
+              - arm_home
+              - arm_away
+              - arm_night
+            name: Sistema de Alarme
+
+          # Quick Actions
+          - type: grid
+            title: Ações Rápidas
+            columns: 2
+            cards:
+              - type: button
+                name: Pânico
+                icon: mdi:bell-ring
+                tap_action:
+                  action: call-service
+                  service: script.panico_geral
+                confirmation:
+                  text: "ATIVAR MODO PÂNICO?"
+
+              - type: button
+                name: Luzes On
+                icon: mdi:lightbulb-group
+                tap_action:
+                  action: call-service
+                  service: light.turn_on
+                  target:
+                    entity_id: light.luzes_externas
+
+          # Drone Fleet Status
+          - type: entities
+            title: Frota de Drones
+            entities:
+              - entity: binary_sensor.ugv_online
+                name: UGV (Terrestre)
+              - entity: binary_sensor.uav_armed
+                name: UAV (Aéreo)
+              - entity: sensor.ugv_battery
+                name: Bateria UGV
+              - entity: sensor.uav_battery
+                name: Bateria UAV
+
+          # System Health
+          - type: entities
+            title: Saúde do Sistema
+            show_header_toggle: false
+            entities:
+              - entity: sensor.disk_use_percent
+                name: Disco (NVR)
+              - entity: binary_sensor.zigbee2mqtt_connection_state
+                name: Rede Zigbee
+              - entity: sensor.backup_state
+                name: Último Backup
+
+      # --- MAIN AREA: SURVEILLANCE ---
+      - type: vertical-stack
+        cards:
+          # Active Threats (Conditional)
+          - type: conditional
+            conditions:
+              - entity: alarm_control_panel.alarmo
+                state: triggered
+            card:
+              type: markdown
+              content: "# 🚨 ALARME DISPARADO! 🚨\nVerifique as câmeras abaixo."
+              card_mod:
+                style: |
+                  ha-card {
+                    background-color: red;
+                    color: white;
+                    animation: blink 2s linear infinite;
+                  }
+                  @keyframes blink {
+                    50% { opacity: 0; }
+                  }
+
+          # Camera Grid
+          - type: grid
+            columns: 2
+            square: true
+            cards:
+              - type: picture-glance
+                title: Entrada
+                camera_image: camera.cam_entrada
+                entities:
+                  - entity: binary_sensor.pir_sala_occupancy
+                    icon: mdi:motion-sensor
+                tap_action:
+                  action: more-info
+
+              - type: picture-glance
+                title: Fundos
+                camera_image: camera.cam_fundos
+                entities: []
+                tap_action:
+                  action: more-info
+
+              - type: picture-glance
+                title: Garagem
+                camera_image: camera.cam_garagem
+                entities: []
+                tap_action:
+                  action: more-info
+
+              - type: picture-glance
+                title: Lateral
+                camera_image: camera.cam_lateral
+                entities: []
+                tap_action:
+                  action: more-info

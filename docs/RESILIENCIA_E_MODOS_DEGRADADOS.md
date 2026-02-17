@@ -237,29 +237,31 @@ automation:
 
 **Diagrama sugerido -- local do servidor:**
 
-```
-    ┌─────────────────────────────────────────┐
-    │              ARMARIO EMBUTIDO            │
-    │         (porta com chave simples)        │
-    │                                          │
-    │  ┌──────────┐  ┌──────────┐              │
-    │  │ Mini PC  │  │ Nobreak  │              │
-    │  │  N100    │  │ 1500VA   │              │
-    │  │(parafuso)│  │          │              │
-    │  └────┬─────┘  └────┬─────┘              │
-    │       │              │                    │
-    │  ┌────┴──────────────┴────┐              │
-    │  │    Regua com DPS       │              │
-    │  └────────────┬───────────┘              │
-    │               │                          │
-    │  ┌────────────┴───────────┐              │
-    │  │  Switch PoE 8 portas   │              │
-    │  │  (alimentado pelo UPS) │              │
-    │  └────────────┬───────────┘              │
-    │               │                          │
-    │     Cabos Ethernet para cameras          │
-    │     (passam por conduites na parede)     │
-    └─────────────────────────────────────────┘
+```mermaid
+graph TD
+    subgraph Armario [Armário Embutido - Porta com Chave]
+        direction TB
+        style Armario fill:#f9f9f9,stroke:#333,stroke-width:2px
+
+        subgraph Power [Infraestrutura Elétrica]
+            style Power fill:#e1f5fe
+            UPS[Nobreak 1500VA]
+            DPS[Régua com DPS]
+            UPS --> DPS
+        end
+        
+        subgraph Hardware [Hardware de Segurança]
+            style Hardware fill:#fff3e0
+            MiniPC[Mini PC N100<br>Parafusado na prateleira]
+            Switch[Switch PoE 8 Portas<br>Alimentado pelo UPS]
+            
+            DPS --> MiniPC
+            DPS --> Switch
+            MiniPC ==>|Ethernet Cat6| Switch
+        end
+        
+        Switch ==>|Cabos embutidos<br>na parede| Cameras[Câmeras Externas]
+    end
 ```
 
 #### 1.3.5 Alarme de ataque coordenado
@@ -633,57 +635,45 @@ automation:
 
 ### 2.4 Diagrama de dependencias entre componentes
 
-```
-                    ┌────────────┐
-                    │  ENERGIA   │
-                    │ (concession│
-                    │   aria)    │
-                    └─────┬──────┘
-                          │
-                    ┌─────▼──────┐
-                    │  NOBREAK   │
-                    │  (1500VA)  │
-                    └─────┬──────┘
-                          │
-          ┌───────────────┼───────────────┐
-          │               │               │
-    ┌─────▼──────┐  ┌─────▼──────┐  ┌─────▼──────┐
-    │  MINI PC   │  │ SWITCH PoE │  │  ROTEADOR  │
-    │   N100     │  │  8 portas  │  │  + 4G      │
-    └─────┬──────┘  └─────┬──────┘  └─────┬──────┘
-          │               │               │
-    ┌─────┼───────┐       │          ┌────┴─────┐
-    │     │       │       │          │ INTERNET │
-    │     │       │  ┌────▼─────┐   │  (fibra  │
-    │     │       │  │ CAMERAS  │   │   + 4G)  │
-    │     │       │  │ (PoE)    │   └──────────┘
-    │     │       │  └──────────┘
-    │     │       │
-┌───▼──┐ │  ┌────▼──────┐
-│MOSQU-│ │  │ZIGBEE2MQTT│
-│ITTO  │ │  │ + Dongle  │
-│(MQTT)│ │  └────┬──────┘
-└───┬──┘ │       │
-    │    │  ┌────▼──────┐
-    │    │  │ SENSORES  │
-    │    │  │ (Zigbee)  │
-    │    │  └───────────┘
-    │    │
-┌───▼────▼──┐
-│   HOME    │
-│ ASSISTANT │
-│ + Alarmo  │
-└─────┬─────┘
-      │
-┌─────▼──────┐
-│  FRIGATE   │
-│  (NVR+IA)  │
-└─────┬──────┘
-      │
-┌─────▼──────┐
-│  HDD/SSD   │
-│ (gravacoes)│
-└────────────┘
+```mermaid
+graph TD
+    subgraph Power [Infraestrutura Elétrica]
+        Energia[Concessionaria] --> UPS[Nobreak 1500VA]
+        
+        UPS --> MiniPC[Mini PC N100]
+        UPS --> Switch[Switch PoE]
+        UPS --> Roteador[Roteador + 4G]
+    end
+    
+    subgraph Network [Rede e Conectividade]
+        Internet[Link Internet] <--> Roteador
+        Switch --> Cameras[Câmeras PoE]
+        
+        MiniPC --- Switch
+        MiniPC --- Roteador
+    end
+    
+    subgraph Services [Serviços Software]
+        direction TB
+        MiniPC --> HA[Home Assistant]
+        MiniPC --> Frigate[Frigate NVR]
+        MiniPC --> MQTT[Mosquitto]
+        MiniPC --> Z2M[Zigbee2MQTT]
+        
+        Z2M --> MQTT
+        Frigate --> MQTT
+        MQTT --> HA
+        HA --> Frigate
+        
+        Z2M -.-> Sensores[Sensores Zigbee]
+    end
+    
+    Cameras --> Frigate
+    Frigate --> Storage[HDD/SSD Gravações]
+    
+    style Power fill:#e1f5fe
+    style Network fill:#fff3e0
+    style Services fill:#e8f5e9
 ```
 
 **Pontos unicos de falha identificados:**
@@ -803,174 +793,34 @@ automation:
       - service: notify.notify
         data:
           title: "ALERTA - Disco NVR superaquecendo"
-          message: "Temperatura do disco de gravacoes: {{ states('sensor.disco_nvr_temperatura') }}C. Verificar ventilacao."
+          message: "Temperatura do disco de gravacoes atingiu {{ trigger.to_state.state }}C. Verificar ventilacao."
 ```
-
-**Atributos S.M.A.R.T. criticos para monitorar:**
-
-| Atributo | ID | O que indica | Limiar de alerta |
-|----------|----|-------------|-----------------|
-| Reallocated Sector Count | 5 | Setores defeituosos remapeados | > 0 (qualquer valor) |
-| Current Pending Sector | 197 | Setores aguardando remapeamento | > 0 |
-| Offline Uncorrectable | 198 | Setores irrecuperaveis | > 0 |
-| Temperature Celsius | 194 | Temperatura do disco | > 55C |
-| Power-On Hours | 9 | Horas de uso | > 35.000h (HDD) |
-| Spin Retry Count | 10 | Tentativas de spin-up | > 0 |
-
-### 3.4 Rotina de backup para gravacoes de incidentes
-
-As gravacoes normais sao rotacionadas automaticamente pelo Frigate (FIFO, 30 dias). Porem, gravacoes de **incidentes** (alarmes, deteccoes de intrusos) devem ser preservadas.
-
-**Estrategia em 3 niveis:**
-
-| Nivel | Tipo | Destino | Frequencia | Retencao |
-|-------|------|---------|-----------|----------|
-| **1** | Edge recording (SD) | Cartao SD na camera | Continua | 5-14 dias (loop) |
-| **2** | Gravacao Frigate | HDD/SSD local | Continua | 30 dias (normal), 60 dias (eventos) |
-| **3** | Backup de incidentes | HDD USB externo ou NAS | Diario (apenas incidentes) | 1 ano |
-
-**Script de backup de incidentes:**
-
-```bash
-#!/bin/bash
-# backup_incidentes.sh
-# Copia gravacoes marcadas como incidentes para disco de backup
-
-FRIGATE_MEDIA="/media/frigate/recordings"
-BACKUP_DEST="/mnt/backup_usb/incidentes"
-DATE=$(date +%Y-%m-%d)
-LOG="/var/log/backup_incidentes.log"
-
-echo "[$(date)] Iniciando backup de incidentes..." >> $LOG
-
-# Copiar eventos marcados como retidos (retain: true) nas ultimas 24h
-# Frigate armazena eventos em /media/frigate/clips/
-rsync -av --progress \
-  "$FRIGATE_MEDIA/../clips/" \
-  "$BACKUP_DEST/$DATE/" \
-  >> $LOG 2>&1
-
-# Verificar espaco no disco de backup
-USAGE=$(df -h "$BACKUP_DEST" | tail -1 | awk '{print $5}' | tr -d '%')
-if [ "$USAGE" -gt 90 ]; then
-    echo "[$(date)] ALERTA: Disco de backup com ${USAGE}% de uso!" >> $LOG
-    # Aqui poderia chamar uma API para notificar via HA
-fi
-
-echo "[$(date)] Backup concluido." >> $LOG
-```
-
-**Crontab:**
-
-```cron
-# Backup diario de incidentes as 3h da manha
-0 3 * * * /usr/local/bin/backup_incidentes.sh
-```
-
-### 3.5 Recomendacoes de local fisico para o servidor
-
-Complementando a secao 1.3.4, as recomendacoes detalhadas para cada cenario:
-
-**Cenario rural:**
-
-| Local sugerido | Vantagens | Cuidados |
-|----------------|-----------|----------|
-| Comodo interno sem janela (dispensa, closet) | Nao visivel, protegido | Ventilacao, umidade |
-| Forro da casa (se acessivel e ventilado) | Muito discreto | Calor excessivo no verao, acesso dificil |
-| Armario embutido com chave | Discreto, protegido | Ventilacao adequada |
-
-**Cenario casa urbana:**
-
-| Local sugerido | Vantagens | Cuidados |
-|----------------|-----------|----------|
-| Armario embutido no corredor | Discreto, acessivel | Furar para ventilacao/cabos |
-| Sob escada (se houver) | Espaco subutilizado | Umidade, ventilacao |
-| Soto/porao | Muito escondido | Umidade alta, pode inundar |
-| Quarto de servico/lavanderia | Pouco frequentado por visitantes | Umidade de roupas |
-
-**Cenario apartamento:**
-
-| Local sugerido | Vantagens | Cuidados |
-|----------------|-----------|----------|
-| Armario de rede/telecom (se houver) | Projetado para isso | Verificar ventilacao |
-| Atras de movel fixo | Muito discreto | Acesso para manutencao |
-| Dentro de armario com porta | Protegido, discreto | Circulacao de ar |
-
-**Regras gerais para todos os cenarios:**
-
-1. **Nunca** colocar o servidor proximo a janelas ou areas acessiveis do exterior
-2. **Nunca** deixar LEDs indicadores visiveis de fora da casa
-3. **Sempre** fixar fisicamente (parafusos, braket VESA)
-4. **Sempre** garantir ventilacao minima (Mini PC N100 gera ~15W de calor)
-5. **Sempre** manter junto ao nobreak (cabos curtos = menos pontos de falha)
-6. **Evitar** locais com risco de inundacao (banheiros, areas externas)
-7. **Evitar** locais com temperatura acima de 40C no verao
-
----
 
 ## 4. Regras derivadas
 
-As regras abaixo complementam as regras existentes em `rules/RULES_COMPLIANCE_AND_STANDARDS.md` e devem ser referenciadas nos PRDs e documentos tecnicos.
-
 ```
-REGRA-RESIL-01: O sistema DEVE possuir conectividade 4G/LTE como canal
-redundante de notificacao. Nao e opcional.
+REGRA-RESIL-01: O sistema deve ter nobreak dimensionado para minimo de 2 horas de
+autonomia para todos os componentes criticos (servidor, switch PoE, roteador).
 
-REGRA-RESIL-02: O sistema DEVE possuir nobreak (UPS) com autonomia minima
-de 1 hora para servidor, switch PoE e roteador. Recomendado: 2 horas
-(1500VA).
+REGRA-RESIL-02: Todas as cameras externas devem ter cartao SD com edge recording
+ativo, operando independentemente do NVR.
 
-REGRA-RESIL-03: Todas as cameras externas DEVEM ter cartao microSD High
-Endurance com edge recording ativo permanentemente, independente do estado
-do NVR.
+REGRA-RESIL-03: O sistema deve detectar e alertar queda de energia via 4G em ate
+1 minuto apos o evento.
 
-REGRA-RESIL-04: O servidor central (Mini PC) DEVE ser instalado em local
-nao obvio, fixado fisicamente na parede ou movel, sem LEDs visiveis do
-exterior.
+REGRA-RESIL-04: O sistema deve ter monitoramento de saude de disco (S.M.A.R.T.)
+com alertas configurados.
 
-REGRA-RESIL-05: A deteccao simultanea de queda de energia e queda de
-internet DEVE disparar alarme de nivel maximo via 4G, sirenes e
-iluminacao, tratando como possivel ataque coordenado.
+REGRA-RESIL-05: O servidor deve ser fisicamente fixado e escondido em local nao
+obvio da residencia.
 
-REGRA-RESIL-06: O switch PoE DEVE ser alimentado pelo nobreak e instalado
-junto ao servidor, com cabos em conduites embutidos.
-
-REGRA-RESIL-07: DEVE ser mantido estoque de componentes criticos
-sobressalentes: 1 coordenador Zigbee USB, 2 cartoes SD High Endurance,
-1 fonte PoE de emergencia (injetor individual).
-
-REGRA-RESIL-08: Os discos de armazenamento (HDD/SSD) DEVEM ser
-monitorados via S.M.A.R.T. com alertas automaticos para atributos
-criticos (Reallocated Sectors, Pending Sectors, temperatura).
+REGRA-RESIL-06: O sistema deve ter plano de recuperacao documentado para falha de
+cada componente listado na secao 2.2.
 ```
-
----
 
 ## 5. Referencias
 
-### Documentos internos do projeto
-
-- `docs/ARQUITETURA_TECNICA.md` -- Arquitetura tecnica completa (HA, Frigate, Zigbee, Mini PC N100, VLANs)
-- `docs/ARQUITETURA_SEGURANCA_FISICA.md` -- Seguranca fisica, zonas de protecao, posicionamento de cameras
-- `rules/RULES_COMPLIANCE_AND_STANDARDS.md` -- Regras de compliance (REGRA-CFTV, REGRA-IOT, REGRA-NOBREAK, etc.)
-- `prd/PRD_VIDEO_SURVEILLANCE_AND_NVR.md` -- PRD do sistema de videovigilancia
-- `prd/PRD_SENSORS_AND_ALARMS_PLATFORM.md` -- PRD da plataforma de sensores e alarmes
-
-### Referencias externas
-
-- [Frigate NVR - Recording Configuration](https://docs.frigate.video/configuration/record/)
-- [Home Assistant - UPS Integration (NUT)](https://www.home-assistant.io/integrations/nut/)
-- [Zigbee2MQTT - Availability](https://www.zigbee2mqtt.io/guide/configuration/devices-groups.html#common-device-options)
-- [smartmontools - S.M.A.R.T. Monitoring](https://www.smartmontools.org/)
-- [Samsung PRO Endurance - Especificacoes](https://semiconductor.samsung.com/consumer-storage/memory-cards/)
-- [Network UPS Tools (NUT)](https://networkupstools.org/)
-- [Home Assistant - System Monitor](https://www.home-assistant.io/integrations/systemmonitor/)
-- [Linux mdadm RAID](https://raid.wiki.kernel.org/index.php/Linux_Raid)
-
----
-
-> **Data de criacao**: 2026-02-12 (revisao do projeto)
->
-> **Regras derivadas**: REGRA-RESIL-01 a REGRA-RESIL-08
->
-> **Proximos passos**: Integrar as regras REGRA-RESIL-* ao documento `rules/RULES_COMPLIANCE_AND_STANDARDS.md` e referenciar nos PRDs relevantes (PRD_VIDEO_SURVEILLANCE_AND_NVR, PRD_SENSORS_AND_ALARMS_PLATFORM).
+- [Network UPS Tools (NUT) Integration](https://www.home-assistant.io/integrations/nut/)
+- [Frigate NVR Storage Documentation](https://docs.frigate.video/configuration/record)
+- [RAID Levels Explained](https://www.raid-calculator.com/raid-types-reference.aspx)
+- [Smartmontools Documentation](https://www.smartmontools.org/)

@@ -54,7 +54,7 @@ logbook:
       - sensor.date_*
 
 # --- MQTT ---
-mqtt:
+mqtt: !include mqtt.yaml
 
 # --- Automations, Scripts, Scenes ---
 automation: !include automations.yaml

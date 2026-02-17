@@ -1,0 +1,63 @@
+views:
+  - title: UGV Control
+    icon: mdi:robot-industrial
+    cards:
+      # --- Video Feed & Status ---
+      - type: horizontal-stack
+        cards:
+          - type: picture-entity
+            entity: camera.ugv_cam # Needs to be added via Generic Camera integration
+            name: UGV Live View
+            camera_view: live
+            show_state: false
+
+          - type: vertical-stack
+            cards:
+              - type: entity
+                entity: sensor.ugv_state
+                name: Status
+              - type: gauge
+                entity: sensor.ugv_battery
+                name: Battery
+                severity:
+                  green: 50
+                  yellow: 20
+                  red: 0
+              - type: entity
+                entity: sensor.ugv_wi_fi_signal
+                name: Wi-Fi Signal
+              - type: entity
+                entity: sensor.ugv_detections
+                name: Objects Detected
+
+      # --- Controls ---
+      - type: grid
+        columns: 2
+        cards:
+          - type: button
+            entity: button.ugv_start_patrol
+            name: Start Patrol
+            icon: mdi:play
+            tap_action:
+              action: toggle
+
+          - type: button
+            entity: button.ugv_emergency_stop
+            name: EMERGENCY STOP
+            icon: mdi:stop-alert
+            show_name: true
+            show_icon: true
+            tap_action:
+              action: toggle
+            card_mod:
+              style: |
+                ha-card {
+                  background: red;
+                  color: white;
+                }
+
+      # --- Map (Optional) ---
+      # - type: map
+      #   entities:
+      #     - device_tracker.ugv_location
+      #   default_zoom: 19

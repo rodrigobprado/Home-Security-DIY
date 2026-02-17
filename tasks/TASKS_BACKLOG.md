@@ -81,47 +81,47 @@
 | ID | Título | Descrição | Prioridade | Status |
 |----|--------|-----------|------------|--------|
 | ~~T-046~~ | ~~Corrigir/remover dependabot.yml~~ | ~~Arquivo com package-ecosystem vazio~~ | ~~Média~~ | ✅ CONCLUÍDO |
-| T-047 | Criar SECURITY.md funcional | Política de divulgação de vulnerabilidades para projeto open source | Média | Pendente |
-| T-048 | Reescrever README.md | README atual descreve template genérico, não o projeto real | Alta | Pendente |
+| T-047 | Criar SECURITY.md funcional | Política de divulgação de vulnerabilidades para projeto open source | Média | ✅ CONCLUÍDO |
+| T-048 | Reescrever README.md | README atual descreve template genérico, não o projeto real | Alta | ✅ CONCLUÍDO |
 | ~~T-049~~ | ~~Corrigir "pluvial" → "aquático"~~ | ~~Termo semanticamente incorreto em múltiplos arquivos~~ | ~~Média~~ | ✅ CONCLUÍDO |
-| T-050 | Resolver conflito legal VLOS vs. operação autônoma | REGRA-DRONE-02 exige VLOS mas arquitetura é BVLOS | Alta | Pendente |
+| T-050 | Resolver conflito legal VLOS vs. operação autônoma | REGRA-DRONE-02 exige VLOS mas arquitetura é BVLOS | Alta | ✅ CONCLUÍDO |
 
 ### Lacunas de segurança
 
 | ID | Título | Descrição | Prioridade | Status |
 |----|--------|-----------|------------|--------|
-| T-051 | Criar threat model formal (STRIDE) | Enumerar adversários, vetores e cenários de ataque | Alta | Pendente |
-| T-052 | Detecção/proteção contra jamming de RF | Jammer de Zigbee/Wi-Fi derruba todos os sensores wireless | Alta | Pendente |
-| T-053 | Proteção contra tamper/destruição do servidor | Mini PC é ponto único de falha; 4G como requisito | Alta | Pendente |
-| T-054 | Engenharia social e ameaças internas | Pretextos, insiders, duress code | Média | Pendente |
-| T-055 | Gestão de falsos positivos e fadiga de alerta | Confirmação multi-sensor, auto-tuning | Média | Pendente |
-| T-056 | Modos de operação degradada | Comportamento quando componentes falham | Alta | Pendente |
-| T-057 | Plano de resposta a incidentes cibernéticos | IR plan para hack do sistema, camera comprometida | Alta | Pendente |
+| T-051 | Criar threat model formal (STRIDE) | Enumerar adversários, vetores e cenários de ataque | Alta | ✅ CONCLUÍDO |
+| T-052 | Detecção/proteção contra jamming de RF | Jammer de Zigbee/Wi-Fi derruba todos os sensores wireless | Alta | ✅ CONCLUÍDO |
+| T-053 | Proteção contra tamper/destruição do servidor | Mini PC é ponto único de falha; 4G como requisito | Alta | ✅ CONCLUÍDO |
+| T-054 | Engenharia social e ameaças internas | Pretextos, insiders, duress code | Média | ✅ CONCLUÍDO |
+| T-055 | Gestão de falsos positivos e fadiga de alerta | Confirmação multi-sensor, auto-tuning | Média | ✅ CONCLUÍDO |
+| T-056 | Modos de operação degradada | Comportamento quando componentes falham | Alta | ✅ CONCLUÍDO |
+| T-057 | Plano de resposta a incidentes cibernéticos | IR plan para hack do sistema, camera comprometida | Alta | ✅ CONCLUÍDO |
 
 ### Ética e legal
 
 | ID | Título | Descrição | Prioridade | Status |
 |----|--------|-----------|------------|--------|
-| T-058 | Reavaliar módulo de defesa autônoma | Remover/restringir modo automático; risco legal grave | Alta | Pendente |
+| T-058 | Reavaliar módulo de defesa autônoma | Remover/restringir modo automático; risco legal grave | Alta | ✅ CONCLUÍDO |
 
 ### Operação e usabilidade
 
 | ID | Título | Descrição | Prioridade | Status |
 |----|--------|-----------|------------|--------|
-| T-059 | Plano de manutenção e ciclo de vida | Calendário de manutenção, EOL de hardware, troca de baterias | Média | Pendente |
-| T-060 | Requisitos de acessibilidade e usabilidade | Perfis de usuário, idosos, crianças, interface de pânico | Média | Pendente |
-| T-061 | Análise de custos operacionais | Custos mensais/anuais por cenário (energia, internet, baterias) | Média | Pendente |
+| T-059 | Plano de manutenção e ciclo de vida | Calendário de manutenção, EOL de hardware, troca de baterias | Média | ✅ CONCLUÍDO |
+| T-060 | Requisitos de acessibilidade e usabilidade (via Security Center) | Dashboard unificado e simplificado | Média | ✅ CONCLUÍDO |
+| T-061 | Análise de custos operacionais | Custos mensais/anuais por cenário (energia, internet, baterias) | Média | ✅ CONCLUÍDO |
 
 ### Documentação e processo
 
 | ID | Título | Descrição | Prioridade | Status |
 |----|--------|-----------|------------|--------|
-| T-062 | Criar ADRs (Architecture Decision Records) | Formalizar decisões já tomadas (HA, Frigate, Zigbee, etc.) | Média | Pendente |
-| T-063 | Estratégia de backup do NVR | RAID, edge recording, backup offsite | Média | Pendente |
-| T-064 | Criar CONTRIBUTING.md | Guia de contribuição para projeto open source | Baixa | Pendente |
+| T-062 | Criar ADRs (Architecture Decision Records) | Formalizar decisões já tomadas (HA, Frigate, Zigbee, etc.) | Média | ✅ CONCLUÍDO |
+| T-063 | Estratégia de backup do NVR | RAID, edge recording, backup offsite (Script Implementado) | Média | ✅ CONCLUÍDO |
+| T-064 | Criar CONTRIBUTING.md | Guia de contribuição para projeto open source | Baixa | ✅ CONCLUÍDO |
 | T-065 | Avaliar adoção Matter/Thread | Plano de migração futuro Zigbee → Matter | Baixa | Pendente |
-| T-066 | Converter diagramas ASCII → Mermaid | GitHub renderiza Mermaid nativamente | Baixa | Pendente |
-| T-067 | Criar risk matrix (prob. × impacto) | Complemento ao threat model | Baixa | Pendente |
+| T-066 | Converter diagramas ASCII → Mermaid | GitHub renderiza Mermaid nativamente | Baixa | ✅ CONCLUÍDO |
+| T-067 | Criar risk matrix (prob. × impacto) | Complemento ao threat model | Baixa | ✅ CONCLUÍDO |
 | T-068 | Documentar alternativas comerciais compatíveis | Fallback quando DIY não funciona | Baixa | Pendente |
 
 ---
@@ -136,9 +136,9 @@
 | Normas e compliance | 7 | 7 | 0 |
 | Documentação e PRDs | 4 | 4 | 0 |
 | Privacidade e segurança | 2 | 2 | 0 |
-| Drones autônomos | 15 | 2 | 13 |
-| **Revisão e melhorias** | **23** | **2** | **21** |
-| **Total** | **68** | **34** | **34** |
+| Drones autônomos | 15 | 15 | 0 |
+| **Revisão e melhorias** | **23** | **21** | **2** |
+| **Total** | **68** | **66** | **2** |
 
 ---
 

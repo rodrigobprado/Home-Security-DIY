@@ -309,93 +309,81 @@ Recomendado como NVR principal devido à detecção de objetos nativa, integraç
 
 ### Diagrama de componentes
 
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                              REDE DOMÉSTICA                                 │
-│  ┌─────────────────────────────────────────────────────────────────────┐   │
-│  │                        VLAN PRINCIPAL (Usuários)                     │   │
-│  │   ┌──────────┐    ┌──────────┐    ┌──────────┐                      │   │
-│  │   │ Notebook │    │ Celular  │    │  Tablet  │                      │   │
-│  │   └────┬─────┘    └────┬─────┘    └────┬─────┘                      │   │
-│  │        └───────────────┼───────────────┘                            │   │
-│  └────────────────────────┼────────────────────────────────────────────┘   │
-│                           │                                                 │
-│  ┌────────────────────────┼────────────────────────────────────────────┐   │
-│  │              VLAN GESTÃO (Servidor Home Security)                   │   │
-│  │                        │                                            │   │
-│  │            ┌───────────┴───────────┐                                │   │
-│  │            │     MINI PC N100      │                                │   │
-│  │            │  ┌─────────────────┐  │                                │   │
-│  │            │  │ HOME ASSISTANT  │  │                                │   │
-│  │            │  │  + Alarmo       │  │                                │   │
-│  │            │  │  + Zigbee2MQTT  │  │                                │   │
-│  │            │  │  + Frigate      │  │                                │   │
-│  │            │  │  + MQTT Broker  │  │                                │   │
-│  │            │  └─────────────────┘  │                                │   │
-│  │            │         │             │                                │   │
-│  │            │    ┌────┴────┐        │                                │   │
-│  │            │    │ Zigbee  │        │                                │   │
-│  │            │    │ Dongle  │        │                                │   │
-│  │            │    └────┬────┘        │                                │   │
-│  │            └─────────┼─────────────┘                                │   │
-│  └──────────────────────┼──────────────────────────────────────────────┘   │
-│                         │                                                   │
-│  ┌──────────────────────┼──────────────────────────────────────────────┐   │
-│  │              VLAN IoT (Sensores Zigbee - via dongle)                │   │
-│  │                      │                                              │   │
-│  │    ┌─────────────────┼─────────────────┐                            │   │
-│  │    │                 │                 │                            │   │
-│  │ ┌──┴──┐  ┌──────┐  ┌─┴───┐  ┌──────┐  ┌┴─────┐                     │   │
-│  │ │Porta│  │Janela│  │ PIR │  │Sirene│  │Outros│                     │   │
-│  │ └─────┘  └──────┘  └─────┘  └──────┘  └──────┘                     │   │
-│  │  SNZB-04  SNZB-04  SNZB-03  HS2WD-E   Zigbee                       │   │
-│  └─────────────────────────────────────────────────────────────────────┘   │
-│                                                                             │
-│  ┌─────────────────────────────────────────────────────────────────────┐   │
-│  │               VLAN CÂMERAS (Isolada, sem internet)                  │   │
-│  │                                                                      │   │
-│  │   ┌────────┐  ┌────────┐  ┌────────┐  ┌────────┐                   │   │
-│  │   │ CAM 1  │  │ CAM 2  │  │ CAM 3  │  │ CAM 4  │                   │   │
-│  │   │Entrada │  │ Fundos │  │Lateral │  │Garagem │                   │   │
-│  │   └───┬────┘  └───┬────┘  └───┬────┘  └───┬────┘                   │   │
-│  │       └───────────┴───────────┴───────────┘                        │   │
-│  │                       │                                             │   │
-│  │              ┌────────┴────────┐                                    │   │
-│  │              │  SWITCH PoE     │                                    │   │
-│  │              │  (8 portas)     │                                    │   │
-│  │              └─────────────────┘                                    │   │
-│  └─────────────────────────────────────────────────────────────────────┘   │
-└─────────────────────────────────────────────────────────────────────────────┘
+```mermaid
+graph TD
+    subgraph Rede_Domestica [Rede Doméstica]
+        direction TB
+        
+        subgraph VLAN_Principal [VLAN Principal - Usuários]
+            Notebook
+            Celular
+            Tablet
+        end
+
+        subgraph VLAN_Gestao [VLAN Gestão - Servidor]
+            MiniPC[Mini PC N100]
+            subgraph Services [Serviços Docker]
+                HA[Home Assistant + Alarmo]
+                Z2M[Zigbee2MQTT]
+                Frigate[Frigate NVR]
+                Mosquitto[MQTT Broker]
+            end
+            ZigbeeDongle[Sonoff Zigbee Dongle]
+            
+            MiniPC --> Services
+            MiniPC -- USB --> ZigbeeDongle
+        end
+
+        subgraph VLAN_IoT [VLAN IoT - Zigbee/Wi-Fi]
+            direction TB
+            SensorPorta[Sensor Porta SNZB-04]
+            SensorJanela[Sensor Janela SNZB-04]
+            SensorPIR[Sensor PIR SNZB-03]
+            Sirene[Sirene HS2WD-E]
+            Outros[Outros Zigbee]
+        end
+
+        subgraph VLAN_Cameras [VLAN Câmeras - Isolada]
+            direction LR
+            Cam1[Cam Entrada]
+            Cam2[Cam Fundos]
+            Cam3[Cam Lateral]
+            Cam4[Cam Garagem]
+            SwitchPoE[Switch PoE 8 Portas]
+            
+            Cam1 --> SwitchPoE
+            Cam2 --> SwitchPoE
+            Cam3 --> SwitchPoE
+            Cam4 --> SwitchPoE
+        end
+
+        %% Conexões Lógicas
+        Celular -.->|Acesso Dashboard| HA
+        Notebook -.->|Acesso Dashboard| HA
+        
+        ZigbeeDongle -.-|Zigbee Mesh| SensorPorta
+        ZigbeeDongle -.-|Zigbee Mesh| SensorJanela
+        ZigbeeDongle -.-|Zigbee Mesh| SensorPIR
+        ZigbeeDongle -.-|Zigbee Mesh| Sirene
+        
+        SwitchPoE ==>|RTSP Stream| Frigate
+    end
 ```
 
 ### Fluxo de dados
 
-```
-┌──────────────┐     RTSP      ┌──────────────┐    Detecção    ┌──────────────┐
-│   CÂMERAS    │──────────────►│   FRIGATE    │───────────────►│HOME ASSISTANT│
-│   (PoE)      │               │   (NVR+IA)   │    Eventos     │   (Alarmo)   │
-└──────────────┘               └──────────────┘                └──────┬───────┘
-                                      │                               │
-                               Gravação local                         │
-                                      │                               │
-                               ┌──────▼──────┐                        │
-                               │  HDD/SSD    │                        │
-                               │ (1TB+ NVR)  │                        │
-                               └─────────────┘                        │
-                                                                      │
-┌──────────────┐    Zigbee     ┌──────────────┐     MQTT       ┌──────▼───────┐
-│   SENSORES   │──────────────►│ ZIGBEE2MQTT  │───────────────►│HOME ASSISTANT│
-│ (Zigbee 3.0) │               │  ou ZHA      │    Estados     │   (Alarmo)   │
-└──────────────┘               └──────────────┘                └──────┬───────┘
-                                                                      │
-                                                               Automações
-                                                                      │
-                                                    ┌─────────────────┼─────────────────┐
-                                                    │                 │                 │
-                                             ┌──────▼──────┐   ┌──────▼──────┐   ┌──────▼──────┐
-                                             │   SIRENES   │   │ NOTIFICAÇÕES│   │ ILUMINAÇÃO  │
-                                             │             │   │ (Push/SMS)  │   │  (Reativa)  │
-                                             └─────────────┘   └─────────────┘   └─────────────┘
+```mermaid
+flowchart LR
+    Cameras[CÂMERAS PoE] -->|RTSP| Frigate[FRIGATE NVR + IA]
+    Frigate -->|Eventos| HA[HOME ASSISTANT + Alarmo]
+    Frigate -->|Gravação| HDD[HDD/SSD 1TB+]
+    
+    Sensores[SENSORES Zigbee] -->|Zigbee 3.0| Z2M[ZIGBEE2MQTT]
+    Z2M -->|MQTT - Estados| HA
+    
+    HA -->|Automações| Sirenes[SIRENES]
+    HA -->|Notificações| Push[PUSH / SMS]
+    HA -->|Controle| Luzes[ILUMINAÇÃO]
 ```
 
 ### Componentes de software
@@ -606,4 +594,3 @@ record:
 ---
 
 > **Próximos passos**: Este documento deve ser usado como base para os PRDs técnicos (PRD_SENSORS_AND_ALARMS_PLATFORM, PRD_VIDEO_SURVEILLANCE_AND_NVR, PRD_NETWORK_SECURITY).
-

@@ -1,0 +1,83 @@
+views:
+  - title: UAV Flight Deck
+    icon: mdi:quadcopter
+    cards:
+      # --- Status Header ---
+      - type: horizontal-stack
+        cards:
+          - type: entity
+            entity: binary_sensor.uav_armed
+            name: Armed Status
+            state_color: true
+
+          - type: entity
+            entity: sensor.uav_mode
+            name: Flight Mode
+
+          - type: entity
+            entity: sensor.uav_battery
+            name: Battery
+
+          - type: entity
+            entity: sensor.uav_altitude
+            name: Altitude (AGL)
+
+      # --- Map ---
+      - type: map
+        default_zoom: 18
+        aspect_ratio: "16:9"
+        entities:
+          - entity: device_tracker.uav_tracker # Assuming we enable tracking
+            name: UAV Position
+          # Fallback if tracker not set:
+          # - sensor.uav_latitude
+          # - sensor.uav_longitude
+
+      # --- Controls (Dangerous! Should be protected) ---
+      - type: grid
+        columns: 2
+        title: Flight Controls
+        cards:
+          - type: button
+            name: ARM
+            icon: mdi:lock-open-alert
+            tap_action:
+              action: call-service
+              service: mqtt.publish
+              data:
+                topic: uav/command
+                payload: '{"cmd": "arm"}'
+            confirmation:
+              text: "WARNING: Propellers will spin! Ensure area is clear."
+
+          - type: button
+            name: DISARM
+            icon: mdi:lock-alert
+            tap_action:
+              action: call-service
+              service: mqtt.publish
+              data:
+                topic: uav/command
+                payload: '{"cmd": "disarm"}'
+
+          - type: button
+            name: TAKEOFF (10m)
+            icon: mdi:arrow-up-bold-box-outline
+            tap_action:
+              action: call-service
+              service: mqtt.publish
+              data:
+                topic: uav/command
+                payload: '{"cmd": "takeoff"}'
+            confirmation:
+              text: "Confirm auto-takeoff to 10m altitude?"
+
+          - type: button
+            name: LAND
+            icon: mdi:arrow-down-bold-box-outline
+            tap_action:
+              action: call-service
+              service: mqtt.publish
+              data:
+                topic: uav/command
+                payload: '{"cmd": "land"}'

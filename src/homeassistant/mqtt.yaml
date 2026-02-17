@@ -1,0 +1,100 @@
+# =============================================================================
+# MQTT Configuration
+# =============================================================================
+
+# --- Sensors ---
+sensor:
+  - name: "UGV Battery"
+    state_topic: "ugv/status"
+    value_template: "{{ value_json.battery }}"
+    unit_of_measurement: "%"
+    device_class: battery
+    icon: mdi:battery
+
+  - name: "UGV Wi-Fi Signal"
+    state_topic: "ugv/status"
+    value_template: "{{ value_json.wifi_signal }}"
+    unit_of_measurement: "dBm"
+    device_class: signal_strength
+    icon: mdi:wifi
+
+  - name: "UGV State"
+    state_topic: "ugv/status"
+    value_template: "{{ value_json.state }}"
+    icon: mdi:robot
+
+  - name: "UGV Detections"
+    state_topic: "ugv/vision/detections"
+    value_template: "{{ value_json.count }}"
+    icon: mdi:eye
+
+  # --- UAV Sensors ---
+  - name: "UAV Battery"
+    state_topic: "uav/status"
+    value_template: "{{ value_json.battery }}"
+    unit_of_measurement: "%"
+    device_class: battery
+    icon: mdi:battery-high
+
+  - name: "UAV Heading"
+    state_topic: "uav/status"
+    value_template: "{{ value_json.heading }}"
+    unit_of_measurement: "°"
+    icon: mdi:compass
+
+  - name: "UAV Mode"
+    state_topic: "uav/status"
+    value_template: "{{ value_json.mode }}"
+    icon: mdi:airplane-takeoff
+
+# --- Binary Sensors ---
+binary_sensor:
+  - name: "UAV Armed"
+    state_topic: "uav/status"
+    value_template: "{{ 'ON' if value_json.armed else 'OFF' }}"
+    device_class: moving # Shows "Running" when ON
+    icon: mdi:propeller
+
+  - name: "UGV Online"
+    state_topic: "ugv/status"
+    value_template: "{{ 'ON' if value_json.state != 'offline' else 'OFF' }}"
+    device_class: connectivity
+    expire_after: 10 # Mark offline if no msg for 10s
+
+  # --- Device Tracker (UAV Location) ---
+  # Note: Device Tracker usually configured in configuration.yaml or via MQTT discovery.
+  # Since we are using manual YAML here, we can use the `device_tracker` integration separate from `mqtt` key,
+  # OR use `mqtt` platform under `device_tracker` domain.
+  # For simplicity in this single file, let's stick to sensor entities for Lat/Lon and map them in dashboard.
+
+  - name: "UAV Latitude"
+    state_topic: "uav/location"
+    value_template: "{{ value_json.latitude }}"
+    icon: mdi:latitude
+
+  - name: "UAV Longitude"
+    state_topic: "uav/location"
+    value_template: "{{ value_json.longitude }}"
+    icon: mdi:longitude
+
+  - name: "UAV Altitude"
+    state_topic: "uav/location"
+    value_template: "{{ value_json.altitude }}"
+    unit_of_measurement: "m"
+    icon: mdi:altimeter
+
+# --- Buttons (Commands) ---
+button:
+  - name: "UGV Start Patrol"
+    command_topic: "ugv/command"
+    payload_press: '{"cmd": "patrol"}'
+    icon: mdi:shield-check
+
+  - name: "UGV Emergency Stop"
+    command_topic: "ugv/command"
+    payload_press: '{"cmd": "stop"}'
+    icon: mdi:alert-octagon-outline
+# --- Camera ---
+# Note: Cameras are usually configured in 'camera:' section, not under 'mqtt:' unless it's an MQTT camera.
+# We will use Generic Camera integration for RTSP, configured in configuration.yaml or UI.
+# But we can try MQTT Camera if we sent images as bytes (slow). RTSP is better.
