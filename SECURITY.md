@@ -1,106 +1,65 @@
-# Security Policy
+# Política de Segurança
 
-Thank you for your interest in the security of **Home Security DIY**, an open-source residential security system project licensed under [GPL v3](LICENSE).
+O projeto **Home Security DIY** leva a segurança a sério. Como um sistema projetado para proteger lares e privacidade, nossa prioridade é garantir que o software seja seguro, resiliente e confiável.
 
-> **Note:** This project is currently in the **planning phase (v0.1)**. There is no production code yet. Most security considerations, architectural decisions, and compliance requirements are documented in the [`docs/`](docs/) and [`rules/`](rules/) directories. This security policy will evolve as the project matures.
+Este documento delineia nossa política de segurança e explica como reportar vulnerabilidades.
 
----
+## Versões suportadas
 
-## Supported Versions
+Apenas a versão mais recente (`main` branch) e as releases marcadas como `stable` recebem atualizações de segurança.
 
-| Version | Status           | Support Level       |
-|---------|------------------|---------------------|
-| v0.1    | Planning phase   | Documentation only  |
+| Versão | Suportada | Notas |
+|--------|-----------|-------|
+| `main` | ✅ Sim | Desenvolvimento ativo |
+| `stable` (latest tag) | ✅ Sim | Versão estável recomendada |
+| Versões antigas (< 1.0) | ❌ Não | Não suportadas |
 
-As the project progresses beyond the planning phase and releases working code, this table will be updated to reflect which versions receive active security support.
+## Reportando uma Vulnerabilidade
 
----
+Nós encorajamos a divulgação responsável de vulnerabilidades de segurança. Se você acredita ter encontrado uma vulnerabilidade no Home Security DIY, por favor, siga os passos abaixo:
 
-## Reporting a Vulnerability
+### O que reportar
 
-We take security seriously, even during the planning phase. If you discover a security vulnerability in this project, please report it responsibly.
+- Falhas que permitam acesso não autorizado ao sistema (bypass de autenticação).
+- Exposição inadvertida de dados sensíveis (vídeo, credenciais, tokens).
+- Vulnerabilidades nos scripts de deploy ou configurações padrão que deixem o sistema inseguro.
+- Cross-Site Scripting (XSS), Cross-Site Request Forgery (CSRF) ou Injection no dashboard.
 
-### How to Report
+### Como reportar
 
-1. **Preferred method:** Use [GitHub Security Advisories](https://github.com/rodrigo/Home-Security-DIY/security/advisories/new) to submit a private vulnerability report directly through GitHub. This ensures the report remains confidential until a fix is available.
+> **NÃO abra uma issue pública no GitHub para reportar uma vulnerabilidade de segurança.**
 
-2. **Fallback method:** If you are unable to use GitHub Security Advisories, you may send an email describing the vulnerability. Please include `[SECURITY]` in the subject line. Contact details will be provided in the repository's profile or through GitHub Discussions.
+Por favor, envie um e-mail para **security@homesecuritydiy.local** (substitua pelo contato real do maintainer) com:
 
-### What to Include in Your Report
+1. Tipo de vulnerabilidade.
+2. Passo a passo para reproduzir o problema.
+3. Impacto potencial.
+4. (Opcional) Código para correção ou mitigação.
 
-To help us understand and address the issue efficiently, please include the following in your report:
+Nós nos comprometemos a responder em até 48 horas.
 
-- **Description:** A clear and concise description of the vulnerability.
-- **Steps to reproduce:** Detailed steps that allow us to reproduce the issue, including any relevant configuration, environment details, or sample inputs.
-- **Impact assessment:** Your assessment of the potential impact (e.g., data exposure, unauthorized access, denial of service, physical security compromise).
-- **Affected components:** Which part of the project is affected (documentation, architecture design, configuration recommendations, code, hardware integration, etc.).
-- **Suggested fix (optional):** If you have a recommendation for how to address the vulnerability, we welcome your input.
+## Processo de Resposta
 
-### Response Timeline
+1. **Triagem**: Analisaremos o report para confirmar a vulnerabilidade e determinar sua severidade.
+2. **Correção**: Desenvolveremos um patch de correção em um branch privado.
+3. **Validação**: Testaremos a correção para garantir que não introduza regressões.
+4. **Divulgação**: Publicaremos a correção e um Security Advisory detalhando o problema (após a mitigação estar disponível).
 
-| Action                     | Expected Timeframe     |
-|----------------------------|------------------------|
-| Acknowledgment of report   | Within 72 hours        |
-| Initial triage and assessment | Within 1 week       |
-| Status update to reporter  | At least every 2 weeks |
-| Fix or mitigation plan     | Varies by severity     |
+## Boas Práticas de Segurança para Usuários
 
-We will do our best to meet these timelines. If a delay occurs, we will communicate the reason and provide an updated estimate.
+Para manter seu sistema seguro, recomendamos:
 
----
+- **Nunca exponha o Home Assistant ou Frigate diretamente à internet** (port forwarding). Use sempre VPN (WireGuard/Tailscale) ou Cloudflare Tunnel.
+- Mantenha o sistema base (Linux/Docker/K3s) e os containers atualizados.
+- Isole a rede de câmeras e dispositivos IoT em VLANs separadas sem acesso à internet.
+- Use senhas fortes e únicas para todos os serviços (MQTT, HA, Frigate).
+- Habilite autenticação multifator (MFA) no Home Assistant.
 
-## Scope
+## Ameaças Conhecidas (Out of Scope)
 
-The following areas are **in scope** for security reports:
-
-- **Documentation recommendations:** Security flaws in documented best practices, installation guides, or configuration recommendations found in `docs/` and `rules/`.
-- **Architecture and design:** Vulnerabilities in the proposed system architecture, network topology, communication protocols, or data flow designs.
-- **Future code and configurations:** Security issues in any code, scripts, configuration files, or automation workflows committed to this repository.
-- **Dependency vulnerabilities:** Known vulnerabilities in third-party libraries or tools recommended or used by this project.
-- **CI/CD and infrastructure:** Security issues in GitHub Actions workflows, build pipelines, or repository configuration.
-
----
-
-## Out of Scope
-
-The following are **not covered** by this security policy:
-
-- **Individual hardware vulnerabilities from vendors:** Security flaws in third-party hardware products (cameras, sensors, controllers, NVR devices, etc.) that are recommended or referenced by this project but are not developed or maintained here. Please report these directly to the respective hardware vendors.
-- **Third-party service vulnerabilities:** Security issues in external services (cloud providers, DNS services, ISPs) that the project may reference or integrate with.
-- **Physical security of your installation:** While we provide guidance on physical security best practices, we cannot be responsible for vulnerabilities arising from individual installation decisions or environmental factors.
-- **Social engineering attacks:** Attacks targeting individual users or contributors rather than the project itself.
+- **Acesso físico**: Se um atacante tiver acesso físico ao servidor, a segurança do software pode ser comprometida. Proteja fisicamente seu hardware.
+- **Jamming de RF**: Dispositivos sem fio (Zigbee/Wi-Fi) são suscetíveis a interferência intencional. Considere sensores cabeados para ambientes críticos.
 
 ---
 
-## Disclosure Policy
-
-This project follows a **coordinated disclosure** approach:
-
-1. **Confidentiality:** All vulnerability reports will be handled confidentially. We will not disclose the details of a vulnerability until a fix or mitigation is available.
-2. **90-day timeline:** We aim to resolve reported vulnerabilities within **90 days** of the initial report. If a fix requires more time, we will work with the reporter to agree on an appropriate disclosure date.
-3. **Public disclosure:** Once a fix is released, we will publish a security advisory on GitHub describing the vulnerability, its impact, and the remediation steps taken.
-4. **Credit:** Reporters will be credited in the advisory unless they request anonymity (see [Recognition](#recognition) below).
-5. **No legal action:** We will not pursue legal action against researchers who report vulnerabilities in good faith and follow this disclosure policy.
-
----
-
-## Recognition
-
-We believe in recognizing the contributions of security researchers who help improve this project:
-
-- Reporters will be **credited by name** (or preferred alias) in the relevant release notes and security advisories.
-- A dedicated **Security Hall of Fame** section may be added to the project documentation as the contributor base grows.
-- If you wish to remain **anonymous**, please let us know in your report and we will respect that preference.
-
----
-
-## Additional Resources
-
-- [Project Documentation](docs/)
-- [Technical Rules and Compliance](rules/)
-- [Architecture Overview](docs/ARCHITECTURE.md)
-- [License (GPL v3)](LICENSE)
-
----
-
-*This security policy is effective as of the project's planning phase (v0.1) and will be updated as the project evolves.*
+Obrigado por ajudar a manter o Home Security DIY seguro para todos!
