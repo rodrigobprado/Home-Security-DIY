@@ -1,0 +1,20 @@
+# =============================================================================
+# Kustomize Base - Home Security DIY
+# =============================================================================
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: home-security
+
+resources:
+  - namespace.yaml
+  - mosquitto/mosquitto.yaml
+  - zigbee2mqtt/zigbee2mqtt.yaml
+  - frigate/frigate.yaml
+  - homeassistant/homeassistant.yaml
+
+labels:
+  - pairs:
+      app.kubernetes.io/part-of: home-security
+      app.kubernetes.io/managed-by: kustomize
+    includeSelectors: false

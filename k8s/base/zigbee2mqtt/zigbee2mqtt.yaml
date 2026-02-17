@@ -1,0 +1,176 @@
+# =============================================================================
+# Zigbee2MQTT - Kubernetes Manifests
+# Home Security DIY
+# =============================================================================
+
+# --- ConfigMap ---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: zigbee2mqtt-config
+  namespace: home-security
+  labels:
+    app.kubernetes.io/name: zigbee2mqtt
+    app.kubernetes.io/component: zigbee-bridge
+    app.kubernetes.io/part-of: home-security
+data:
+  configuration.yaml: |
+    mqtt:
+      base_topic: zigbee2mqtt
+      server: mqtt://mosquitto:1883
+      user: '${MQTT_USER}'
+      password: '${MQTT_PASSWORD}'
+
+    serial:
+      port: /dev/ttyACM0
+
+    frontend:
+      port: 8080
+
+    advanced:
+      channel: 20
+      network_key: GENERATE
+      log_level: info
+      log_output:
+        - console
+      homeassistant_legacy_entity_attributes: false
+      legacy_api: false
+      legacy_availability_payload: false
+
+    homeassistant: true
+    availability: true
+
+    device_options:
+      retain: true
+
+    ota:
+      update_check_interval: 1440
+      disable_automatic_update_check: false
+
+---
+# --- PersistentVolumeClaim ---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: zigbee2mqtt-data
+  namespace: home-security
+  labels:
+    app.kubernetes.io/name: zigbee2mqtt
+    app.kubernetes.io/part-of: home-security
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 512Mi
+  storageClassName: local-path
+
+---
+# --- Deployment ---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zigbee2mqtt
+  namespace: home-security
+  labels:
+    app.kubernetes.io/name: zigbee2mqtt
+    app.kubernetes.io/component: zigbee-bridge
+    app.kubernetes.io/part-of: home-security
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: zigbee2mqtt
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: zigbee2mqtt
+        app.kubernetes.io/component: zigbee-bridge
+        app.kubernetes.io/part-of: home-security
+    spec:
+      containers:
+        - name: zigbee2mqtt
+          image: koenkk/zigbee2mqtt:latest
+          ports:
+            - name: frontend
+              containerPort: 8080
+              protocol: TCP
+          volumeMounts:
+            - name: data
+              mountPath: /app/data
+            - name: config
+              mountPath: /app/data/configuration.yaml
+              subPath: configuration.yaml
+            - name: zigbee-device
+              mountPath: /dev/ttyACM0
+          env:
+            - name: TZ
+              value: America/Sao_Paulo
+            - name: MQTT_USER
+              valueFrom:
+                secretKeyRef:
+                  name: mqtt-credentials
+                  key: MQTT_USER
+            - name: MQTT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mqtt-credentials
+                  key: MQTT_PASSWORD
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+          securityContext:
+            privileged: true
+          livenessProbe:
+            httpGet:
+              path: /
+              port: frontend
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /
+              port: frontend
+            initialDelaySeconds: 15
+            periodSeconds: 10
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: zigbee2mqtt-data
+        - name: config
+          configMap:
+            name: zigbee2mqtt-config
+        - name: zigbee-device
+          hostPath:
+            path: /dev/ttyUSB0
+            type: CharDevice
+      # Schedule on node with Zigbee USB dongle
+      nodeSelector:
+        home-security/zigbee-coordinator: "true"
+
+---
+# --- Service ---
+apiVersion: v1
+kind: Service
+metadata:
+  name: zigbee2mqtt
+  namespace: home-security
+  labels:
+    app.kubernetes.io/name: zigbee2mqtt
+    app.kubernetes.io/component: zigbee-bridge
+    app.kubernetes.io/part-of: home-security
+spec:
+  type: ClusterIP
+  ports:
+    - name: frontend
+      port: 8080
+      targetPort: frontend
+      protocol: TCP
+  selector:
+    app.kubernetes.io/name: zigbee2mqtt

@@ -1,0 +1,327 @@
+# =============================================================================
+# Home Assistant - Automações de Segurança
+# Home Security DIY
+# =============================================================================
+# Referência: https://www.home-assistant.io/docs/automation/
+
+# =============================================================================
+# ALARME - NOTIFICAÇÕES
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# Notificação ao disparar o alarme
+# Envia push notification com snapshot da câmera quando o alarme dispara.
+# PRD: RF-029, RF-035 (PRD_SENSORS_AND_ALARMS_PLATFORM)
+# ---------------------------------------------------------------------------
+- id: alarm_triggered_notification
+  alias: "Segurança - Alarme disparado - Notificação"
+  description: "Envia notificação push e Telegram quando o alarme dispara"
+  trigger:
+    - platform: state
+      entity_id: alarm_control_panel.alarmo
+      to: "triggered"
+  condition:
+    - condition: state
+      entity_id: input_boolean.alarm_notifications
+      state: "on"
+  action:
+    # Snapshot da câmera de entrada
+    - service: camera.snapshot
+      target:
+        entity_id: camera.cam_entrada
+      data:
+        filename: /config/www/snapshots/alarm_{{ now().strftime('%Y%m%d_%H%M%S') }}.jpg
+
+    # Notificação push (Home Assistant Companion App)
+    - service: notify.notify
+      data:
+        title: "🚨 ALARME DISPARADO!"
+        message: >
+          Alarme disparado às {{ now().strftime('%H:%M:%S') }}.
+          Sensor: {{ trigger.to_state.attributes.open_sensors | default('desconhecido') }}
+        data:
+          push:
+            sound:
+              name: alarm
+              critical: 1
+              volume: 1.0
+          image: /local/snapshots/alarm_{{ now().strftime('%Y%m%d_%H%M%S') }}.jpg
+          actions:
+            - action: ALARM_DISARM
+              title: "Desarmar"
+            - action: ALARM_VIEW_CAMERAS
+              title: "Ver câmeras"
+
+    # Notificação Telegram (canal redundante)
+    # Descomente e configure o bot_token/chat_id no HA
+    # - service: notify.telegram
+    #   data:
+    #     title: "🚨 ALARME DISPARADO!"
+    #     message: >
+    #       Alarme disparado às {{ now().strftime('%H:%M:%S') }}.
+    #       Sensor: {{ trigger.to_state.attributes.open_sensors | default('desconhecido') }}
+
+# ---------------------------------------------------------------------------
+# Notificação ao armar/desarmar
+# PRD: RF-029 (PRD_SENSORS_AND_ALARMS_PLATFORM)
+# ---------------------------------------------------------------------------
+- id: alarm_state_change_notification
+  alias: "Segurança - Mudança de estado do alarme"
+  description: "Notifica quando o alarme é armado ou desarmado"
+  trigger:
+    - platform: state
+      entity_id: alarm_control_panel.alarmo
+      to:
+        - "armed_away"
+        - "armed_night"
+        - "armed_home"
+        - "disarmed"
+  condition:
+    - condition: state
+      entity_id: input_select.alarm_notification_level
+      state: "Todos os eventos"
+  action:
+    - service: notify.notify
+      data:
+        title: "🔐 Estado do alarme alterado"
+        message: >
+          {% set states_map = {
+            'armed_away': '🟢 Armado Total',
+            'armed_night': '🟡 Armado Noite',
+            'armed_home': '🔵 Armado Perímetro',
+            'disarmed': '⚪ Desarmado'
+          } %}
+          {{ states_map[trigger.to_state.state] }}
+          às {{ now().strftime('%H:%M:%S') }}
+
+# =============================================================================
+# ALARME - RESPOSTA AUTOMÁTICA
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# Ativar sirene e iluminação reativa ao disparar alarme
+# PRD: RF-024, RF-025, RF-026 (PRD_SENSORS_AND_ALARMS_PLATFORM)
+# ---------------------------------------------------------------------------
+- id: alarm_triggered_response
+  alias: "Segurança - Alarme disparado - Resposta"
+  description: "Ativa sirene e luzes ao disparar alarme"
+  trigger:
+    - platform: state
+      entity_id: alarm_control_panel.alarmo
+      to: "triggered"
+  action:
+    # Ativar sirene interna (Zigbee)
+    - service: siren.turn_on
+      target:
+        entity_id: siren.sirene_interna
+      data:
+        duration: 300 # 5 minutos
+        volume_level: 1.0
+
+    # Ativar sirene externa (se existir)
+    - service: siren.turn_on
+      target:
+        entity_id: siren.sirene_externa
+      data:
+        duration: 300
+
+    # Acender todas as luzes externas (dissuasão)
+    - service: light.turn_on
+      target:
+        entity_id: light.luzes_externas
+      data:
+        brightness: 255
+
+    # Acender luzes internas
+    - service: light.turn_on
+      target:
+        entity_id: light.luzes_internas
+      data:
+        brightness: 255
+
+# ---------------------------------------------------------------------------
+# Desativar resposta ao desarmar alarme
+# ---------------------------------------------------------------------------
+- id: alarm_disarmed_response
+  alias: "Segurança - Alarme desarmado - Parar resposta"
+  description: "Desativa sirenes e restaura luzes ao desarmar"
+  trigger:
+    - platform: state
+      entity_id: alarm_control_panel.alarmo
+      to: "disarmed"
+  action:
+    - service: siren.turn_off
+      target:
+        entity_id:
+          - siren.sirene_interna
+          - siren.sirene_externa
+
+# =============================================================================
+# DETECÇÃO DE INTRUSÃO (FRIGATE + ALARME)
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# Pessoa detectada enquanto alarme armado → disparo do alarme
+# PRD: RF-036, RF-037 (PRD_SENSORS_AND_ALARMS_PLATFORM)
+# ---------------------------------------------------------------------------
+- id: frigate_person_detected_alarm
+  alias: "Segurança - Pessoa detectada com alarme armado"
+  description: "Dispara alarme quando Frigate detecta pessoa e alarme está armado"
+  trigger:
+    - platform: mqtt
+      topic: frigate/events
+  condition:
+    - condition: template
+      value_template: "{{ trigger.payload_json['after']['label'] == 'person' }}"
+    - condition: template
+      value_template: "{{ trigger.payload_json['type'] == 'new' }}"
+    - condition: state
+      entity_id: alarm_control_panel.alarmo
+      state:
+        - "armed_away"
+        - "armed_night"
+        - "armed_home"
+  action:
+    - service: alarm_control_panel.alarm_trigger
+      target:
+        entity_id: alarm_control_panel.alarmo
+
+# ---------------------------------------------------------------------------
+# Notificação de pessoa detectada (alarme desarmado)
+# PRD: RF-019 (PRD_VIDEO_SURVEILLANCE_AND_NVR)
+# ---------------------------------------------------------------------------
+- id: frigate_person_detected_info
+  alias: "Segurança - Pessoa detectada - Info"
+  description: "Notifica detecção de pessoa mesmo com alarme desarmado"
+  trigger:
+    - platform: mqtt
+      topic: frigate/events
+  condition:
+    - condition: template
+      value_template: "{{ trigger.payload_json['after']['label'] == 'person' }}"
+    - condition: template
+      value_template: "{{ trigger.payload_json['type'] == 'new' }}"
+    - condition: state
+      entity_id: alarm_control_panel.alarmo
+      state: "disarmed"
+    - condition: state
+      entity_id: input_select.alarm_notification_level
+      state: "Todos os eventos"
+  action:
+    - service: notify.notify
+      data:
+        title: "👤 Pessoa detectada"
+        message: >
+          Pessoa detectada na câmera {{ trigger.payload_json['after']['camera'] }}
+          às {{ now().strftime('%H:%M:%S') }}.
+        data:
+          image: >
+            /api/frigate/notifications/{{ trigger.payload_json['after']['id'] }}/snapshot.jpg
+
+# =============================================================================
+# MONITORAMENTO DE SAÚDE DO SISTEMA
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# Alerta de bateria baixa em sensores Zigbee
+# PRD: RNF-011 (PRD_SENSORS_AND_ALARMS_PLATFORM)
+# ---------------------------------------------------------------------------
+- id: sensor_battery_low
+  alias: "Sistema - Bateria baixa de sensor"
+  description: "Notifica quando bateria de sensor Zigbee cai abaixo de 20%"
+  trigger:
+    - platform: numeric_state
+      entity_id:
+        - sensor.porta_frente_battery
+        - sensor.porta_fundos_battery
+        - sensor.porta_quintal_battery
+        - sensor.janela_sala_battery
+        - sensor.janela_quarto_battery
+        - sensor.pir_sala_battery
+        - sensor.pir_corredor_battery
+      below: 20
+  action:
+    - service: notify.notify
+      data:
+        title: "⚠️ Bateria baixa"
+        message: >
+          O sensor {{ trigger.to_state.attributes.friendly_name | default(trigger.entity_id) }}
+          está com {{ trigger.to_state.state }}% de bateria.
+          Troque a bateria em breve.
+
+# ---------------------------------------------------------------------------
+# Alerta de câmera offline
+# PRD: RF-005 (PRD_MONITORING_DASHBOARD)
+# ---------------------------------------------------------------------------
+- id: camera_offline_alert
+  alias: "Sistema - Câmera offline"
+  description: "Notifica quando uma câmera fica indisponível por mais de 5 minutos"
+  trigger:
+    - platform: state
+      entity_id:
+        - camera.cam_entrada
+        - camera.cam_fundos
+        - camera.cam_lateral
+        - camera.cam_garagem
+      to: "unavailable"
+      for:
+        minutes: 5
+  action:
+    - service: notify.notify
+      data:
+        title: "📹 Câmera offline!"
+        message: >
+          A câmera {{ trigger.to_state.attributes.friendly_name | default(trigger.entity_id) }}
+          está offline há mais de 5 minutos.
+          Verifique a conexão de rede e alimentação.
+
+# =============================================================================
+# AUTO-ARMAR
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# Auto-armar alarme à noite (modo noite)
+# PRD: RF-023 (PRD_SENSORS_AND_ALARMS_PLATFORM)
+# ---------------------------------------------------------------------------
+- id: alarm_auto_arm_night
+  alias: "Segurança - Auto-armar à noite"
+  description: "Arma o alarme automaticamente no horário configurado"
+  trigger:
+    - platform: time
+      at: input_datetime.alarm_auto_arm_time
+  condition:
+    - condition: state
+      entity_id: input_boolean.alarm_auto_arm
+      state: "on"
+    - condition: state
+      entity_id: alarm_control_panel.alarmo
+      state: "disarmed"
+  action:
+    - service: alarm_control_panel.alarm_arm_night
+      target:
+        entity_id: alarm_control_panel.alarmo
+
+    - service: notify.notify
+      data:
+        title: "🌙 Alarme armado automaticamente"
+        message: "Modo noturno ativado às {{ now().strftime('%H:%M') }}."
+
+# =============================================================================
+# AÇÕES DE NOTIFICAÇÃO (resposta a ações nos push notifications)
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# Desarmar via notificação push
+# ---------------------------------------------------------------------------
+- id: alarm_disarm_from_notification
+  alias: "Segurança - Desarmar via notificação"
+  description: "Permite desarmar o alarme pela ação na notificação push"
+  trigger:
+    - platform: event
+      event_type: mobile_app_notification_action
+      event_data:
+        action: ALARM_DISARM
+  action:
+    - service: alarm_control_panel.alarm_disarm
+      target:
+        entity_id: alarm_control_panel.alarmo

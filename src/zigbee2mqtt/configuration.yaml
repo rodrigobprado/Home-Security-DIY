@@ -1,0 +1,68 @@
+# =============================================================================
+# Zigbee2MQTT Configuration
+# Home Security DIY
+# =============================================================================
+# Referência: https://www.zigbee2mqtt.io/guide/configuration/
+
+# --- MQTT Broker ---
+mqtt:
+  base_topic: zigbee2mqtt
+  server: mqtt://mosquitto:1883
+  user: "${MQTT_USER}"
+  password: "${MQTT_PASSWORD}"
+
+# --- Serial / Coordenador Zigbee ---
+# Sonoff ZBDongle-P (CC2652P) ou compatível
+serial:
+  port: /dev/ttyACM0
+  # adapter: zstack  # Uncomment if using ZStack-based coordinator
+
+# --- Frontend web ---
+frontend:
+  port: 8080
+
+# --- Zigbee Network ---
+advanced:
+  # Canal 20 para evitar interferência com Wi-Fi 2.4GHz
+  # Wi-Fi canais 1,6,11 correspondem a Zigbee canais 11-14, 15-20, 21-24
+  # Canal 20 fica entre Wi-Fi 6 e 11
+  channel: 20
+
+  # Network key (gerar uma nova com: dd if=/dev/urandom bs=1 count=16 2>/dev/null | od -A none -t x1 | tr -d ' ')
+  # IMPORTANTE: Altere esta chave antes do primeiro uso!
+  network_key: GENERATE
+
+  # Transmit power (dBm) - increase for rural/large areas
+  # transmit_power: 20
+
+  # Log level
+  log_level: info
+
+  # Log output
+  log_output:
+    - console
+    - file
+
+  # Timestamp format for logs
+  timestamp_format: "YYYY-MM-DD HH:mm:ss"
+
+  # Home Assistant auto-discovery
+  homeassistant_legacy_entity_attributes: false
+  legacy_api: false
+  legacy_availability_payload: false
+
+# --- Home Assistant MQTT Discovery ---
+homeassistant: true
+
+# --- Availability ---
+availability: true
+
+# --- Device options (defaults) ---
+device_options:
+  # Retain messages for sensors
+  retain: true
+
+# --- OTA updates ---
+ota:
+  update_check_interval: 1440 # Check every 24h
+  disable_automatic_update_check: false

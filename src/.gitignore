@@ -1,0 +1,41 @@
+# =============================================================================
+# Home Security DIY - .gitignore for src/
+# =============================================================================
+
+# --- Environment ---
+.env
+
+# --- Mosquitto ---
+mosquitto/config/password_file
+mosquitto/data/
+mosquitto/log/
+
+# --- Zigbee2MQTT ---
+zigbee2mqtt/log/
+zigbee2mqtt/state.json
+zigbee2mqtt/database.db
+zigbee2mqtt/coordinator_backup.json
+
+# --- Frigate ---
+frigate/media/
+frigate/clips/
+frigate/recordings/
+
+# --- Home Assistant ---
+homeassistant/.storage/
+homeassistant/.cloud/
+homeassistant/home-assistant_v2.db
+homeassistant/home-assistant_v2.db-wal
+homeassistant/home-assistant_v2.db-shm
+homeassistant/tts/
+homeassistant/www/snapshots/
+homeassistant/.HA_VERSION
+homeassistant/deps/
+homeassistant/custom_components/
+
+# --- OS ---
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~

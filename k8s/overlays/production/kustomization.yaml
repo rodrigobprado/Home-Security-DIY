@@ -1,0 +1,44 @@
+# =============================================================================
+# Kustomize Overlay - Production (Produção)
+# Home Security DIY
+# =============================================================================
+# Uso: kubectl apply -k k8s/overlays/production/
+#
+# Características:
+# - Recursos completos para operação 24/7
+# - Storage grande para gravações (HDD dedicado)
+# - Ingress com TLS para acesso via domínio local
+# =============================================================================
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: home-security
+
+resources:
+  - ../../base
+  - ingress.yaml
+
+patches:
+  # --- Frigate: storage de produção (HDD dedicado) ---
+  - target:
+      kind: PersistentVolumeClaim
+      name: frigate-media
+    patch: |
+      - op: replace
+        path: /spec/resources/requests/storage
+        value: 500Gi
+
+  # --- Home Assistant: mais storage para histórico longo ---
+  - target:
+      kind: PersistentVolumeClaim
+      name: homeassistant-config
+    patch: |
+      - op: replace
+        path: /spec/resources/requests/storage
+        value: 10Gi
+
+labels:
+  - pairs:
+      app.kubernetes.io/instance: production
+      environment: production
+    includeSelectors: false

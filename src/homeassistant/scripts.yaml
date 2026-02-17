@@ -1,0 +1,140 @@
+# =============================================================================
+# Home Assistant - Scripts de Segurança
+# Home Security DIY
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# Botão de Pânico
+# Ativa TUDO: alarme, sirenes, luzes, notificação de emergência.
+# PRD: RF-027 (PRD_PERIMETER_URBAN_HOUSE), RF-009 (PRD_SENSORS_AND_ALARMS_PLATFORM)
+# ---------------------------------------------------------------------------
+panic_button:
+  alias: "🚨 Botão de Pânico"
+  description: "Ativa alarme, sirenes, luzes e envia notificação de emergência"
+  icon: mdi:alert-octagon
+  mode: single
+  sequence:
+    # Disparar o alarme
+    - service: alarm_control_panel.alarm_trigger
+      target:
+        entity_id: alarm_control_panel.alarmo
+
+    # Ativar sirenes no máximo
+    - service: siren.turn_on
+      target:
+        entity_id:
+          - siren.sirene_interna
+          - siren.sirene_externa
+      data:
+        duration: 600
+        volume_level: 1.0
+
+    # Acender todas as luzes
+    - service: light.turn_on
+      target:
+        entity_id: all
+      data:
+        brightness: 255
+
+    # Snapshot de todas as câmeras
+    - service: camera.snapshot
+      target:
+        entity_id: camera.cam_entrada
+      data:
+        filename: /config/www/snapshots/panic_entrada_{{ now().strftime('%Y%m%d_%H%M%S') }}.jpg
+    - service: camera.snapshot
+      target:
+        entity_id: camera.cam_fundos
+      data:
+        filename: /config/www/snapshots/panic_fundos_{{ now().strftime('%Y%m%d_%H%M%S') }}.jpg
+
+    # Notificação de emergência
+    - service: notify.notify
+      data:
+        title: "🆘 PÂNICO ATIVADO!"
+        message: >
+          Botão de pânico pressionado às {{ now().strftime('%H:%M:%S') }}.
+          Todas as sirenes e luzes ativadas.
+          Verifique as câmeras imediatamente.
+        data:
+          push:
+            sound:
+              name: alarm
+              critical: 1
+              volume: 1.0
+
+# ---------------------------------------------------------------------------
+# Reset completo do alarme
+# Desativa sirenes, restaura luzes, desarma alarme.
+# ---------------------------------------------------------------------------
+alarm_reset:
+  alias: "🔄 Reset do Alarme"
+  description: "Desativa sirenes, restaura luzes e desarma o alarme"
+  icon: mdi:shield-refresh
+  mode: single
+  sequence:
+    # Desarmar alarme
+    - service: alarm_control_panel.alarm_disarm
+      target:
+        entity_id: alarm_control_panel.alarmo
+
+    # Desativar sirenes
+    - service: siren.turn_off
+      target:
+        entity_id:
+          - siren.sirene_interna
+          - siren.sirene_externa
+
+    # Restaurar luzes
+    - service: light.turn_off
+      target:
+        entity_id: light.luzes_externas
+
+    # Notificação
+    - service: notify.notify
+      data:
+        title: "✅ Alarme resetado"
+        message: "Alarme desarmado e sirenes desativadas às {{ now().strftime('%H:%M:%S') }}."
+
+# ---------------------------------------------------------------------------
+# Teste do sistema (sirene curta + verificação)
+# ---------------------------------------------------------------------------
+system_test:
+  alias: "🧪 Teste do Sistema"
+  description: "Testa sirene (2 seg), câmeras e sensores"
+  icon: mdi:test-tube
+  mode: single
+  sequence:
+    # Teste de sirene (2 segundos)
+    - service: siren.turn_on
+      target:
+        entity_id: siren.sirene_interna
+      data:
+        duration: 2
+        volume_level: 0.3
+
+    - delay:
+        seconds: 3
+
+    # Snapshot de teste de todas as câmeras
+    - service: camera.snapshot
+      target:
+        entity_id:
+          - camera.cam_entrada
+          - camera.cam_fundos
+          - camera.cam_lateral
+          - camera.cam_garagem
+      data:
+        filename: /config/www/snapshots/test_{{ now().strftime('%Y%m%d_%H%M%S') }}.jpg
+
+    # Notificação de resultado
+    - service: notify.notify
+      data:
+        title: "🧪 Teste do sistema concluído"
+        message: >
+          Teste realizado às {{ now().strftime('%H:%M:%S') }}.
+          Sirene: OK
+          Câmeras: Verifique os snapshots.
+          Sensores: {{ states.binary_sensor | selectattr('attributes.device_class', 'defined')
+            | selectattr('attributes.device_class', 'in', ['door', 'window', 'motion'])
+            | list | count }} ativos.

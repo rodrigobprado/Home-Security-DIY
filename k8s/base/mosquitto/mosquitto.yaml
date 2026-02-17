@@ -1,0 +1,168 @@
+# =============================================================================
+# Mosquitto MQTT Broker - Kubernetes Manifests
+# Home Security DIY
+# =============================================================================
+
+# --- ConfigMap ---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mosquitto-config
+  namespace: home-security
+  labels:
+    app.kubernetes.io/name: mosquitto
+    app.kubernetes.io/component: mqtt-broker
+    app.kubernetes.io/part-of: home-security
+data:
+  mosquitto.conf: |
+    listener 1883
+    protocol mqtt
+
+    listener 9001
+    protocol websockets
+
+    allow_anonymous false
+    password_file /mosquitto/config/password_file
+
+    persistence true
+    persistence_location /mosquitto/data/
+
+    log_dest stdout
+    log_type error
+    log_type warning
+    log_type notice
+    log_timestamp true
+    log_timestamp_format %Y-%m-%dT%H:%M:%S
+
+    max_inflight_messages 20
+    max_queued_messages 1000
+    message_size_limit 262144
+    connection_messages true
+
+---
+# --- Secret (placeholder - override in overlays) ---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mqtt-credentials
+  namespace: home-security
+  labels:
+    app.kubernetes.io/name: mosquitto
+    app.kubernetes.io/part-of: home-security
+type: Opaque
+stringData:
+  MQTT_USER: homeassistant
+  MQTT_PASSWORD: CHANGE_ME
+
+---
+# --- PersistentVolumeClaim ---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mosquitto-data
+  namespace: home-security
+  labels:
+    app.kubernetes.io/name: mosquitto
+    app.kubernetes.io/part-of: home-security
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: local-path
+
+---
+# --- Deployment ---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mosquitto
+  namespace: home-security
+  labels:
+    app.kubernetes.io/name: mosquitto
+    app.kubernetes.io/component: mqtt-broker
+    app.kubernetes.io/part-of: home-security
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: mosquitto
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: mosquitto
+        app.kubernetes.io/component: mqtt-broker
+        app.kubernetes.io/part-of: home-security
+    spec:
+      containers:
+        - name: mosquitto
+          image: eclipse-mosquitto:2
+          ports:
+            - name: mqtt
+              containerPort: 1883
+              protocol: TCP
+            - name: websocket
+              containerPort: 9001
+              protocol: TCP
+          volumeMounts:
+            - name: config
+              mountPath: /mosquitto/config/mosquitto.conf
+              subPath: mosquitto.conf
+              readOnly: true
+            - name: data
+              mountPath: /mosquitto/data
+          env:
+            - name: TZ
+              value: America/Sao_Paulo
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi
+          livenessProbe:
+            tcpSocket:
+              port: mqtt
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          readinessProbe:
+            tcpSocket:
+              port: mqtt
+            initialDelaySeconds: 5
+            periodSeconds: 10
+      volumes:
+        - name: config
+          configMap:
+            name: mosquitto-config
+        - name: data
+          persistentVolumeClaim:
+            claimName: mosquitto-data
+
+---
+# --- Service ---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mosquitto
+  namespace: home-security
+  labels:
+    app.kubernetes.io/name: mosquitto
+    app.kubernetes.io/component: mqtt-broker
+    app.kubernetes.io/part-of: home-security
+spec:
+  type: ClusterIP
+  ports:
+    - name: mqtt
+      port: 1883
+      targetPort: mqtt
+      protocol: TCP
+    - name: websocket
+      port: 9001
+      targetPort: websocket
+      protocol: TCP
+  selector:
+    app.kubernetes.io/name: mosquitto

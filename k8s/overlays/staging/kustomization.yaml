@@ -1,0 +1,121 @@
+# =============================================================================
+# Kustomize Overlay - Staging (Homologação)
+# Home Security DIY
+# =============================================================================
+# Uso: kubectl apply -k k8s/overlays/staging/
+#
+# Diferenças vs produção:
+# - Recursos reduzidos (pode rodar em hardware menor)
+# - Storage menor
+# - Nomes com sufixo "-staging" para coexistir com produção
+# =============================================================================
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: home-security-staging
+
+resources:
+  - ../../base
+
+namePrefix: stg-
+
+patches:
+  # --- Namespace override ---
+  - target:
+      kind: Namespace
+      name: home-security
+    patch: |
+      - op: replace
+        path: /metadata/name
+        value: home-security-staging
+
+  # --- Mosquitto: recursos menores ---
+  - target:
+      kind: Deployment
+      name: mosquitto
+    patch: |
+      - op: replace
+        path: /spec/template/spec/containers/0/resources
+        value:
+          requests:
+            cpu: 25m
+            memory: 32Mi
+          limits:
+            cpu: 100m
+            memory: 64Mi
+
+  # --- Mosquitto: storage menor ---
+  - target:
+      kind: PersistentVolumeClaim
+      name: mosquitto-data
+    patch: |
+      - op: replace
+        path: /spec/resources/requests/storage
+        value: 512Mi
+
+  # --- Zigbee2MQTT: recursos menores ---
+  - target:
+      kind: Deployment
+      name: zigbee2mqtt
+    patch: |
+      - op: replace
+        path: /spec/template/spec/containers/0/resources
+        value:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+          limits:
+            cpu: 250m
+            memory: 128Mi
+
+  # --- Frigate: recursos menores, storage menor ---
+  - target:
+      kind: Deployment
+      name: frigate
+    patch: |
+      - op: replace
+        path: /spec/template/spec/containers/0/resources
+        value:
+          requests:
+            cpu: 250m
+            memory: 256Mi
+          limits:
+            cpu: 1000m
+            memory: 1Gi
+
+  - target:
+      kind: PersistentVolumeClaim
+      name: frigate-media
+    patch: |
+      - op: replace
+        path: /spec/resources/requests/storage
+        value: 20Gi
+
+  # --- Home Assistant: recursos menores ---
+  - target:
+      kind: Deployment
+      name: homeassistant
+    patch: |
+      - op: replace
+        path: /spec/template/spec/containers/0/resources
+        value:
+          requests:
+            cpu: 125m
+            memory: 256Mi
+          limits:
+            cpu: 1000m
+            memory: 1Gi
+
+  - target:
+      kind: PersistentVolumeClaim
+      name: homeassistant-config
+    patch: |
+      - op: replace
+        path: /spec/resources/requests/storage
+        value: 2Gi
+
+labels:
+  - pairs:
+      app.kubernetes.io/instance: staging
+      environment: staging
+    includeSelectors: false

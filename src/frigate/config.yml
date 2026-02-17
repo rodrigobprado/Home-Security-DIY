@@ -1,0 +1,259 @@
+# =============================================================================
+# Frigate NVR Configuration
+# Home Security DIY
+# =============================================================================
+# Referência: https://docs.frigate.video/configuration/
+#
+# Este arquivo configura o Frigate para detecção de objetos (pessoas, veículos)
+# em câmeras IP via RTSP, usando Intel OpenVINO para aceleração de IA.
+#
+# As URLs das câmeras são definidas via variáveis de ambiente no .env
+
+# --- MQTT ---
+mqtt:
+  enabled: true
+  host: mosquitto
+  port: 1883
+  user: "{FRIGATE_MQTT_USER}"
+  password: "{FRIGATE_MQTT_PASSWORD}"
+  topic_prefix: frigate
+
+# --- Detector de IA ---
+# Intel OpenVINO (usa iGPU do Intel N100)
+detectors:
+  openvino:
+    type: openvino
+    device: AUTO
+    model:
+      path: /openvino-model/ssdlite_mobilenet_v2.xml
+
+# --- Modelo de detecção ---
+model:
+  width: 300
+  height: 300
+  input_tensor: nhwc
+  input_pixel_format: bgr
+  labelmap_path: /openvino-model/coco_91cl_bkgr.txt
+
+# --- Configuração global de objetos ---
+objects:
+  track:
+    - person
+    - car
+    - motorcycle
+    - bicycle
+    - dog
+    - cat
+  filters:
+    person:
+      min_area: 5000
+      max_area: 100000
+      min_score: 0.5
+      threshold: 0.7
+    car:
+      min_area: 10000
+      min_score: 0.5
+      threshold: 0.7
+
+# --- Gravação global ---
+record:
+  enabled: true
+  retain:
+    days: 30
+    mode: motion
+  events:
+    pre_capture: 5
+    post_capture: 10
+    retain:
+      default: 60
+      mode: active_objects
+      objects:
+        person: 90
+        car: 60
+
+# --- Snapshots globais ---
+snapshots:
+  enabled: true
+  clean_copy: true
+  timestamp: true
+  bounding_box: true
+  crop: false
+  retain:
+    default: 90
+    objects:
+      person: 90
+      car: 60
+
+# --- Streaming (WebRTC/RTSP restream) ---
+go2rtc:
+  streams:
+    cam_entrada:
+      - "{FRIGATE_CAM_ENTRADA_URL}"
+    cam_entrada_sub:
+      - "{FRIGATE_CAM_ENTRADA_SUB_URL}"
+    cam_fundos:
+      - "{FRIGATE_CAM_FUNDOS_URL}"
+    cam_fundos_sub:
+      - "{FRIGATE_CAM_FUNDOS_SUB_URL}"
+    cam_lateral:
+      - "{FRIGATE_CAM_LATERAL_URL}"
+    cam_lateral_sub:
+      - "{FRIGATE_CAM_LATERAL_SUB_URL}"
+    cam_garagem:
+      - "{FRIGATE_CAM_GARAGEM_URL}"
+    cam_garagem_sub:
+      - "{FRIGATE_CAM_GARAGEM_SUB_URL}"
+
+# =============================================================================
+# CÂMERAS
+# =============================================================================
+# Configuração para cenário urbano com 4 câmeras.
+# Ajuste as zonas e máscaras conforme o layout da sua residência.
+
+cameras:
+  # ---------------------------------------------------------------------------
+  # Câmera 1 - Entrada (portões, rua, calçada)
+  # ---------------------------------------------------------------------------
+  cam_entrada:
+    enabled: true
+    ffmpeg:
+      inputs:
+        - path: rtsp://127.0.0.1:8554/cam_entrada
+          input_args: preset-rtsp-restream
+          roles:
+            - record
+        - path: rtsp://127.0.0.1:8554/cam_entrada_sub
+          input_args: preset-rtsp-restream
+          roles:
+            - detect
+    detect:
+      enabled: true
+      width: 1280
+      height: 720
+      fps: 10
+    objects:
+      track:
+        - person
+        - car
+        - motorcycle
+        - bicycle
+      filters:
+        person:
+          min_area: 3000
+          min_score: 0.5
+    zones:
+      portao_pedestres:
+        coordinates: 0.0,0.5,0.3,0.5,0.3,1.0,0.0,1.0
+      portao_veiculos:
+        coordinates: 0.3,0.5,0.7,0.5,0.7,1.0,0.3,1.0
+      calcada:
+        coordinates: 0.0,0.0,1.0,0.0,1.0,0.4,0.0,0.4
+    snapshots:
+      enabled: true
+    record:
+      enabled: true
+
+  # ---------------------------------------------------------------------------
+  # Câmera 2 - Fundos (quintal, área de serviço, churrasqueira)
+  # ---------------------------------------------------------------------------
+  cam_fundos:
+    enabled: true
+    ffmpeg:
+      inputs:
+        - path: rtsp://127.0.0.1:8554/cam_fundos
+          input_args: preset-rtsp-restream
+          roles:
+            - record
+        - path: rtsp://127.0.0.1:8554/cam_fundos_sub
+          input_args: preset-rtsp-restream
+          roles:
+            - detect
+    detect:
+      enabled: true
+      width: 1280
+      height: 720
+      fps: 10
+    objects:
+      track:
+        - person
+        - dog
+        - cat
+      filters:
+        person:
+          min_area: 3000
+          min_score: 0.5
+    zones:
+      quintal:
+        coordinates: 0.0,0.0,1.0,0.0,1.0,0.7,0.0,0.7
+      area_servico:
+        coordinates: 0.0,0.7,0.5,0.7,0.5,1.0,0.0,1.0
+    snapshots:
+      enabled: true
+    record:
+      enabled: true
+
+  # ---------------------------------------------------------------------------
+  # Câmera 3 - Lateral (corredor lateral, janelas)
+  # ---------------------------------------------------------------------------
+  cam_lateral:
+    enabled: true
+    ffmpeg:
+      inputs:
+        - path: rtsp://127.0.0.1:8554/cam_lateral
+          input_args: preset-rtsp-restream
+          roles:
+            - record
+        - path: rtsp://127.0.0.1:8554/cam_lateral_sub
+          input_args: preset-rtsp-restream
+          roles:
+            - detect
+    detect:
+      enabled: true
+      width: 1280
+      height: 720
+      fps: 10
+    objects:
+      track:
+        - person
+      filters:
+        person:
+          min_area: 2000
+          min_score: 0.5
+    snapshots:
+      enabled: true
+    record:
+      enabled: true
+
+  # ---------------------------------------------------------------------------
+  # Câmera 4 - Garagem (veículos, acesso interno)
+  # ---------------------------------------------------------------------------
+  cam_garagem:
+    enabled: true
+    ffmpeg:
+      inputs:
+        - path: rtsp://127.0.0.1:8554/cam_garagem
+          input_args: preset-rtsp-restream
+          roles:
+            - record
+        - path: rtsp://127.0.0.1:8554/cam_garagem_sub
+          input_args: preset-rtsp-restream
+          roles:
+            - detect
+    detect:
+      enabled: true
+      width: 1280
+      height: 720
+      fps: 10
+    objects:
+      track:
+        - person
+        - car
+        - motorcycle
+      filters:
+        person:
+          min_area: 3000
+          min_score: 0.5
+    snapshots:
+      enabled: true
+    record:
+      enabled: true

@@ -1,0 +1,10 @@
+# =============================================================================
+# Home Security DIY - Kubernetes Namespace
+# =============================================================================
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: home-security
+  labels:
+    app.kubernetes.io/part-of: home-security
+    app.kubernetes.io/managed-by: kustomize

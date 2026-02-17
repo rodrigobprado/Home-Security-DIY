@@ -1,0 +1,63 @@
+# =============================================================================
+# Home Assistant - Customização de Entidades
+# Home Security DIY
+# =============================================================================
+# Referência: https://www.home-assistant.io/docs/configuration/customizing-devices/
+
+# --- Sensores de abertura ---
+binary_sensor.porta_frente:
+  friendly_name: "Porta Principal"
+  device_class: door
+
+binary_sensor.porta_fundos:
+  friendly_name: "Porta de Serviço"
+  device_class: door
+
+binary_sensor.porta_quintal:
+  friendly_name: "Porta do Quintal"
+  device_class: door
+
+binary_sensor.janela_sala:
+  friendly_name: "Janela da Sala"
+  device_class: window
+
+binary_sensor.janela_quarto:
+  friendly_name: "Janela do Quarto"
+  device_class: window
+
+binary_sensor.janela_cozinha:
+  friendly_name: "Janela da Cozinha"
+  device_class: window
+
+# --- Sensores de movimento ---
+binary_sensor.pir_sala:
+  friendly_name: "Movimento Sala"
+  device_class: motion
+
+binary_sensor.pir_corredor:
+  friendly_name: "Movimento Corredor"
+  device_class: motion
+
+binary_sensor.pir_quintal:
+  friendly_name: "Movimento Quintal"
+  device_class: motion
+
+# --- Câmeras ---
+camera.cam_entrada:
+  friendly_name: "Câmera Entrada"
+
+camera.cam_fundos:
+  friendly_name: "Câmera Fundos"
+
+camera.cam_lateral:
+  friendly_name: "Câmera Lateral"
+
+camera.cam_garagem:
+  friendly_name: "Câmera Garagem"
+
+# --- Sirenes ---
+siren.sirene_interna:
+  friendly_name: "Sirene Interna"
+
+siren.sirene_externa:
+  friendly_name: "Sirene Externa"

@@ -1,0 +1,144 @@
+# =============================================================================
+# Home Assistant - Configuration
+# Home Security DIY
+# =============================================================================
+# Referência: https://www.home-assistant.io/docs/configuration/
+
+homeassistant:
+  name: Home Security
+  unit_system: metric
+  currency: BRL
+  country: BR
+  time_zone: America/Sao_Paulo
+  customize: !include customize.yaml
+
+# --- Frontend ---
+frontend:
+  themes: !include_dir_merge_named themes/
+
+# --- HTTP ---
+http:
+  use_x_forwarded_for: true
+  trusted_proxies:
+    - 172.16.0.0/12
+    - 192.168.0.0/16
+    - 10.0.0.0/8
+
+# --- Logger ---
+logger:
+  default: warning
+  logs:
+    homeassistant.components.mqtt: info
+    homeassistant.components.automation: info
+    homeassistant.components.alarm_control_panel: info
+
+# --- Recorder (history database) ---
+recorder:
+  db_url: sqlite:////config/home-assistant_v2.db
+  purge_keep_days: 30
+  commit_interval: 5
+  exclude:
+    entity_globs:
+      - sensor.sun_*
+      - sensor.date_*
+      - weather.*
+
+# --- History ---
+history:
+
+# --- Logbook ---
+logbook:
+  exclude:
+    entity_globs:
+      - sensor.sun_*
+      - sensor.date_*
+
+# --- MQTT ---
+mqtt:
+
+# --- Automations, Scripts, Scenes ---
+automation: !include automations.yaml
+script: !include scripts.yaml
+scene: !include scenes.yaml
+
+# --- Input Booleans (for alarm automation control) ---
+input_boolean:
+  alarm_auto_arm:
+    name: Auto-armar alarme à noite
+    icon: mdi:shield-moon
+
+  alarm_auto_arm_away:
+    name: Auto-armar ao sair
+    icon: mdi:shield-car
+
+  alarm_notifications:
+    name: Notificações de alarme
+    icon: mdi:bell
+    initial: true
+
+# --- Input Numbers ---
+input_number:
+  alarm_auto_arm_hour:
+    name: Hora para auto-armar
+    icon: mdi:clock
+    min: 20
+    max: 23
+    step: 1
+    initial: 23
+    mode: slider
+
+# --- Input Selects ---
+input_select:
+  alarm_notification_level:
+    name: Nível de notificação
+    options:
+      - Todos os eventos
+      - Apenas alarmes
+      - Desativado
+    initial: Todos os eventos
+    icon: mdi:bell-alert
+
+# --- Template Sensors ---
+template:
+  - sensor:
+      - name: "Sensores com bateria baixa"
+        state: >
+          {% set ns = namespace(count=0) %}
+          {% for state in states.sensor %}
+            {% if 'battery' in state.entity_id and state.state | int(0) < 20 %}
+              {% set ns.count = ns.count + 1 %}
+            {% endif %}
+          {% endfor %}
+          {{ ns.count }}
+        icon: mdi:battery-alert
+
+      - name: "Câmeras offline"
+        state: >
+          {% set ns = namespace(count=0) %}
+          {% for state in states.camera %}
+            {% if state.state == 'unavailable' %}
+              {% set ns.count = ns.count + 1 %}
+            {% endif %}
+          {% endfor %}
+          {{ ns.count }}
+        icon: mdi:camera-off
+
+      - name: "Status de segurança"
+        state: >
+          {% set alarm = states('alarm_control_panel.alarmo') %}
+          {% if alarm == 'triggered' %}
+            🔴 ALARME DISPARADO
+          {% elif alarm == 'armed_away' %}
+            🟢 Armado Total
+          {% elif alarm == 'armed_night' %}
+            🟡 Armado Noite
+          {% elif alarm == 'armed_home' %}
+            🔵 Armado Perímetro
+          {% elif alarm == 'arming' %}
+            ⏳ Armando...
+          {% elif alarm == 'pending' %}
+            ⏳ Aguardando código...
+          {% else %}
+            ⚪ Desarmado
+          {% endif %}
+        icon: mdi:shield-home

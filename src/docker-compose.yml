@@ -1,0 +1,149 @@
+# =============================================================================
+# Home Security DIY - Docker Compose Stack
+# =============================================================================
+# Sistema de segurança residencial 100% local, open source.
+#
+# Serviços:
+#   - Home Assistant: Plataforma de automação central + Alarmo
+#   - Mosquitto:      Broker MQTT para comunicação entre serviços
+#   - Zigbee2MQTT:    Bridge Zigbee → MQTT para sensores
+#   - Frigate:        NVR com detecção de objetos por IA (OpenVINO)
+#
+# Uso:
+#   1. cp .env.example .env && nano .env
+#   2. docker compose up -d
+#   3. Acesse http://localhost:8123
+#
+# Docs: src/docs/QUICK_START.md
+# =============================================================================
+
+services:
+  # ---------------------------------------------------------------------------
+  # MQTT Broker (Mosquitto)
+  # Comunicação central entre Home Assistant, Zigbee2MQTT e Frigate.
+  # ---------------------------------------------------------------------------
+  mosquitto:
+    image: eclipse-mosquitto:2
+    container_name: home-security-mosquitto
+    restart: unless-stopped
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+    volumes:
+      - ./mosquitto/config:/mosquitto/config:ro
+      - mosquitto_data:/mosquitto/data
+      - mosquitto_log:/mosquitto/log
+    environment:
+      - TZ=${TZ:-America/Sao_Paulo}
+    networks:
+      - home-security-net
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "mosquitto_sub -h localhost -p 1883 -t '$$SYS/broker/uptime' -C 1 -u ${MQTT_USER} -P ${MQTT_PASSWORD} || exit 1",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # ---------------------------------------------------------------------------
+  # Zigbee2MQTT
+  # Bridge entre sensores Zigbee (abertura, PIR, sirene) e MQTT.
+  # Requer coordenador USB (Sonoff ZBDongle-P ou compatível).
+  # ---------------------------------------------------------------------------
+  zigbee2mqtt:
+    image: koenkk/zigbee2mqtt:latest
+    container_name: home-security-zigbee2mqtt
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./zigbee2mqtt:/app/data
+    environment:
+      - TZ=${TZ:-America/Sao_Paulo}
+    devices:
+      - ${ZIGBEE_DEVICE:-/dev/ttyUSB0}:/dev/ttyACM0
+    depends_on:
+      mosquitto:
+        condition: service_healthy
+    networks:
+      - home-security-net
+
+  # ---------------------------------------------------------------------------
+  # Frigate NVR
+  # Gravação de vídeo com detecção de objetos (pessoas, veículos) via IA.
+  # Usa Intel OpenVINO (iGPU do N100) para aceleração.
+  # ---------------------------------------------------------------------------
+  frigate:
+    image: ghcr.io/blakeblackshear/frigate:stable
+    container_name: home-security-frigate
+    restart: unless-stopped
+    privileged: true
+    shm_size: "256mb"
+    ports:
+      - "5000:5000" # Web UI
+      - "8554:8554" # RTSP restream
+      - "8555:8555" # WebRTC
+      - "8555:8555/udp"
+    volumes:
+      - ./frigate/config.yml:/config/config.yml:ro
+      - ${FRIGATE_MEDIA_PATH:-./frigate/media}:/media/frigate
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      - TZ=${TZ:-America/Sao_Paulo}
+      - FRIGATE_CAM_ENTRADA_URL=${FRIGATE_CAM_ENTRADA_URL}
+      - FRIGATE_CAM_FUNDOS_URL=${FRIGATE_CAM_FUNDOS_URL}
+      - FRIGATE_CAM_LATERAL_URL=${FRIGATE_CAM_LATERAL_URL}
+      - FRIGATE_CAM_GARAGEM_URL=${FRIGATE_CAM_GARAGEM_URL}
+      - FRIGATE_CAM_ENTRADA_SUB_URL=${FRIGATE_CAM_ENTRADA_SUB_URL}
+      - FRIGATE_CAM_FUNDOS_SUB_URL=${FRIGATE_CAM_FUNDOS_SUB_URL}
+      - FRIGATE_CAM_LATERAL_SUB_URL=${FRIGATE_CAM_LATERAL_SUB_URL}
+      - FRIGATE_CAM_GARAGEM_SUB_URL=${FRIGATE_CAM_GARAGEM_SUB_URL}
+      - MQTT_USER=${MQTT_USER}
+      - MQTT_PASSWORD=${MQTT_PASSWORD}
+    # Intel iGPU passthrough for OpenVINO
+    devices:
+      - /dev/dri:/dev/dri
+    depends_on:
+      mosquitto:
+        condition: service_healthy
+    networks:
+      - home-security-net
+
+  # ---------------------------------------------------------------------------
+  # Home Assistant
+  # Plataforma central de automação, dashboard e sistema de alarme (Alarmo).
+  # ---------------------------------------------------------------------------
+  homeassistant:
+    image: ghcr.io/home-assistant/home-assistant:stable
+    container_name: home-security-homeassistant
+    restart: unless-stopped
+    network_mode: host
+    volumes:
+      - ${HA_CONFIG_PATH:-./homeassistant}:/config
+      - /etc/localtime:/etc/localtime:ro
+      - /run/dbus:/run/dbus:ro
+    environment:
+      - TZ=${TZ:-America/Sao_Paulo}
+    depends_on:
+      mosquitto:
+        condition: service_healthy
+
+# =============================================================================
+# Networks
+# =============================================================================
+networks:
+  home-security-net:
+    name: home-security-net
+    driver: bridge
+
+# =============================================================================
+# Volumes
+# =============================================================================
+volumes:
+  mosquitto_data:
+    name: home-security-mosquitto-data
+  mosquitto_log:
+    name: home-security-mosquitto-log
