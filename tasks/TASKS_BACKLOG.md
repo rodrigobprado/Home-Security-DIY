@@ -119,10 +119,10 @@
 | T-062 | Criar ADRs (Architecture Decision Records) | Formalizar decisões já tomadas (HA, Frigate, Zigbee, etc.) | Média | ✅ CONCLUÍDO |
 | T-063 | Estratégia de backup do NVR | RAID, edge recording, backup offsite (Script Implementado) | Média | ✅ CONCLUÍDO |
 | T-064 | Criar CONTRIBUTING.md | Guia de contribuição para projeto open source | Baixa | ✅ CONCLUÍDO |
-| T-065 | Avaliar adoção Matter/Thread | Plano de migração futuro Zigbee → Matter | Baixa | Pendente |
+| T-065 | Avaliar adoção Matter/Thread | Plano de migração futuro Zigbee → Matter | Baixa | ✅ CONCLUÍDO (2026-02-18) |
 | T-066 | Converter diagramas ASCII → Mermaid | GitHub renderiza Mermaid nativamente | Baixa | ✅ CONCLUÍDO |
 | T-067 | Criar risk matrix (prob. × impacto) | Complemento ao threat model | Baixa | ✅ CONCLUÍDO |
-| T-068 | Documentar alternativas comerciais compatíveis | Fallback quando DIY não funciona | Baixa | Pendente |
+| T-068 | Documentar alternativas comerciais compatíveis | Fallback quando DIY não funciona | Baixa | ✅ CONCLUÍDO (2026-02-18) |
 
 ---
 
@@ -137,8 +137,8 @@
 | Documentação e PRDs | 4 | 4 | 0 |
 | Privacidade e segurança | 2 | 2 | 0 |
 | Drones autônomos | 15 | 15 | 0 |
-| **Revisão e melhorias** | **23** | **21** | **2** |
-| **Total** | **68** | **66** | **2** |
+| **Revisão e melhorias** | **23** | **23** | **0** |
+| **Total** | **68** | **68** | **0** |
 
 ---
 

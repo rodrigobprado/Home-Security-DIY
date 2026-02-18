@@ -2,7 +2,8 @@
 
 > Comentário: Lista de documentação planejada.
 
-- [ ] Completar `ARCHITECTURE.md` com diagrama de componentes.
-- [ ] Criar guia de onboarding para novos contribuidores.
-- [ ] Documentar endpoints principais em `API_DOCS.md`.
+- [x] Completar `ARCHITECTURE.md` com diagrama de componentes. ✅ Concluído (2026-02-18)
+- [x] Criar guia de onboarding para novos contribuidores. ✅ Concluído em `docs/ONBOARDING.md` (2026-02-18)
+- [x] Documentar endpoints principais em `API_DOCS.md`. ✅ Concluído (2026-02-18)
 
+> Todas as pendências de documentação resolvidas em 2026-02-18.

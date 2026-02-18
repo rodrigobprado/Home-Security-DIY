@@ -1,0 +1,73 @@
+name: Validate Configs
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "src/**"
+      - "k8s/**"
+      - "scripts/**"
+      - ".github/workflows/validate.yml"
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint-yaml:
+    name: Lint YAML
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install yamllint
+        run: pip install yamllint
+
+      - name: Lint Docker Compose
+        run: yamllint -c .yamllint.yml src/docker-compose.yml
+
+      - name: Lint K8s manifests
+        run: yamllint -c .yamllint.yml k8s/base/ k8s/overlays/
+
+  validate-compose:
+    name: Validate Docker Compose
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create dummy .env
+        run: cp src/.env.example src/.env
+
+      - name: Validate compose config
+        run: docker compose -f src/docker-compose.yml config --quiet
+
+  validate-k8s:
+    name: Validate Kubernetes Manifests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install kubectl
+        uses: azure/setup-kubectl@v4
+
+      - name: Build kustomize (staging)
+        run: kubectl kustomize k8s/overlays/staging/
+
+      - name: Build kustomize (production)
+        run: kubectl kustomize k8s/overlays/production/
+
+      - name: Dry-run staging
+        run: kubectl apply -k k8s/overlays/staging/ --dry-run=client
+
+      - name: Dry-run production
+        run: kubectl apply -k k8s/overlays/production/ --dry-run=client
+
+  lint-shell:
+    name: Lint Shell Scripts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install shellcheck
+        run: sudo apt-get install -y shellcheck
+
+      - name: Lint scripts
+        run: shellcheck scripts/*.sh

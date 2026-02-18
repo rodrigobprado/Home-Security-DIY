@@ -61,39 +61,39 @@
 | PRD | Status | Responsável | Data |
 |-----|--------|-------------|------|
 | `PRD_PERIMETER_RURAL.md` | ✅ CONCLUÍDO | Agente_Documentador | 2026-02-12 |
-| `PRD_RURAL_ACCESS_CONTROL.md` | TODO | Agente_Documentador | - |
+| `PRD_RURAL_ACCESS_CONTROL.md` | ✅ CONCLUÍDO | Agente_Documentador | 2026-02-18 |
 | `PRD_PERIMETER_URBAN_HOUSE.md` | ✅ CONCLUÍDO | Agente_Documentador | 2026-02-12 |
-| `PRD_HOUSE_ENVELOPE.md` | TODO | Agente_Documentador | - |
+| `PRD_HOUSE_ENVELOPE.md` | ✅ CONCLUÍDO | Agente_Documentador | 2026-02-18 |
 | `PRD_APARTMENT_SECURITY.md` | ✅ CONCLUÍDO | Agente_Documentador | 2026-02-12 |
-| `PRD_APARTMENT_SMART_LOCK.md` | TODO | Agente_Documentador | - |
+| `PRD_APARTMENT_SMART_LOCK.md` | ✅ CONCLUÍDO | Agente_Documentador | 2026-02-18 |
 | `PRD_SENSORS_AND_ALARMS_PLATFORM.md` | ✅ CONCLUÍDO | Agente_Documentador | 2026-02-12 |
 | `PRD_VIDEO_SURVEILLANCE_AND_NVR.md` | ✅ CONCLUÍDO | Agente_Documentador | 2026-02-12 |
 | `PRD_MONITORING_DASHBOARD.md` | ✅ CONCLUÍDO | Agente_Documentador | 2026-02-12 |
-| `PRD_NOTIFICATIONS_AND_ALERTS.md` | TODO | Agente_Documentador | - |
-| `PRD_AUTOMATION_AND_SCENES.md` | TODO | Agente_Documentador | - |
-| `PRD_ENVIRONMENTAL_SENSORS.md` | TODO | Agente_Documentador | - |
-| `PRD_BACKUP_AND_RESILIENCE.md` | TODO | Agente_Documentador | - |
-| `PRD_NETWORK_SECURITY.md` | TODO | Agente_Documentador | - |
-| `PRD_LOCAL_PROCESSING_HUB.md` | TODO | Agente_Documentador | - |
+| `PRD_NOTIFICATIONS_AND_ALERTS.md` | ✅ CONCLUÍDO | Agente_Documentador | 2026-02-18 |
+| `PRD_AUTOMATION_AND_SCENES.md` | ✅ CONCLUÍDO | Agente_Documentador | 2026-02-18 |
+| `PRD_ENVIRONMENTAL_SENSORS.md` | ✅ CONCLUÍDO | Agente_Documentador | 2026-02-18 |
+| `PRD_BACKUP_AND_RESILIENCE.md` | ✅ CONCLUÍDO | Agente_Documentador | 2026-02-18 |
+| `PRD_NETWORK_SECURITY.md` | ✅ CONCLUÍDO | Agente_Documentador | 2026-02-18 |
+| `PRD_LOCAL_PROCESSING_HUB.md` | ✅ CONCLUÍDO | Agente_Documentador | 2026-02-18 |
 
 ### PRDs de drones autônomos
 
 | PRD | Status | Responsável | Data |
 |-----|--------|-------------|------|
 | `PRD_AUTONOMOUS_DRONES.md` | ✅ CONCLUÍDO | Agente_Arquiteto_Drones | 2026-02-12 |
-| `PRD_DRONE_DEFENSE_MODULE.md` | TODO | Agente_Arquiteto_Drones | - |
-| `PRD_DRONE_COMMUNICATION.md` | TODO | Agente_Arquiteto_Drones | - |
-| `PRD_DRONE_FLEET_MANAGEMENT.md` | TODO | Agente_Arquiteto_Drones | - |
-| `PRD_DRONE_AI_VISION.md` | TODO | Agente_Arquiteto_Drones | - |
+| `PRD_DRONE_DEFENSE_MODULE.md` | ✅ CONCLUÍDO | Agente_Arquiteto_Drones | 2026-02-18 |
+| `PRD_DRONE_COMMUNICATION.md` | ✅ CONCLUÍDO | Agente_Arquiteto_Drones | 2026-02-18 |
+| `PRD_DRONE_FLEET_MANAGEMENT.md` | ✅ CONCLUÍDO | Agente_Arquiteto_Drones | 2026-02-18 |
+| `PRD_DRONE_AI_VISION.md` | ✅ CONCLUÍDO | Agente_Arquiteto_Drones | 2026-02-18 |
 
 ### Resumo de progresso PRDs
 
 | Status | Quantidade |
 |--------|------------|
-| Concluídos | 7 |
-| Pendentes (principais) | 8 |
-| Pendentes (drones) | 4 |
+| Concluídos | 20 |
+| Pendentes (principais) | 0 |
+| Pendentes (drones) | 0 |
 | **Total** | **20** |
 
-> **Última atualização**: 2026-02-12 por Agente_Arquiteto_Drones
+> **Última atualização**: 2026-02-18 — Todos os PRDs concluídos
 
