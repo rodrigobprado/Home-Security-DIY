@@ -60,7 +60,7 @@ data:
         homeassistant.components.alarm_control_panel: info
 
     recorder:
-      db_url: sqlite:////config/home-assistant_v2.db
+      db_url: !env_var POSTGRES_HA_URL
       purge_keep_days: 30
       commit_interval: 5
 
@@ -158,6 +158,11 @@ spec:
           env:
             - name: TZ
               value: America/Sao_Paulo
+            - name: POSTGRES_HA_URL
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-credentials
+                  key: POSTGRES_HA_URL
           resources:
             requests:
               cpu: 250m

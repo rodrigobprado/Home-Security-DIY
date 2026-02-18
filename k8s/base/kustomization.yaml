@@ -8,6 +8,7 @@ namespace: home-security
 
 resources:
   - namespace.yaml
+  - postgres/postgres.yaml
   - mosquitto/mosquitto.yaml
   - zigbee2mqtt/zigbee2mqtt.yaml
   - frigate/frigate.yaml

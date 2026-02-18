@@ -1,0 +1,264 @@
+# =============================================================================
+# PostgreSQL 16 — Kubernetes Manifests
+# Home Security DIY
+# =============================================================================
+# IMPORTANTE: Atualize os valores do Secret antes de aplicar em produção.
+# Use SealedSecrets, External Secrets Operator ou Vault para gestão segura
+# de credenciais em ambientes reais.
+# =============================================================================
+
+# --- Secret: credenciais do PostgreSQL ---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: postgres-credentials
+  namespace: home-security
+  labels:
+    app.kubernetes.io/name: postgres
+    app.kubernetes.io/component: database
+    app.kubernetes.io/part-of: home-security
+type: Opaque
+stringData:
+  # Usuário admin do PostgreSQL
+  POSTGRES_USER: "postgres"
+  # Substitua por senhas fortes antes de aplicar!
+  POSTGRES_PASSWORD: "CHANGE_ME_postgres_admin_password"
+  POSTGRES_DB: "homedb"
+  # Usuários de serviço (um por schema)
+  POSTGRES_HA_PASSWORD: "CHANGE_ME_ha_password"
+  POSTGRES_DASHBOARD_PASSWORD: "CHANGE_ME_dashboard_password"
+  POSTGRES_METRICS_PASSWORD: "CHANGE_ME_metrics_password"
+  # URL de conexão para o Home Assistant
+  POSTGRES_HA_URL: "postgresql+psycopg2://ha_user:CHANGE_ME_ha_password@postgres.home-security.svc.cluster.local:5432/homedb?options=-csearch_path%3Dhomeassistant"
+
+---
+# --- ConfigMap: script de inicialização do banco ---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-init
+  namespace: home-security
+  labels:
+    app.kubernetes.io/name: postgres
+    app.kubernetes.io/component: database
+    app.kubernetes.io/part-of: home-security
+data:
+  01-init.sh: |
+    #!/bin/bash
+    # Inicialização do PostgreSQL: cria schemas e usuários isolados por serviço.
+    set -euo pipefail
+
+    echo "[postgres-init] Iniciando configuração do banco de dados..."
+
+    psql -v ON_ERROR_STOP=1 \
+         --username "$POSTGRES_USER" \
+         --dbname "$POSTGRES_DB" <<-EOSQL
+
+        DO \$\$
+        BEGIN
+            IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'ha_user') THEN
+                CREATE USER ha_user WITH PASSWORD '${POSTGRES_HA_PASSWORD}';
+            ELSE
+                ALTER USER ha_user WITH PASSWORD '${POSTGRES_HA_PASSWORD}';
+            END IF;
+
+            IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'dashboard_user') THEN
+                CREATE USER dashboard_user WITH PASSWORD '${POSTGRES_DASHBOARD_PASSWORD}';
+            ELSE
+                ALTER USER dashboard_user WITH PASSWORD '${POSTGRES_DASHBOARD_PASSWORD}';
+            END IF;
+
+            IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'metrics_user') THEN
+                CREATE USER metrics_user WITH PASSWORD '${POSTGRES_METRICS_PASSWORD}';
+            ELSE
+                ALTER USER metrics_user WITH PASSWORD '${POSTGRES_METRICS_PASSWORD}';
+            END IF;
+        END
+        \$\$;
+
+        CREATE SCHEMA IF NOT EXISTS homeassistant AUTHORIZATION ha_user;
+        CREATE SCHEMA IF NOT EXISTS dashboard AUTHORIZATION dashboard_user;
+        CREATE SCHEMA IF NOT EXISTS metrics AUTHORIZATION metrics_user;
+
+        GRANT CONNECT ON DATABASE ${POSTGRES_DB} TO ha_user, dashboard_user, metrics_user;
+        REVOKE ALL ON SCHEMA public FROM ha_user, dashboard_user, metrics_user;
+
+        GRANT USAGE ON SCHEMA homeassistant TO ha_user;
+        GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA homeassistant TO ha_user;
+        GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA homeassistant TO ha_user;
+        ALTER DEFAULT PRIVILEGES IN SCHEMA homeassistant GRANT ALL ON TABLES TO ha_user;
+        ALTER DEFAULT PRIVILEGES IN SCHEMA homeassistant GRANT ALL ON SEQUENCES TO ha_user;
+
+        GRANT USAGE ON SCHEMA dashboard TO dashboard_user;
+        GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA dashboard TO dashboard_user;
+        GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA dashboard TO dashboard_user;
+        ALTER DEFAULT PRIVILEGES IN SCHEMA dashboard GRANT ALL ON TABLES TO dashboard_user;
+        ALTER DEFAULT PRIVILEGES IN SCHEMA dashboard GRANT ALL ON SEQUENCES TO dashboard_user;
+
+        GRANT USAGE ON SCHEMA metrics TO metrics_user;
+        GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA metrics TO metrics_user;
+        GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA metrics TO metrics_user;
+        ALTER DEFAULT PRIVILEGES IN SCHEMA metrics GRANT ALL ON TABLES TO metrics_user;
+        ALTER DEFAULT PRIVILEGES IN SCHEMA metrics GRANT ALL ON SEQUENCES TO metrics_user;
+
+        ALTER DATABASE ${POSTGRES_DB} SET timezone TO 'America/Sao_Paulo';
+
+        COMMENT ON SCHEMA homeassistant IS 'Home Assistant: histórico de estados e eventos (recorder)';
+        COMMENT ON SCHEMA dashboard     IS 'Dashboard operacional (Issue #2)';
+        COMMENT ON SCHEMA metrics       IS 'Métricas do sistema de segurança';
+
+    EOSQL
+
+    echo "[postgres-init] Schemas criados: homeassistant, dashboard, metrics"
+
+---
+# --- PersistentVolumeClaim: dados do PostgreSQL ---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-data
+  namespace: home-security
+  labels:
+    app.kubernetes.io/name: postgres
+    app.kubernetes.io/component: database
+    app.kubernetes.io/part-of: home-security
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 20Gi
+  storageClassName: local-path
+
+---
+# --- StatefulSet: PostgreSQL ---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres
+  namespace: home-security
+  labels:
+    app.kubernetes.io/name: postgres
+    app.kubernetes.io/component: database
+    app.kubernetes.io/part-of: home-security
+spec:
+  serviceName: postgres
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: postgres
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: postgres
+        app.kubernetes.io/component: database
+        app.kubernetes.io/part-of: home-security
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:16-alpine
+          ports:
+            - name: postgres
+              containerPort: 5432
+              protocol: TCP
+          env:
+            - name: POSTGRES_DB
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-credentials
+                  key: POSTGRES_DB
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-credentials
+                  key: POSTGRES_USER
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-credentials
+                  key: POSTGRES_PASSWORD
+            - name: POSTGRES_HA_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-credentials
+                  key: POSTGRES_HA_PASSWORD
+            - name: POSTGRES_DASHBOARD_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-credentials
+                  key: POSTGRES_DASHBOARD_PASSWORD
+            - name: POSTGRES_METRICS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-credentials
+                  key: POSTGRES_METRICS_PASSWORD
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+            - name: TZ
+              value: America/Sao_Paulo
+          volumeMounts:
+            - name: postgres-data
+              mountPath: /var/lib/postgresql/data
+            - name: postgres-init
+              mountPath: /docker-entrypoint-initdb.d
+              readOnly: true
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 1000m
+              memory: 1Gi
+          livenessProbe:
+            exec:
+              command:
+                - pg_isready
+                - -U
+                - postgres
+                - -d
+                - homedb
+            initialDelaySeconds: 30
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            exec:
+              command:
+                - pg_isready
+                - -U
+                - postgres
+                - -d
+                - homedb
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+      volumes:
+        - name: postgres-data
+          persistentVolumeClaim:
+            claimName: postgres-data
+        - name: postgres-init
+          configMap:
+            name: postgres-init
+            defaultMode: 0755
+
+---
+# --- Service: PostgreSQL (ClusterIP interno) ---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  namespace: home-security
+  labels:
+    app.kubernetes.io/name: postgres
+    app.kubernetes.io/component: database
+    app.kubernetes.io/part-of: home-security
+spec:
+  type: ClusterIP
+  ports:
+    - name: postgres
+      port: 5432
+      targetPort: postgres
+      protocol: TCP
+  selector:
+    app.kubernetes.io/name: postgres
