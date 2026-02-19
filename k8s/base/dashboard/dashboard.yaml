@@ -1,0 +1,204 @@
+# =============================================================================
+# Dashboard — Home Security DIY (K8s Base)
+# =============================================================================
+# Inclui: Secret, ConfigMap, Deployments (API + Frontend), Services
+# =============================================================================
+
+# --- Secret: credenciais do dashboard ---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: dashboard-credentials
+  namespace: home-security
+  labels:
+    app.kubernetes.io/name: dashboard
+    app.kubernetes.io/component: credentials
+type: Opaque
+stringData:
+  ha-token: "CHANGE_ME_ha_long_lived_token"
+  ha-url: "http://192.168.10.10:8123"
+  database-url: "postgresql+asyncpg://dashboard_user:CHANGE_ME_dashboard_password@postgres:5432/homedb?options=-csearch_path%3Ddashboard"
+
+---
+# --- ConfigMap: variáveis não-sensíveis ---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dashboard-config
+  namespace: home-security
+  labels:
+    app.kubernetes.io/name: dashboard
+    app.kubernetes.io/component: config
+data:
+  FRIGATE_URL: "http://frigate:5000"
+  MQTT_BROKER: "mosquitto"
+  TZ: "America/Sao_Paulo"
+
+---
+# --- Deployment: API (FastAPI) ---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dashboard-api
+  namespace: home-security
+  labels:
+    app.kubernetes.io/name: dashboard
+    app.kubernetes.io/component: api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: dashboard
+      app.kubernetes.io/component: api
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: dashboard
+        app.kubernetes.io/component: api
+    spec:
+      containers:
+        - name: dashboard-api
+          image: home-security-dashboard-api:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
+              name: http
+          env:
+            - name: HA_URL
+              valueFrom:
+                secretKeyRef:
+                  name: dashboard-credentials
+                  key: ha-url
+            - name: HA_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: dashboard-credentials
+                  key: ha-token
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: dashboard-credentials
+                  key: database-url
+            - name: FRIGATE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: dashboard-config
+                  key: FRIGATE_URL
+            - name: MQTT_BROKER
+              valueFrom:
+                configMapKeyRef:
+                  name: dashboard-config
+                  key: MQTT_BROKER
+            - name: TZ
+              valueFrom:
+                configMapKeyRef:
+                  name: dashboard-config
+                  key: TZ
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 15
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+
+---
+# --- Service: API ---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dashboard-api
+  namespace: home-security
+  labels:
+    app.kubernetes.io/name: dashboard
+    app.kubernetes.io/component: api
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8000
+      targetPort: 8000
+      name: http
+  selector:
+    app.kubernetes.io/name: dashboard
+    app.kubernetes.io/component: api
+
+---
+# --- Deployment: Frontend (React + Nginx) ---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dashboard-frontend
+  namespace: home-security
+  labels:
+    app.kubernetes.io/name: dashboard
+    app.kubernetes.io/component: frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: dashboard
+      app.kubernetes.io/component: frontend
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: dashboard
+        app.kubernetes.io/component: frontend
+    spec:
+      containers:
+        - name: dashboard-frontend
+          image: home-security-dashboard-frontend:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 80
+              name: http
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "64Mi"
+            limits:
+              cpu: "200m"
+              memory: "128Mi"
+
+---
+# --- Service: Frontend ---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dashboard-frontend
+  namespace: home-security
+  labels:
+    app.kubernetes.io/name: dashboard
+    app.kubernetes.io/component: frontend
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: 80
+      name: http
+  selector:
+    app.kubernetes.io/name: dashboard
+    app.kubernetes.io/component: frontend

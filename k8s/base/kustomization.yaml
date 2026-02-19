@@ -13,6 +13,7 @@ resources:
   - zigbee2mqtt/zigbee2mqtt.yaml
   - frigate/frigate.yaml
   - homeassistant/homeassistant.yaml
+  - dashboard/dashboard.yaml
 
 labels:
   - pairs:

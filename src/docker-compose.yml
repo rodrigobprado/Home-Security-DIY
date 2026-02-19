@@ -16,6 +16,10 @@
 #   3. Acesse http://localhost:8123
 #
 # Docs: src/docs/QUICK_START.md
+#
+# Serviços adicionais (Issue #2):
+#   - Dashboard API:      FastAPI backend (port 8000)
+#   - Dashboard Frontend: React SPA (port 3000)
 # =============================================================================
 
 services:
@@ -164,6 +168,57 @@ services:
       mosquitto:
         condition: service_healthy
       postgres:
+        condition: service_healthy
+
+  # ---------------------------------------------------------------------------
+  # Dashboard API (FastAPI)
+  # Backend do dashboard operacional: WebSocket fan-out, proxy Frigate,
+  # histórico de alertas via PostgreSQL (schema dashboard).
+  # ---------------------------------------------------------------------------
+  dashboard-api:
+    build: ./dashboard/backend
+    image: home-security-dashboard-api:latest
+    container_name: home-security-dashboard-api
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - HA_URL=http://${HA_HOST:-host.docker.internal}:8123
+      - HA_TOKEN=${HA_TOKEN}
+      - FRIGATE_URL=http://home-security-frigate:5000
+      - MQTT_BROKER=home-security-mosquitto
+      - DATABASE_URL=postgresql+asyncpg://dashboard_user:${POSTGRES_DASHBOARD_PASSWORD}@home-security-postgres:5432/${POSTGRES_DB:-homedb}?options=-csearch_path%3Ddashboard
+      - TZ=${TZ:-America/Sao_Paulo}
+    networks:
+      - home-security-net
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mosquitto:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8000/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+  # ---------------------------------------------------------------------------
+  # Dashboard Frontend (React + Nginx)
+  # SPA com tema dark: modo completo (/) e kiosk (/simplified).
+  # Porta 3000 → nginx:80 → proxy /api e /ws para dashboard-api.
+  # ---------------------------------------------------------------------------
+  dashboard-frontend:
+    build: ./dashboard/frontend
+    image: home-security-dashboard-frontend:latest
+    container_name: home-security-dashboard-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    networks:
+      - home-security-net
+    depends_on:
+      dashboard-api:
         condition: service_healthy
 
 # =============================================================================

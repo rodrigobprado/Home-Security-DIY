@@ -8,6 +8,7 @@
 #   192.168.10.X  security.home.local
 #   192.168.10.X  frigate.home.local
 #   192.168.10.X  zigbee.home.local
+#   192.168.10.X  dashboard.home.local
 
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -58,6 +59,18 @@ spec:
                 name: zigbee2mqtt
                 port:
                   number: 8080
+
+    # --- Dashboard Operacional ---
+    - host: dashboard.home.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: dashboard-frontend
+                port:
+                  number: 80
 
 ---
 # --- NodePort Service for MQTT (external devices) ---
