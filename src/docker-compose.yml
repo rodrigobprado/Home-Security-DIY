@@ -76,7 +76,7 @@ services:
       test:
         [
           "CMD-SHELL",
-          "mosquitto_sub -h localhost -p 1883 -t '$$SYS/broker/uptime' -C 1 -u ${MQTT_USER} -P ${MQTT_PASSWORD} || exit 1",
+          "nc -z localhost 1883 || exit 1",
         ]
       interval: 30s
       timeout: 10s
@@ -89,7 +89,7 @@ services:
   # Requer coordenador USB (Sonoff ZBDongle-P ou compatível).
   # ---------------------------------------------------------------------------
   zigbee2mqtt:
-    image: koenkk/zigbee2mqtt:latest
+    image: koenkk/zigbee2mqtt:1.42.0
     container_name: home-security-zigbee2mqtt
     restart: unless-stopped
     ports:
@@ -112,7 +112,7 @@ services:
   # Usa Intel OpenVINO (iGPU do N100) para aceleração.
   # ---------------------------------------------------------------------------
   frigate:
-    image: ghcr.io/blakeblackshear/frigate:stable
+    image: ghcr.io/blakeblackshear/frigate:0.14.1
     container_name: home-security-frigate
     restart: unless-stopped
     shm_size: "256mb"
@@ -155,7 +155,7 @@ services:
   # Plataforma central de automação, dashboard e sistema de alarme (Alarmo).
   # ---------------------------------------------------------------------------
   homeassistant:
-    image: ghcr.io/home-assistant/home-assistant:stable
+    image: ghcr.io/home-assistant/home-assistant:2024.12.5
     container_name: home-security-homeassistant
     restart: unless-stopped
     network_mode: host

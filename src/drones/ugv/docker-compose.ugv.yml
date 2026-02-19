@@ -5,7 +5,7 @@ services:
   # UGV Brain (ROS 2 Humble)
   # ---------------------------------------------------------------------------
   ugv-brain:
-    image: osrf/ros:humble-desktop
+    image: osrf/ros:humble-desktop-jammy
     container_name: ugv-brain
     restart: unless-stopped
     command: python3 /app/ugv_control.py
@@ -33,7 +33,7 @@ services:
   # RTSP Server (MediaMTX) - Low Latency Streaming
   # ---------------------------------------------------------------------------
   mediamtx:
-    image: bluenviron/mediamtx:latest
+    image: bluenviron/mediamtx:1.11.3
     container_name: ugv-mediamtx
     restart: unless-stopped
     networks:

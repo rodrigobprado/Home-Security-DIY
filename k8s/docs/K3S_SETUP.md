@@ -82,6 +82,15 @@ chmod +x scripts/generate-k8s-secrets.sh
 kubectl apply -f k8s/generated/secrets/
 ```
 
+Para o Ingress TLS em produção, crie também o secret de certificado:
+
+```bash
+kubectl create secret tls home-security-tls \
+  -n home-security \
+  --cert=/caminho/para/fullchain.pem \
+  --key=/caminho/para/privkey.pem
+```
+
 Alternativa manual:
 
 ```bash

@@ -37,7 +37,7 @@ async def _check_http(url: str) -> str:
         resp = await client.get(
             url,
             headers={"Authorization": f"Bearer {settings.ha_token}"}
-            if "8123" in url
+            if url.startswith(settings.ha_url)
             else {},
         )
         return "online" if resp.status_code < 500 else "degraded"
