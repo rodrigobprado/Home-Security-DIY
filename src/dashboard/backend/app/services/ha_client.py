@@ -30,6 +30,11 @@ _subscribers: set = set()
 # Último estado conhecido de cada entidade (cache em memória)
 _entity_states: dict[str, dict] = {}
 _rest_client: httpx.AsyncClient | None = None
+_metrics = {
+    "messages_dropped_total": 0,
+    "messages_fanout_total": 0,
+    "fanout_failures_total": 0,
+}
 
 
 async def _get_rest_client() -> httpx.AsyncClient:
@@ -63,6 +68,17 @@ def get_all_states() -> dict[str, dict]:
 
 def get_state(entity_id: str) -> dict | None:
     return _entity_states.get(entity_id)
+
+
+def record_ws_drop() -> None:
+    _metrics["messages_dropped_total"] += 1
+
+
+def get_ws_metrics() -> dict[str, int]:
+    return {
+        **_metrics,
+        "connected_clients": len(_subscribers),
+    }
 
 
 def _severity_for(entity_id: str, new_state: str) -> str:
@@ -106,7 +122,9 @@ async def _fan_out(message: dict) -> None:
     for cb in list(_subscribers):
         try:
             await cb(payload)
+            _metrics["messages_fanout_total"] += 1
         except Exception:
+            _metrics["fanout_failures_total"] += 1
             dead.add(cb)
     _subscribers.difference_update(dead)
 

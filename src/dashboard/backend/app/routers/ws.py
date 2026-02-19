@@ -26,10 +26,11 @@ async def websocket_endpoint(websocket: WebSocket) -> None:
         try:
             queue.put_nowait(payload)
         except asyncio.QueueFull:
-            pass  # descarta mensagem se fila cheia (cliente lento)
+            ha_client.record_ws_drop()
+            logger.warning("Fila de WebSocket cheia; descartando mensagem para cliente lento.")
 
     ha_client.subscribe(enqueue)
-    logger.info("Cliente WS conectado. Total: %d", len(ha_client._subscribers))
+    logger.info("Cliente WS conectado. Total: %d", ha_client.get_ws_metrics()["connected_clients"])
 
     # Envia snapshot completo dos estados atuais ao conectar
     try:
