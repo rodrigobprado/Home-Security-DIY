@@ -81,6 +81,11 @@ python -m pip install -r requirements.txt pytest
 pytest ../../../tests/backend -q
 ```
 
+### Cobertura mínima (CI)
+
+- Backend (`pytest-cov`): mínimo de **70%** em `app/`
+- Frontend (`vitest --coverage`): mínimo de **60%** em linhas/funções/statements e **50%** em branches
+
 ---
 
 ## Código de Conduta

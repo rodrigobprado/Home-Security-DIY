@@ -188,6 +188,12 @@ Execute após cada deploy em ambiente real:
 
 Ver `.github/workflows/validate.yml` para implementação completa.
 
+**Cobertura mínima no CI:**
+- Backend: `pytest-cov` com `--cov-fail-under=70` para `app/`
+- Frontend: `vitest --coverage` com thresholds:
+  - lines/functions/statements >= 60
+  - branches >= 50
+
 **Pipeline de segurança:**
 - Workflow `Snyk Security` com execução condicional quando `SNYK_TOKEN` está disponível.
 - Scans de SAST, SCA, IaC e imagens de container (modo não-bloqueante em cenários sem secret).
