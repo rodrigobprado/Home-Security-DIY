@@ -145,7 +145,7 @@ Você pode agendar esse comando via `cron` no servidor para manutenção contín
 
 ## Contribuição
 
-Contribuições são bem-vindas! Por favor, leia o [CONTRIBUTING.md](CONTRIBUTING.md) (em breve) para detalhes sobre nosso código de conduta e processo de envio de pull requests.
+Contribuições são bem-vindas! Leia o [CONTRIBUTING.md](CONTRIBUTING.md) para detalhes sobre código de conduta, fluxo de issues/PRs e validações recomendadas antes do merge.
 
 ---
 
