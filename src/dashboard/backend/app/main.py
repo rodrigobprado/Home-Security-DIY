@@ -9,7 +9,7 @@ from app.config import settings
 from app.db.session import init_db
 from app.routers import alerts, cameras, sensors, services, ws
 from app.security import require_api_key
-from app.services import ha_client
+from app.services import frigate_client, ha_client
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -36,6 +36,9 @@ async def lifespan(app: FastAPI):
             await _ha_task
         except asyncio.CancelledError:
             pass
+    await ha_client.close()
+    await frigate_client.close()
+    await services.close()
 
 
 app = FastAPI(

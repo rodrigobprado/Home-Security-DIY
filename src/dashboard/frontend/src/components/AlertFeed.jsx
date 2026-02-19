@@ -21,13 +21,13 @@ function formatTime(iso) {
 }
 
 export default function AlertFeed() {
-  const { alerts, setAlerts } = useStore()
+  const { alerts, setAlertsIfEmpty } = useStore()
 
   // Carrega histórico inicial via REST
   useEffect(() => {
     fetch('/api/alerts?limit=30')
       .then((r) => r.json())
-      .then((data) => { if (Array.isArray(data) && alerts.length === 0) setAlerts(data) })
+      .then((data) => { if (Array.isArray(data)) setAlertsIfEmpty(data) })
       .catch(() => {})
   }, [])
 

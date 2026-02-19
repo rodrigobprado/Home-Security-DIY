@@ -1,0 +1,44 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: homeassistant-pdb
+  namespace: home-security
+spec:
+  minAvailable: 0
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: homeassistant
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: mosquitto-pdb
+  namespace: home-security
+spec:
+  minAvailable: 0
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: mosquitto
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: frigate-pdb
+  namespace: home-security
+spec:
+  minAvailable: 0
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: frigate
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: dashboard-api-pdb
+  namespace: home-security
+spec:
+  minAvailable: 0
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: dashboard
+      app.kubernetes.io/component: api

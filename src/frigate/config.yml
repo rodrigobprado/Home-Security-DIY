@@ -14,8 +14,8 @@ mqtt:
   enabled: true
   host: mosquitto
   port: 1883
-  user: "{FRIGATE_MQTT_USER}"
-  password: "{FRIGATE_MQTT_PASSWORD}"
+  user: "{MQTT_USER}"
+  password: "{MQTT_PASSWORD}"
   topic_prefix: frigate
 
 # --- Detector de IA ---

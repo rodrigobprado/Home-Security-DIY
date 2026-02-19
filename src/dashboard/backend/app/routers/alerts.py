@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy import desc, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -12,12 +12,13 @@ router = APIRouter(prefix="/api", tags=["alerts"])
 
 @router.get("/alerts")
 async def list_alerts(
-    limit: int = 50,
+    limit: int = Query(default=50, ge=1, le=500),
+    offset: int = Query(default=0, ge=0),
     severity: str | None = None,
     db: AsyncSession = Depends(get_db),
 ) -> list[dict]:
     """Retorna histórico de alertas paginado, do mais recente para o mais antigo."""
-    stmt = select(Alert).order_by(desc(Alert.timestamp)).limit(limit)
+    stmt = select(Alert).order_by(desc(Alert.timestamp)).offset(offset).limit(limit)
     if severity:
         stmt = stmt.where(Alert.severity == severity)
     result = await db.execute(stmt)
