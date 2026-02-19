@@ -183,7 +183,7 @@ Execute após cada deploy em ambiente real:
 | `validate-k8s` | kubectl kustomize + kubeconform | Manifests Kubernetes (schema) |
 | `lint-shell` | shellcheck | Scripts .sh |
 | `docs-links` | script local | Links Markdown internos |
-| `frontend-quality` | eslint + vitest | Qualidade e testes do frontend |
+| `frontend-quality` | eslint + typecheck + vitest | Qualidade e testes do frontend |
 | `backend-quality` | pytest | Testes backend do dashboard |
 
 Ver `.github/workflows/validate.yml` para implementação completa.
