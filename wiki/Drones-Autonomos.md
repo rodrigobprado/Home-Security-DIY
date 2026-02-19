@@ -255,6 +255,12 @@ REGRA-DRONE-10: Whitelist de pessoas autorizadas deve ser configurável.
 4. Dashboard de telemetria em tempo real
 5. Alertas via Telegram
 
+### Estado atual dos comandos UGV (MVP)
+
+- `move`: implementado
+- `defense_arm` / `defense_disarm`: implementados com validações de saúde
+- `patrol`: **ainda não implementado**; o controlador publica status explícito `not_implemented` no tópico `ugv/status` para evitar falso positivo operacional
+
 ---
 
 ## Referências
