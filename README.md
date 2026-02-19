@@ -85,18 +85,23 @@ Para instalação definitiva em um Mini PC ou servidor dedicado usando **Kuberne
 
 ```
 Home-Security-DIY/
-├── src/                       # Stack Docker Compose (Desenvolvimento)
-│   ├── docker-compose.yml
-│   └── configs...
-├── k8s/                       # Stack Kubernetes/K3s (Produção)
-│   ├── base/                  # Manifests base
-│   └── overlays/              # Configs específicas (staging/prod)
-├── docs/                      # Documentação de arquitetura
+├── src/
+│   ├── docker-compose.yml             # Stack Docker Compose (desenvolvimento)
+│   ├── dashboard/                     # Dashboard operacional (backend + frontend)
+│   ├── homeassistant/                 # Configurações HA
+│   ├── frigate/                       # Configuração NVR/IA
+│   └── docs/QUICK_START.md
+├── k8s/
+│   ├── base/                          # Manifestos base
+│   ├── overlays/                      # Configs staging/production
+│   └── docs/K3S_SETUP.md
+├── docs/
+│   ├── ARCHITECTURE.md
 │   ├── ARQUITETURA_TECNICA.md
-│   └── ...
-├── prd/                       # Requisitos de Produto (PRDs)
-├── scripts/                   # Scripts de automação e deploy
-└── tasks/                     # Gestão de tarefas do projeto
+│   └── adr/                           # Architecture Decision Records
+├── scripts/                           # Automação e validações
+├── tests/
+└── tasks/
 ```
 
 ---

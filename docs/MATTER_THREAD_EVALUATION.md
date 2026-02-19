@@ -153,4 +153,4 @@ O **Sonoff ZBDongle-P (CC2652P)** suporta firmware multiprotocolo (Zigbee + Thre
 - [Thread Group](https://www.threadgroup.org/)
 - [Home Assistant Matter Integration](https://www.home-assistant.io/integrations/matter/)
 - [Zigbee2MQTT](https://www.zigbee2mqtt.io/)
-- [ADR-003 - Zigbee como protocolo](docs/adr/ADR-003-zigbee-protocolo.md)
+- [ADR-003 - Zigbee como protocolo](docs/adr/003-adoption-zigbee.md)
