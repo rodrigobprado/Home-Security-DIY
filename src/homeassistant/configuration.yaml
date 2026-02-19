@@ -33,7 +33,7 @@ logger:
 
 # --- Recorder (history database) ---
 recorder:
-  db_url: sqlite:////config/home-assistant_v2.db
+  db_url: !env_var POSTGRES_HA_URL
   purge_keep_days: 30
   commit_interval: 5
   exclude:

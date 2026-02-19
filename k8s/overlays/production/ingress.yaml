@@ -23,6 +23,13 @@ metadata:
     traefik.ingress.kubernetes.io/router.tls: "true"
 spec:
   ingressClassName: traefik
+  tls:
+    - secretName: home-security-tls
+      hosts:
+        - security.home.local
+        - frigate.home.local
+        - zigbee.home.local
+        - dashboard.home.local
   rules:
     # --- Home Assistant ---
     - host: security.home.local

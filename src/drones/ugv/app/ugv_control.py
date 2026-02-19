@@ -122,7 +122,18 @@ def on_message(client, userdata, msg):
             send_motor_cmd(left, right)
             
         elif command == 'patrol':
-            print("Starting Patrol Sequence...")
+            print("Patrol command received but feature is not implemented yet.")
+            client.publish(
+                MQTT_TOPIC_STATUS,
+                json.dumps(
+                    {
+                        "state": "warning",
+                        "command": "patrol",
+                        "status": "not_implemented",
+                        "reason": "Patrol sequence pending implementation",
+                    }
+                ),
+            )
             
     except Exception as e:
         print(f"Error parsing command: {e}")
@@ -154,6 +165,7 @@ def main():
     
     try:
         client.connect(MQTT_BROKER, MQTT_PORT, 60)
+        health.update_heartbeat()
         client.loop_start()
     except Exception as e:
         print(f"Error connecting to MQTT: {e}")
