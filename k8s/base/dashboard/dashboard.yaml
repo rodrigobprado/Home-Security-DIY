@@ -14,10 +14,14 @@ metadata:
     app.kubernetes.io/name: dashboard
     app.kubernetes.io/component: credentials
 type: Opaque
+  # IMPORTANT: Never commit real values here.
+  # Use scripts/generate-k8s-secrets.sh or SealedSecrets/ESO for real deployments.
 stringData:
   ha-token: "CHANGE_ME_ha_long_lived_token"
   ha-url: "http://HOME_ASSISTANT_HOST_IP:8123"
   database-url: "postgresql+asyncpg://dashboard_user:CHANGE_ME_dashboard_password@postgres:5432/homedb?options=-csearch_path%3Ddashboard"
+  dashboard-api-key: "CHANGE_ME_generate_with_openssl_rand_hex_32"
+  dashboard-allowed-origins: "https://dashboard.home.local"
 
 ---
 # --- ConfigMap: variáveis não-sensíveis ---
@@ -89,6 +93,16 @@ spec:
                 configMapKeyRef:
                   name: dashboard-config
                   key: MQTT_BROKER
+            - name: DASHBOARD_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: dashboard-credentials
+                  key: dashboard-api-key
+            - name: DASHBOARD_ALLOWED_ORIGINS
+              valueFrom:
+                secretKeyRef:
+                  name: dashboard-credentials
+                  key: dashboard-allowed-origins
             - name: TZ
               valueFrom:
                 configMapKeyRef:

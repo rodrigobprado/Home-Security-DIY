@@ -39,7 +39,7 @@ services:
     networks:
       - ugv-net
     ports:
-      - "8554:8554"
+      - "127.0.0.1:8554:8554"
     environment:
       - MTX_PROTOCOLS=tcp
       - MTX_WEBRTC=no # Disable WebRTC to save resources if not needed
