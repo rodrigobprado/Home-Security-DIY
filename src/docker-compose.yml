@@ -218,6 +218,9 @@ services:
     image: home-security-dashboard-frontend:latest
     container_name: home-security-dashboard-frontend
     restart: unless-stopped
+    environment:
+      - DASHBOARD_API_KEY=${DASHBOARD_API_KEY}
+      - NGINX_ENVSUBST_FILTER=^DASHBOARD_API_KEY$
     ports:
       - "3000:8080"
     networks:
