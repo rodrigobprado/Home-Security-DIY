@@ -51,17 +51,23 @@ jobs:
       - name: Install kubectl
         uses: azure/setup-kubectl@v4
 
-      - name: Build kustomize (staging)
-        run: kubectl kustomize k8s/overlays/staging/
+      - name: Install kubeconform
+        run: |
+          KUBECONFORM_VERSION="0.6.7"
+          curl -sSL -o /tmp/kubeconform.tar.gz "https://github.com/yannh/kubeconform/releases/download/v${KUBECONFORM_VERSION}/kubeconform-linux-amd64.tar.gz"
+          tar -xzf /tmp/kubeconform.tar.gz -C /tmp
+          sudo mv /tmp/kubeconform /usr/local/bin/kubeconform
+          kubeconform -v
 
-      - name: Build kustomize (production)
-        run: kubectl kustomize k8s/overlays/production/
+      - name: Build and validate staging manifests
+        run: |
+          kubectl kustomize k8s/overlays/staging/ > /tmp/staging-manifests.yaml
+          kubeconform -strict -summary -ignore-missing-schemas /tmp/staging-manifests.yaml
 
-      - name: Dry-run staging
-        run: kubectl apply -k k8s/overlays/staging/ --dry-run=client
-
-      - name: Dry-run production
-        run: kubectl apply -k k8s/overlays/production/ --dry-run=client
+      - name: Build and validate production manifests
+        run: |
+          kubectl kustomize k8s/overlays/production/ > /tmp/production-manifests.yaml
+          kubeconform -strict -summary -ignore-missing-schemas /tmp/production-manifests.yaml
 
   lint-shell:
     name: Lint Shell Scripts
