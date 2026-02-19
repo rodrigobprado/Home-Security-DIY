@@ -37,6 +37,7 @@ class Settings(BaseSettings):
         "binary_sensor.ugv_online",
         "binary_sensor.uav_armed",
     ]
+    alert_retention_days: int = 90
 
     # Câmeras disponíveis
     cameras: list[str] = [

@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 
-from sqlalchemy import DateTime, Float, Integer, String, Text
+from sqlalchemy import DateTime, Float, Index, Integer, String, Text
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
@@ -12,7 +12,10 @@ class Alert(Base):
     """Histórico de alertas e eventos do sistema de segurança."""
 
     __tablename__ = "alerts"
-    __table_args__ = {"schema": "dashboard"}
+    __table_args__ = (
+        Index("ix_dashboard_alerts_severity_timestamp", "severity", "timestamp"),
+        {"schema": "dashboard"},
+    )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     timestamp: Mapped[datetime] = mapped_column(
