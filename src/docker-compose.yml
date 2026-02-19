@@ -188,6 +188,8 @@ services:
       - FRIGATE_URL=http://home-security-frigate:5000
       - MQTT_BROKER=home-security-mosquitto
       - DATABASE_URL=postgresql+asyncpg://dashboard_user:${POSTGRES_DASHBOARD_PASSWORD}@home-security-postgres:5432/${POSTGRES_DB:-homedb}?options=-csearch_path%3Ddashboard
+      - DASHBOARD_API_KEY=${DASHBOARD_API_KEY}
+      - DASHBOARD_ALLOWED_ORIGINS=${DASHBOARD_ALLOWED_ORIGINS:-http://localhost:3000,http://127.0.0.1:3000}
       - TZ=${TZ:-America/Sao_Paulo}
     networks:
       - home-security-net

@@ -20,6 +20,9 @@ MQTT_BROKER = os.environ.get('MQTT_BROKER', 'localhost')
 MQTT_PORT = int(os.environ.get('MQTT_PORT', 1883))
 MQTT_USER = os.environ.get('MQTT_USER', '')
 MQTT_PASSWORD = os.environ.get('MQTT_PASSWORD', '')
+DEFENSE_PIN = os.environ.get("DEFENSE_PIN_UAV", "").strip()
+if not DEFENSE_PIN:
+    raise RuntimeError("DEFENSE_PIN_UAV env var is required for UAV bridge.")
 
 MAVLINK_CONNECTION = os.environ.get('MAVLINK_CONNECTION', 'udpin:0.0.0.0:14550')
 
@@ -39,7 +42,7 @@ uav_state = {
     "heading": 0
 }
 
-defense = DefenseController(pin_code="1234")
+defense = DefenseController(pin_code=DEFENSE_PIN)
 
 # MAVLink Mock (Replacing pymavlink for this MVP script to avoid heavy deps if not needed yet)
 # In a real scenario, we would import pymavlink.mavutil and connect.
@@ -66,10 +69,10 @@ def on_connect(client, userdata, flags, rc):
 
 def on_message(client, userdata, msg):
     global uav_state
-    print(f"MQTT MSG: {msg.topic} {msg.payload}")
     try:
         payload = json.loads(msg.payload.decode())
         cmd = payload.get('cmd')
+        print(f"MQTT CMD: topic={msg.topic} cmd={cmd}")
         
         if cmd == 'arm':
             print("Command: ARM")

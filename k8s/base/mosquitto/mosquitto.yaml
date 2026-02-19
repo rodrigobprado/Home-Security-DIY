@@ -23,6 +23,7 @@ data:
 
     allow_anonymous false
     password_file /mosquitto/config/password_file
+    acl_file /mosquitto/config/acl_file
 
     persistence true
     persistence_location /mosquitto/data/
@@ -38,6 +39,31 @@ data:
     max_queued_messages 1000
     message_size_limit 262144
     connection_messages true
+  acl_file: |
+    user homeassistant
+    topic readwrite #
+
+    user dashboard
+    topic read homeassistant/#
+    topic read frigate/#
+    topic read ugv/#
+    topic read uav/#
+
+    user frigate
+    topic readwrite frigate/#
+    topic read homeassistant/#
+
+    user zigbee2mqtt
+    topic readwrite zigbee2mqtt/#
+    topic readwrite homeassistant/#
+
+    user ugv
+    topic readwrite ugv/#
+    topic read homeassistant/#
+
+    user uav
+    topic readwrite uav/#
+    topic read homeassistant/#
 
 ---
 # --- Secret (placeholder - override in overlays) ---
@@ -111,6 +137,10 @@ spec:
             - name: config
               mountPath: /mosquitto/config/mosquitto.conf
               subPath: mosquitto.conf
+              readOnly: true
+            - name: config
+              mountPath: /mosquitto/config/acl_file
+              subPath: acl_file
               readOnly: true
             - name: data
               mountPath: /mosquitto/data

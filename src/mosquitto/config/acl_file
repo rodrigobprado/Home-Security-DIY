@@ -1,0 +1,24 @@
+user homeassistant
+topic readwrite #
+
+user dashboard
+topic read homeassistant/#
+topic read frigate/#
+topic read ugv/#
+topic read uav/#
+
+user frigate
+topic readwrite frigate/#
+topic read homeassistant/#
+
+user zigbee2mqtt
+topic readwrite zigbee2mqtt/#
+topic readwrite homeassistant/#
+
+user ugv
+topic readwrite ugv/#
+topic read homeassistant/#
+
+user uav
+topic readwrite uav/#
+topic read homeassistant/#

@@ -23,6 +23,7 @@ services:
       - MQTT_PORT=1883
       - MQTT_USER=homeassistant
       - MQTT_PASSWORD=CHANGE_ME
+      - DEFENSE_PIN_UGV=CHANGE_ME_ugv_pin
       - RTSP_URI=rtsp://localhost:8554/cam
 
   # ---------------------------------------------------------------------------
@@ -36,4 +37,3 @@ services:
     environment:
       - MTX_PROTOCOLS=tcp
       - MTX_WEBRTC=no # Disable WebRTC to save resources if not needed
-
