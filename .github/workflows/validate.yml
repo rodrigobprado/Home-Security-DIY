@@ -81,6 +81,15 @@ jobs:
       - name: Lint scripts
         run: shellcheck scripts/*.sh
 
+  docs-links:
+    name: Validate Markdown Links
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate local markdown links
+        run: bash scripts/validate-doc-links.sh
+
   frontend-quality:
     name: Frontend Lint and Tests
     runs-on: ubuntu-latest
