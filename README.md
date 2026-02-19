@@ -124,6 +124,20 @@ O projeto inclui uma camada reativa avançada com **frota modular de drones aut�
 
 ---
 
+## Manutenção de Alertas
+
+O histórico de alertas do dashboard possui retenção configurável (`ALERT_RETENTION_DAYS`, padrão 90 dias).
+
+Para executar limpeza manual de registros antigos:
+
+```bash
+python3 scripts/cleanup_alerts.py
+```
+
+Você pode agendar esse comando via `cron` no servidor para manutenção contínua.
+
+---
+
 ## Contribuição
 
 Contribuições são bem-vindas! Por favor, leia o [CONTRIBUTING.md](CONTRIBUTING.md) (em breve) para detalhes sobre nosso código de conduta e processo de envio de pull requests.
