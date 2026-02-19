@@ -31,6 +31,27 @@ Tem uma ideia para melhorar o projeto?
 6. Faça o push para seu fork (`git push origin feature/minha-melhoria`).
 7. Abra um **Pull Request** para o branch `main` do repositório original.
 
+### Fluxo padrão de issue -> PR -> merge
+
+Para padronizar revisão e fechamento automático de issues, use o script:
+
+```bash
+./scripts/pr_flow.sh \
+  --title "fix: resumo da correção" \
+  --issues "123 124"
+```
+
+Opcionalmente, inclua um resumo customizado:
+
+```bash
+./scripts/pr_flow.sh \
+  --title "fix: resumo da correção" \
+  --issues "123 124" \
+  --summary-file /tmp/pr-summary.md
+```
+
+O script cria o PR com checklist de validação/operação e adiciona `Closes #...` para cada issue.
+
 ## Padrões de Projeto
 
 ### Estrutura de Diretórios
