@@ -13,7 +13,10 @@ O sistema utiliza APIs REST, WebSocket e MQTT para comunicacao entre componentes
 ### Convencoes
 
 - **Formato**: JSON para APIs REST, JSON para MQTT payloads
-- **Autenticacao**: Bearer token (Long-Lived Access Token) para HA, usuario/senha para MQTT
+- **Autenticacao**:
+  - Home Assistant: Bearer token (Long-Lived Access Token)
+  - Dashboard API: `X-API-Key` ou Bearer
+  - MQTT: usuario/senha
 - **Codigos de erro**: Padrao HTTP para REST APIs
 
 ---
@@ -247,7 +250,42 @@ Usada para atualizacoes em tempo real no dashboard. Permite subscribe a mudancas
 
 ---
 
-## 6. Nomenclatura de entidades
+## 6. Dashboard API
+
+**Base URL**: `http://<HOST>:8000`
+**Autenticacao**:
+- `X-API-Key: <DASHBOARD_API_KEY>`
+- ou `Authorization: Bearer <DASHBOARD_API_KEY>`
+
+| Metodo | Endpoint | Descricao |
+|--------|----------|-----------|
+| `GET` | `/health` | Healthcheck da API |
+| `WS` | `/ws` | Fan-out WebSocket de eventos do Home Assistant |
+| `GET` | `/api/sensors` | Lista estados de entidades |
+| `GET` | `/api/sensors/{entity_id}` | Estado de entidade especifica |
+| `GET` | `/api/cameras/{name}/snapshot` | Snapshot JPEG (proxy Frigate) |
+| `GET` | `/api/cameras/events` | Eventos recentes de deteccao |
+| `GET` | `/api/alerts` | Historico de alertas (PostgreSQL) |
+| `GET` | `/api/services/status` | Saude de servicos principais |
+| `GET` | `/api/services/ws-metrics` | Metricas operacionais de WebSocket |
+| `GET` | `/api/map/devices` | Posicao dos dispositivos no mapa |
+
+**Exemplo REST:**
+
+```bash
+curl -H "X-API-Key: ${DASHBOARD_API_KEY}" \
+  http://localhost:8000/api/services/status
+```
+
+**Exemplo WebSocket:**
+
+```text
+ws://localhost:8000/ws?api_key=${DASHBOARD_API_KEY}
+```
+
+---
+
+## 7. Nomenclatura de entidades
 
 ### Padroes de nomes no Home Assistant
 

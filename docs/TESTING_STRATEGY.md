@@ -82,19 +82,19 @@ Verifica:
 ### 3.3 Validacao de Kubernetes manifests
 
 ```bash
-# Validar kustomize build
-kustomize build k8s/overlays/staging/
-kustomize build k8s/overlays/production/
+# Build dos overlays
+kubectl kustomize k8s/overlays/staging/ > /tmp/staging-manifests.yaml
+kubectl kustomize k8s/overlays/production/ > /tmp/production-manifests.yaml
 
-# Validar manifests individuais (dry-run)
-kubectl apply -k k8s/overlays/staging/ --dry-run=client
-kubectl apply -k k8s/overlays/production/ --dry-run=client
+# Validacao de schema sem cluster
+kubeconform -strict -summary -ignore-missing-schemas /tmp/staging-manifests.yaml
+kubeconform -strict -summary -ignore-missing-schemas /tmp/production-manifests.yaml
 ```
 
 Verifica:
 - Manifests K8s sintaticamente validos
 - Kustomize overlays montam corretamente
-- Recursos referenciados existem
+- Conformidade de schema dos recursos
 
 ### 3.4 Validacao de variaveis de ambiente
 
@@ -186,16 +186,19 @@ Executar apos cada deploy em ambiente real:
 **Jobs**:
 1. `lint-yaml` — Validar todos os YAML com yamllint
 2. `validate-compose` — `docker compose config`
-3. `validate-k8s` — `kustomize build` + `kubectl --dry-run`
+3. `validate-k8s` — `kubectl kustomize` + `kubeconform`
 4. `lint-shell` — Validar scripts shell com `shellcheck`
+5. `docs-links` — Validar links Markdown locais
+6. `frontend-quality` — `eslint` + `vitest`
+7. `backend-quality` — `pytest` do backend dashboard
 
 Ver `.github/workflows/validate.yml` para implementacao completa.
 
-### 6.2 Pipeline de seguranca (futuro)
+### 6.2 Pipeline de seguranca
 
-- Scan de imagens Docker com `trivy`
-- Verificacao de secrets expostos com `gitleaks`
-- Audit de dependencias
+- Workflow `Snyk Security` com execucao condicional quando `SNYK_TOKEN` esta configurado
+- Scans de SAST, SCA, IaC e containers
+- Etapas de monitoramento podem executar como nao-bloqueantes em cenarios sem secret
 
 ---
 
@@ -212,7 +215,7 @@ Script unico para rodar todas as validacoes localmente antes de commit:
 Executa:
 1. yamllint em todos os YAML
 2. docker compose config
-3. kustomize build (se kustomize instalado)
+3. kubectl kustomize (se kubectl instalado)
 4. shellcheck em scripts .sh
 5. Verificacao de variaveis de ambiente
 
@@ -225,7 +228,8 @@ Executa:
 | `yamllint` | Lint de YAML | `pip install yamllint` |
 | `shellcheck` | Lint de shell scripts | `apt install shellcheck` |
 | `docker compose` | Validacao de compose | Incluido no Docker |
-| `kustomize` | Build de manifests K8s | `kubectl kustomize` (built-in) |
+| `kubeconform` | Validacao de schema K8s | binario oficial |
+| `kubectl` | Build de overlays Kustomize | `kubectl kustomize` (built-in) |
 | `mosquitto-clients` | Testes MQTT | `apt install mosquitto-clients` |
 
 ---
