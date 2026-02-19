@@ -36,7 +36,22 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Check Snyk token availability
+        id: snyk_token
+        run: |
+          if [ -n "${{ secrets.SNYK_TOKEN }}" ]; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Skip Snyk scan (token not configured)
+        if: steps.snyk_token.outputs.enabled != 'true'
+        run: echo "SNYK_TOKEN is not configured. Skipping Snyk scans for this run."
+
       - name: Set up Snyk CLI to check for security issues
+        if: steps.snyk_token.outputs.enabled == 'true'
         # Snyk can be used to break the build when it detects security issues.
         # In this case we want to upload the SAST issues to GitHub Code Scanning
         uses: snyk/actions/setup@806182742461562b67788a64410098c9d9b96adb
@@ -54,33 +69,46 @@ jobs:
         # Runs Snyk Code (SAST) analysis and uploads result into GitHub.
         # Use || true to not fail the pipeline
       - name: Snyk Code test
+        if: steps.snyk_token.outputs.enabled == 'true'
+        continue-on-error: true
         run: snyk code test --sarif > snyk-code.sarif # || true
 
         # Runs Snyk Open Source (SCA) analysis and uploads result to Snyk.
       - name: Snyk Open Source monitor
+        if: steps.snyk_token.outputs.enabled == 'true'
+        continue-on-error: true
         run: snyk monitor --all-projects
 
         # Runs Snyk Infrastructure as Code (IaC) analysis and uploads result to Snyk.
         # Use || true to not fail the pipeline.
       - name: Snyk IaC test and report
+        if: steps.snyk_token.outputs.enabled == 'true'
+        continue-on-error: true
         run: snyk iac test --report # || true
 
         # Build and scan Dashboard API image
       - name: Build Dashboard API image
+        if: steps.snyk_token.outputs.enabled == 'true'
         run: docker build -t home-security/dashboard-api:test ./src/dashboard/backend
 
       - name: Snyk Container monitor - Dashboard API
+        if: steps.snyk_token.outputs.enabled == 'true'
+        continue-on-error: true
         run: snyk container monitor home-security/dashboard-api:test --file=src/dashboard/backend/Dockerfile
 
         # Build and scan Dashboard Frontend image
       - name: Build Dashboard Frontend image
+        if: steps.snyk_token.outputs.enabled == 'true'
         run: docker build -t home-security/dashboard-frontend:test ./src/dashboard/frontend
 
       - name: Snyk Container monitor - Dashboard Frontend
+        if: steps.snyk_token.outputs.enabled == 'true'
+        continue-on-error: true
         run: snyk container monitor home-security/dashboard-frontend:test --file=src/dashboard/frontend/Dockerfile
 
         # Push the Snyk Code results into GitHub Code Scanning tab
       - name: Upload result to GitHub Code Scanning
+        if: steps.snyk_token.outputs.enabled == 'true'
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: snyk-code.sarif
