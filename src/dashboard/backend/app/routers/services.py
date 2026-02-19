@@ -56,3 +56,9 @@ async def services_status() -> dict:
     results["ha_websocket"] = "online" if ha_client.get_all_states() else "connecting"
 
     return {"services": results}
+
+
+@router.get("/ws-metrics")
+async def ws_metrics() -> dict:
+    """Retorna métricas operacionais do fan-out WebSocket."""
+    return {"ws_metrics": ha_client.get_ws_metrics()}

@@ -135,6 +135,10 @@ def test_services_route_with_api_key(monkeypatch):
     assert resp.status_code == 200
     assert resp.json()["services"]["ha_websocket"] == "online"
 
+    metrics = client.get("/api/services/ws-metrics", headers={"X-API-Key": "test-api-key"})
+    assert metrics.status_code == 200
+    assert "ws_metrics" in metrics.json()
+
 
 def test_ws_requires_api_key():
     app = _build_test_app()
