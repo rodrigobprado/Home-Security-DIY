@@ -260,6 +260,7 @@ REGRA-DRONE-10: Whitelist de pessoas autorizadas deve ser configurável.
 - `move`: implementado
 - `defense_arm` / `defense_disarm`: implementados com validações de saúde
 - `patrol`: **ainda não implementado**; o controlador publica status explícito `not_implemented` no tópico `ugv/status` para evitar falso positivo operacional
+- Bootstrap MQTT: o monitor de saúde tem heartbeat resetado imediatamente após `client.connect()` para evitar alerta espúrio de timeout no primeiro ciclo
 
 ---
 
