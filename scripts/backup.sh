@@ -26,6 +26,7 @@ BACKUP_DIR="${1:-$DEFAULT_BACKUP_DIR}"
 TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
 RETENTION_DAYS=30
 LOG_FILE="$BACKUP_DIR/backup.log"
+BACKUP_ENCRYPTION_PASSPHRASE="${BACKUP_ENCRYPTION_PASSPHRASE:-}"
 
 # Ambiente de execução: docker (padrão) ou k8s
 BACKUP_ENV="${BACKUP_ENV:-docker}"
@@ -44,7 +45,6 @@ DIRS_TO_BACKUP=(
     "zigbee2mqtt"
     "mosquitto/config"
     "frigate/config.yml"
-    ".env"
 )
 
 # --- Funções auxiliares ---
@@ -205,6 +205,21 @@ if [ ${#EXISTING_DIRS[@]} -gt 0 ]; then
         log "ERRO: Falha ao criar backup das configurações!"
         exit 1
     fi
+
+    if [ -n "$BACKUP_ENCRYPTION_PASSPHRASE" ]; then
+        ENCRYPTED_ARCHIVE="$BACKUP_DIR/${ARCHIVE_NAME}.enc"
+        log "Criptografando backup de configurações em: $ENCRYPTED_ARCHIVE"
+        if openssl enc -aes-256-cbc -salt -pbkdf2 \
+            -in "$BACKUP_DIR/$ARCHIVE_NAME" \
+            -out "$ENCRYPTED_ARCHIVE" \
+            -pass "env:BACKUP_ENCRYPTION_PASSPHRASE" 2>> "$LOG_FILE"; then
+            rm -f "$BACKUP_DIR/$ARCHIVE_NAME"
+            log "Backup criptografado com sucesso."
+        else
+            log "ERRO: Falha ao criptografar backup."
+            exit 1
+        fi
+    fi
 else
     log "AVISO: Nenhuma configuração encontrada para backup."
 fi
@@ -212,6 +227,8 @@ fi
 # Retenção das configurações (30 dias)
 log "Limpando backups de configuração com mais de $RETENTION_DAYS dias..."
 find "$BACKUP_DIR" -maxdepth 1 -name "home_security_configs_*.tar.gz" \
+    -type f -mtime +$RETENTION_DAYS -delete -print >> "$LOG_FILE"
+find "$BACKUP_DIR" -maxdepth 1 -name "home_security_configs_*.tar.gz.enc" \
     -type f -mtime +$RETENTION_DAYS -delete -print >> "$LOG_FILE"
 
 # =============================================================================

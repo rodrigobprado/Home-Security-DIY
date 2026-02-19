@@ -12,6 +12,7 @@ MQTT_PORT = int(os.environ.get('MQTT_PORT', 1883))
 MQTT_USER = os.environ.get('MQTT_USER', '')
 MQTT_PASSWORD = os.environ.get('MQTT_PASSWORD', '')
 MQTT_TOPIC_DETECTIONS = "ugv/vision/detections"
+MQTT_TOPIC_VISION_HEALTH = "ugv/vision/health"
 
 # Simulate Object Detection (Replace with YOLOv8/TFLite inference)
 def run_inference(frame):
@@ -49,20 +50,40 @@ def main():
     # In production with mediamtx, we might push TO mediamtx via ffmpeg, 
     # and read FROM /dev/video0 here.
     cap = cv2.VideoCapture(0) # Open local camera
-    
     if not cap.isOpened():
         print("Cannot open camera")
+        client.publish(
+            MQTT_TOPIC_VISION_HEALTH,
+            json.dumps({"status": "camera_unavailable", "timestamp": datetime.now().isoformat()}),
+        )
         return
 
     last_process_time = 0
     PROCESS_INTERVAL = 0.2 # 5 FPS processing to save CPU
+    retries = 0
+    max_retries_before_reopen = 10
 
     while True:
         ret, frame = cap.read()
         if not ret:
-            print("Can't receive frame (stream end?). Exiting ...")
-            time.sleep(1)
+            retries += 1
+            if retries >= max_retries_before_reopen:
+                print("Camera read failed repeatedly. Reopening capture...")
+                cap.release()
+                time.sleep(2)
+                cap = cv2.VideoCapture(0)
+                if not cap.isOpened():
+                    client.publish(
+                        MQTT_TOPIC_VISION_HEALTH,
+                        json.dumps(
+                            {"status": "camera_unavailable", "timestamp": datetime.now().isoformat()}
+                        ),
+                    )
+                    time.sleep(10)
+                retries = 0
+            time.sleep(0.5)
             continue
+        retries = 0
 
         now = time.time()
         if now - last_process_time > PROCESS_INTERVAL:

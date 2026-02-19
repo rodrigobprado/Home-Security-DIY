@@ -24,10 +24,7 @@ class Settings(BaseSettings):
     ]
 
     # PostgreSQL (schema: dashboard)
-    database_url: str = (
-        "postgresql+asyncpg://dashboard_user:password"
-        "@postgres:5432/homedb?options=-csearch_path%3Ddashboard"
-    )
+    database_url: str = "postgresql+asyncpg://UNCONFIGURED:UNCONFIGURED@localhost/UNCONFIGURED"
 
     # Entidades relevantes para alertas
     alert_entities: list[str] = [
@@ -54,6 +51,13 @@ class Settings(BaseSettings):
     def parse_origins(cls, value):
         if isinstance(value, str):
             return [origin.strip() for origin in value.split(",") if origin.strip()]
+        return value
+
+    @field_validator("database_url")
+    @classmethod
+    def validate_database_url(cls, value):
+        if "dashboard_user:password@" in value:
+            raise ValueError("DATABASE_URL contains insecure default password.")
         return value
 
 

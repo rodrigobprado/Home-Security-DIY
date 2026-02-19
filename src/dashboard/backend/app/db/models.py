@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 from sqlalchemy import DateTime, Float, Integer, String, Text
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
@@ -16,7 +16,7 @@ class Alert(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     timestamp: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), default=datetime.utcnow, index=True
+        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), index=True
     )
     entity_id: Mapped[str] = mapped_column(String(200), nullable=False, index=True)
     event_type: Mapped[str] = mapped_column(String(100), nullable=False)

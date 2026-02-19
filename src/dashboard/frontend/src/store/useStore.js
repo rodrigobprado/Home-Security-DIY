@@ -27,6 +27,10 @@ const useStore = create((set) => ({
     })),
 
   setAlerts: (alerts) => set({ alerts }),
+  setAlertsIfEmpty: (alerts) =>
+    set((s) => ({
+      alerts: s.alerts.length === 0 ? alerts : s.alerts,
+    })),
 
   setServices: (services) => set({ services }),
 

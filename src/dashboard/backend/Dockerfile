@@ -14,6 +14,11 @@ COPY app/ ./app/
 COPY migrations/ ./migrations/
 COPY alembic.ini ./alembic.ini
 
+RUN addgroup --system appgroup && adduser --system --ingroup appgroup appuser \
+    && chown -R appuser:appgroup /app
+
+USER appuser
+
 EXPOSE 8000
 
 # IMPORTANT: Keep workers=1. app/services/ha_client.py stores state in-process

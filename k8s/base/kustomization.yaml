@@ -14,6 +14,7 @@ resources:
   - frigate/frigate.yaml
   - homeassistant/homeassistant.yaml
   - dashboard/dashboard.yaml
+  - pdb.yaml
 
 labels:
   - pairs:

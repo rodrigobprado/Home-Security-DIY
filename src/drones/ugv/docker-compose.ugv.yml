@@ -12,11 +12,11 @@ services:
     volumes:
       - ./app:/app
       - ../common:/app/common
-      - /dev:/dev
     devices:
       - /dev/ttyUSB0:/dev/ttyUSB0 # ESP32
       - /dev/video0:/dev/video0 # Camera
-    network_mode: host # For easy communication with HA and other devices
+    networks:
+      - ugv-net
     environment:
       - ROS_DOMAIN_ID=0
       - MQTT_BROKER=192.168.1.100 # Replace with actual broker IP
@@ -27,7 +27,7 @@ services:
       - COMMAND_HMAC_SECRET_UGV=CHANGE_ME_ugv_hmac_secret
       - COMMAND_ALLOWED_SOURCES_UGV=dashboard,homeassistant
       - COMMAND_MAX_SKEW_SECONDS_UGV=30
-      - RTSP_URI=rtsp://localhost:8554/cam
+      - RTSP_URI=rtsp://mediamtx:8554/cam
 
   # ---------------------------------------------------------------------------
   # RTSP Server (MediaMTX) - Low Latency Streaming
@@ -36,7 +36,14 @@ services:
     image: bluenviron/mediamtx:latest
     container_name: ugv-mediamtx
     restart: unless-stopped
-    network_mode: host
+    networks:
+      - ugv-net
+    ports:
+      - "8554:8554"
     environment:
       - MTX_PROTOCOLS=tcp
       - MTX_WEBRTC=no # Disable WebRTC to save resources if not needed
+
+networks:
+  ugv-net:
+    driver: bridge

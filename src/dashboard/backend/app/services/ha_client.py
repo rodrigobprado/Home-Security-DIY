@@ -29,6 +29,24 @@ _subscribers: set = set()
 
 # Último estado conhecido de cada entidade (cache em memória)
 _entity_states: dict[str, dict] = {}
+_rest_client: httpx.AsyncClient | None = None
+
+
+async def _get_rest_client() -> httpx.AsyncClient:
+    global _rest_client
+    if _rest_client is None:
+        _rest_client = httpx.AsyncClient(
+            timeout=10,
+            limits=httpx.Limits(max_connections=10, max_keepalive_connections=5),
+        )
+    return _rest_client
+
+
+async def close() -> None:
+    global _rest_client
+    if _rest_client is not None:
+        await _rest_client.aclose()
+        _rest_client = None
 
 
 def subscribe(callback) -> None:
@@ -96,15 +114,15 @@ async def _fan_out(message: dict) -> None:
 async def _fetch_initial_states() -> None:
     """Busca todos os estados via REST API na inicialização."""
     try:
-        async with httpx.AsyncClient(timeout=10) as client:
-            resp = await client.get(
-                f"{settings.ha_url}/api/states",
-                headers={"Authorization": f"Bearer {settings.ha_token}"},
-            )
-            if resp.status_code == 200:
-                for state in resp.json():
-                    _entity_states[state["entity_id"]] = state
-                logger.info("Estados iniciais carregados: %d entidades", len(_entity_states))
+        client = await _get_rest_client()
+        resp = await client.get(
+            f"{settings.ha_url}/api/states",
+            headers={"Authorization": f"Bearer {settings.ha_token}"},
+        )
+        if resp.status_code == 200:
+            for state in resp.json():
+                _entity_states[state["entity_id"]] = state
+            logger.info("Estados iniciais carregados: %d entidades", len(_entity_states))
     except Exception as exc:
         logger.warning("Não foi possível carregar estados iniciais: %s", exc)
 

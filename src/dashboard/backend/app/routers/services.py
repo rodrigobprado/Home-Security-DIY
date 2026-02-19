@@ -11,17 +11,36 @@ SERVICES_TO_CHECK = {
     "frigate": f"{settings.frigate_url}/api/stats",
 }
 
+_client: httpx.AsyncClient | None = None
+
+
+async def get_client() -> httpx.AsyncClient:
+    global _client
+    if _client is None:
+        _client = httpx.AsyncClient(
+            timeout=3,
+            limits=httpx.Limits(max_connections=10, max_keepalive_connections=5),
+        )
+    return _client
+
+
+async def close() -> None:
+    global _client
+    if _client is not None:
+        await _client.aclose()
+        _client = None
+
 
 async def _check_http(url: str) -> str:
     try:
-        async with httpx.AsyncClient(timeout=3) as client:
-            resp = await client.get(
-                url,
-                headers={"Authorization": f"Bearer {settings.ha_token}"}
-                if "8123" in url
-                else {},
-            )
-            return "online" if resp.status_code < 500 else "degraded"
+        client = await get_client()
+        resp = await client.get(
+            url,
+            headers={"Authorization": f"Bearer {settings.ha_token}"}
+            if "8123" in url
+            else {},
+        )
+        return "online" if resp.status_code < 500 else "degraded"
     except Exception:
         return "offline"
 

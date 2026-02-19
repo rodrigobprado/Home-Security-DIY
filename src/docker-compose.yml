@@ -115,7 +115,6 @@ services:
     image: ghcr.io/blakeblackshear/frigate:stable
     container_name: home-security-frigate
     restart: unless-stopped
-    privileged: true
     shm_size: "256mb"
     ports:
       - "127.0.0.1:5000:5000" # Web UI
@@ -141,6 +140,10 @@ services:
     # Intel iGPU passthrough for OpenVINO
     devices:
       - /dev/dri:/dev/dri
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
     depends_on:
       mosquitto:
         condition: service_healthy
@@ -216,7 +219,7 @@ services:
     container_name: home-security-dashboard-frontend
     restart: unless-stopped
     ports:
-      - "3000:80"
+      - "3000:8080"
     networks:
       - home-security-net
     depends_on:

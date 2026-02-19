@@ -1,10 +1,10 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import AlertFeed from "./AlertFeed";
 
-const setAlerts = vi.fn();
+const setAlertsIfEmpty = vi.fn();
 const mockedStore = {
   alerts: [],
-  setAlerts,
+  setAlertsIfEmpty,
 };
 
 vi.mock("../store/useStore", () => ({
@@ -13,7 +13,7 @@ vi.mock("../store/useStore", () => ({
 
 describe("AlertFeed", () => {
   beforeEach(() => {
-    setAlerts.mockClear();
+    setAlertsIfEmpty.mockClear();
     global.fetch = vi.fn().mockResolvedValue({
       json: async () => [
         {
@@ -31,7 +31,7 @@ describe("AlertFeed", () => {
   it("requests initial alerts from REST API", async () => {
     render(<AlertFeed />);
     await waitFor(() => expect(global.fetch).toHaveBeenCalledWith("/api/alerts?limit=30"));
-    await waitFor(() => expect(setAlerts).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(setAlertsIfEmpty).toHaveBeenCalledTimes(1));
   });
 
   it("shows empty state", () => {
