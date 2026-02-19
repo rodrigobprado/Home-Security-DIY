@@ -74,7 +74,15 @@ ls -la /dev/dri/
 
 ## 3. Configurar Secrets
 
-Antes do deploy, crie os Secrets com credenciais reais:
+Antes do deploy, gere os Secrets localmente a partir de `src/.env`:
+
+```bash
+chmod +x scripts/generate-k8s-secrets.sh
+./scripts/generate-k8s-secrets.sh src/.env
+kubectl apply -f k8s/generated/secrets/
+```
+
+Alternativa manual:
 
 ```bash
 # MQTT credentials
@@ -135,7 +143,7 @@ Adicione ao `/etc/hosts` ou DNS local:
 | Home Assistant | http://security.home.local |
 | Frigate | http://frigate.home.local |
 | Zigbee2MQTT | http://zigbee.home.local |
-| MQTT | mqtt://\<NODE_IP\>:31883 |
+| MQTT | ClusterIP interno (exposição externa somente via túnel TLS/mTLS) |
 
 ---
 

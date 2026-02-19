@@ -118,13 +118,13 @@ Todos os containers devem estar `healthy` ou `running`.
 
 ### Verificar Zigbee2MQTT
 
-1. Acesse **http://SEU_IP:8080**
+1. Acesse **http://localhost:8080** (bind local por segurança)
 2. Verifique que o coordenador está conectado
 3. Coloque sensores em modo de pareamento e adicione-os
 
 ### Verificar Frigate
 
-1. Acesse **http://SEU_IP:5000**
+1. Acesse **http://localhost:5000** (bind local por segurança)
 2. Verifique que as câmeras aparecem com stream ativo
 3. Ajuste zonas de detecção conforme necessário
 
@@ -143,12 +143,15 @@ No HACS, instale:
 | Porta | Serviço | Protocolo |
 |-------|---------|-----------|
 | 8123 | Home Assistant | HTTP |
-| 1883 | Mosquitto MQTT | TCP |
-| 9001 | Mosquitto WebSocket | TCP |
-| 8080 | Zigbee2MQTT Frontend | HTTP |
-| 5000 | Frigate Web UI | HTTP |
+| 1883 | Mosquitto MQTT | TCP (loopback) |
+| 9001 | Mosquitto WebSocket | TCP (loopback) |
+| 8080 | Zigbee2MQTT Frontend | HTTP (loopback) |
+| 5000 | Frigate Web UI | HTTP (loopback) |
 | 8554 | Frigate RTSP Restream | TCP |
 | 8555 | Frigate WebRTC | TCP/UDP |
+
+> Nota: Dashboard API roda com `uvicorn --workers 1` por restrição arquitetural atual
+> do cliente Home Assistant (`ha_client.py` usa estado em memória por processo).
 
 ---
 

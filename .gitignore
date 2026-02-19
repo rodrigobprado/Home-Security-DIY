@@ -1,0 +1,2 @@
+# Kubernetes generated secrets (created locally by scripts/generate-k8s-secrets.sh)
+k8s/generated/secrets/*.yaml

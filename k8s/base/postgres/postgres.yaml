@@ -2,36 +2,11 @@
 # PostgreSQL 16 — Kubernetes Manifests
 # Home Security DIY
 # =============================================================================
-# IMPORTANTE: Atualize os valores do Secret antes de aplicar em produção.
-# Use SealedSecrets, External Secrets Operator ou Vault para gestão segura
-# de credenciais em ambientes reais.
+# IMPORTANTE: O Secret postgres-credentials deve ser criado fora do repositório.
+# Use scripts/generate-k8s-secrets.sh, SealedSecrets, External Secrets Operator
+# ou Vault para gestão segura de credenciais em ambientes reais.
 # =============================================================================
 
-# --- Secret: credenciais do PostgreSQL ---
-apiVersion: v1
-kind: Secret
-metadata:
-  name: postgres-credentials
-  namespace: home-security
-  labels:
-    app.kubernetes.io/name: postgres
-    app.kubernetes.io/component: database
-    app.kubernetes.io/part-of: home-security
-type: Opaque
-stringData:
-  # Usuário admin do PostgreSQL
-  POSTGRES_USER: "postgres"
-  # Substitua por senhas fortes antes de aplicar!
-  POSTGRES_PASSWORD: "CHANGE_ME_postgres_admin_password"
-  POSTGRES_DB: "homedb"
-  # Usuários de serviço (um por schema)
-  POSTGRES_HA_PASSWORD: "CHANGE_ME_ha_password"
-  POSTGRES_DASHBOARD_PASSWORD: "CHANGE_ME_dashboard_password"
-  POSTGRES_METRICS_PASSWORD: "CHANGE_ME_metrics_password"
-  # URL de conexão para o Home Assistant
-  POSTGRES_HA_URL: "postgresql+psycopg2://ha_user:CHANGE_ME_ha_password@postgres.home-security.svc.cluster.local:5432/homedb?options=-csearch_path%3Dhomeassistant"
-
----
 # --- ConfigMap: script de inicialização do banco ---
 apiVersion: v1
 kind: ConfigMap

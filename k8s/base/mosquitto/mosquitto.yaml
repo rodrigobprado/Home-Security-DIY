@@ -2,6 +2,7 @@
 # Mosquitto MQTT Broker - Kubernetes Manifests
 # Home Security DIY
 # =============================================================================
+# O Secret mqtt-credentials deve ser criado fora do repositório.
 
 # --- ConfigMap ---
 apiVersion: v1
@@ -41,13 +42,21 @@ data:
     connection_messages true
   acl_file: |
     user homeassistant
-    topic readwrite #
+    topic readwrite homeassistant/#
+    topic read frigate/#
+    topic read zigbee2mqtt/#
+    topic read ugv/#
+    topic read uav/#
+    topic write ugv/command
+    topic write uav/command
 
     user dashboard
     topic read homeassistant/#
     topic read frigate/#
     topic read ugv/#
     topic read uav/#
+    topic write ugv/command
+    topic write uav/command
 
     user frigate
     topic readwrite frigate/#
@@ -58,27 +67,17 @@ data:
     topic readwrite homeassistant/#
 
     user ugv
-    topic readwrite ugv/#
+    topic read ugv/command
+    topic write ugv/status
+    topic write ugv/defense/status
+    topic write ugv/vision/#
     topic read homeassistant/#
 
     user uav
-    topic readwrite uav/#
+    topic read uav/command
+    topic write uav/status
+    topic write uav/location
     topic read homeassistant/#
-
----
-# --- Secret (placeholder - override in overlays) ---
-apiVersion: v1
-kind: Secret
-metadata:
-  name: mqtt-credentials
-  namespace: home-security
-  labels:
-    app.kubernetes.io/name: mosquitto
-    app.kubernetes.io/part-of: home-security
-type: Opaque
-stringData:
-  MQTT_USER: homeassistant
-  MQTT_PASSWORD: CHANGE_ME
 
 ---
 # --- PersistentVolumeClaim ---

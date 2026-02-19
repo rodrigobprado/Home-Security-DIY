@@ -16,6 +16,7 @@
 #define ENC_L_B 35
 #define ENC_R_A 32
 #define ENC_R_B 33
+#define BATTERY_ADC_PIN 39
 
 // LoRa SX1276 (SPI)
 #define LORA_SS 5
@@ -86,6 +87,7 @@ void setup() {
     pinMode(ENC_L_B, INPUT);
     pinMode(ENC_R_A, INPUT);
     pinMode(ENC_R_B, INPUT);
+    pinMode(BATTERY_ADC_PIN, INPUT);
 
     // Interrupts
     attachInterrupt(digitalPinToInterrupt(ENC_L_A), isr_enc_l, RISING);
@@ -164,6 +166,11 @@ void loop() {
     if (millis() - lastStatusTime >= STATUS_INTERVAL) {
         lastStatusTime = millis();
         Serial.printf("O %ld %ld\n", encoderLeftPos, encoderRightPos);
+        // Battery telemetry frame for high-level health checks (0-100%)
+        int rawBattery = analogRead(BATTERY_ADC_PIN);
+        int batteryPercent = map(rawBattery, 1800, 3200, 0, 100);
+        batteryPercent = constrain(batteryPercent, 0, 100);
+        Serial.printf("B %d\n", batteryPercent);
     }
 
     // -------------------------------------------------------------------------

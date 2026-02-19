@@ -1,11 +1,19 @@
 user homeassistant
-topic readwrite #
+topic readwrite homeassistant/#
+topic read frigate/#
+topic read zigbee2mqtt/#
+topic read ugv/#
+topic read uav/#
+topic write ugv/command
+topic write uav/command
 
 user dashboard
 topic read homeassistant/#
 topic read frigate/#
 topic read ugv/#
 topic read uav/#
+topic write ugv/command
+topic write uav/command
 
 user frigate
 topic readwrite frigate/#
@@ -16,9 +24,14 @@ topic readwrite zigbee2mqtt/#
 topic readwrite homeassistant/#
 
 user ugv
-topic readwrite ugv/#
+topic read ugv/command
+topic write ugv/status
+topic write ugv/defense/status
+topic write ugv/vision/#
 topic read homeassistant/#
 
 user uav
-topic readwrite uav/#
+topic read uav/command
+topic write uav/status
+topic write uav/location
 topic read homeassistant/#

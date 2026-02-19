@@ -74,3 +74,26 @@ jobs:
 
       - name: Lint scripts
         run: shellcheck scripts/*.sh
+
+  frontend-quality:
+    name: Frontend Lint and Tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: src/dashboard/frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install frontend dependencies
+        run: npm install
+
+      - name: Run ESLint
+        run: npm run lint
+
+      - name: Run Vitest
+        run: npm run test
