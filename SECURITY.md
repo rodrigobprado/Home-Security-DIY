@@ -29,7 +29,11 @@ Nós encorajamos a divulgação responsável de vulnerabilidades de segurança. 
 
 > **NÃO abra uma issue pública no GitHub para reportar uma vulnerabilidade de segurança.**
 
-Por favor, envie um e-mail para **security@homesecuritydiy.local** (substitua pelo contato real do maintainer) com:
+Use o canal privado de Security Advisory do projeto:
+
+- **GitHub Private Vulnerability Reporting**: https://github.com/rodrigobprado/Home-Security-DIY/security/advisories/new
+
+Inclua no report:
 
 1. Tipo de vulnerabilidade.
 2. Passo a passo para reproduzir o problema.
