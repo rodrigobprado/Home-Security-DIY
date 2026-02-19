@@ -56,9 +56,23 @@ class Settings(BaseSettings):
     @field_validator("database_url")
     @classmethod
     def validate_database_url(cls, value):
+        upper_value = value.upper()
         if "dashboard_user:password@" in value:
             raise ValueError("DATABASE_URL contains insecure default password.")
+        if "UNCONFIGURED" in upper_value or "CHANGE_ME" in upper_value:
+            raise ValueError("DATABASE_URL contains placeholder credentials.")
         return value
+
+    @field_validator("ha_token", "dashboard_api_key")
+    @classmethod
+    def validate_required_secrets(cls, value: str, info):
+        secret = (value or "").strip()
+        if not secret:
+            raise ValueError(f"{info.field_name.upper()} must be configured.")
+        upper_secret = secret.upper()
+        if "CHANGE_ME" in upper_secret or "UNCONFIGURED" in upper_secret:
+            raise ValueError(f"{info.field_name.upper()} contains insecure placeholder value.")
+        return secret
 
 
 settings = Settings()
