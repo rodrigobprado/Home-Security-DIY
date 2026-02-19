@@ -3,6 +3,8 @@ import os
 import serial
 import json
 import sys
+import hmac
+import hashlib
 import paho.mqtt.client as mqtt
 
 # Add common folder to path
@@ -29,6 +31,15 @@ MQTT_BROKER = os.environ.get('MQTT_BROKER', 'localhost')
 MQTT_PORT = int(os.environ.get('MQTT_PORT', 1883))
 MQTT_USER = os.environ.get('MQTT_USER', '')
 MQTT_PASSWORD = os.environ.get('MQTT_PASSWORD', '')
+COMMAND_HMAC_SECRET = os.environ.get("COMMAND_HMAC_SECRET_UGV", "").strip()
+if not COMMAND_HMAC_SECRET:
+    raise RuntimeError("COMMAND_HMAC_SECRET_UGV env var is required for UGV control.")
+COMMAND_ALLOWED_SOURCES = {
+    source.strip() for source in os.environ.get(
+        "COMMAND_ALLOWED_SOURCES_UGV", "dashboard,homeassistant"
+    ).split(",") if source.strip()
+}
+COMMAND_MAX_SKEW_SECONDS = int(os.environ.get("COMMAND_MAX_SKEW_SECONDS_UGV", "30"))
 
 MQTT_TOPIC_CMD = "ugv/command"
 MQTT_TOPIC_STATUS = "ugv/status"
@@ -46,21 +57,61 @@ def on_connect(client, userdata, flags, rc):
     print(f"Connected to MQTT Broker with result code {rc}")
     client.subscribe(MQTT_TOPIC_CMD)
 
+def verify_command_auth(payload):
+    source_id = payload.get("source_id")
+    timestamp = payload.get("timestamp")
+    signature = payload.get("signature")
+
+    if source_id not in COMMAND_ALLOWED_SOURCES:
+        return False, f"unauthorized source_id: {source_id}"
+
+    try:
+        ts = int(timestamp)
+    except (TypeError, ValueError):
+        return False, "invalid timestamp"
+
+    if abs(int(time.time()) - ts) > COMMAND_MAX_SKEW_SECONDS:
+        return False, "stale command timestamp"
+
+    if not isinstance(signature, str) or not signature:
+        return False, "missing signature"
+
+    signed_payload = {k: v for k, v in payload.items() if k != "signature"}
+    canonical = json.dumps(signed_payload, sort_keys=True, separators=(",", ":")).encode()
+    expected = hmac.new(
+        COMMAND_HMAC_SECRET.encode(), canonical, hashlib.sha256
+    ).hexdigest()
+    if not hmac.compare_digest(expected, signature):
+        return False, "invalid signature"
+
+    return True, "ok"
+
 def on_message(client, userdata, msg):
     try:
         health.update_heartbeat()
         payload = json.loads(msg.payload.decode())
         command = payload.get('cmd')
         print(f"MQTT CMD: topic={msg.topic} cmd={command}")
-        
+
+        authorized, auth_reason = verify_command_auth(payload)
+        if not authorized:
+            print(f"Ignoring unauthorized command: {auth_reason}")
+            return
+
+        is_healthy, reason = health.check_health()
+
         # Defense Commands
         if command == 'defense_arm':
+            if not is_healthy:
+                print(f"Blocking defense_arm due to health failure: {reason}")
+                return
             defense.arm(payload.get('pin', ''))
+            return
         elif command == 'defense_disarm':
             defense.disarm("Request")
-        
+            return
+
         # Nav Commands (Only if Healthy)
-        is_healthy, reason = health.check_health()
         if not is_healthy:
             print(f"Ignoring command due to health failure: {reason}")
             return
@@ -134,6 +185,14 @@ def main():
                     if len(parts) == 3:
                         ticks_l = int(parts[1])
                         ticks_r = int(parts[2])
+                elif line.startswith("B "):
+                    parts = line.split()
+                    if len(parts) == 2:
+                        try:
+                            battery_level = int(parts[1])
+                            health.update_battery(max(0, min(100, battery_level)))
+                        except ValueError:
+                            print(f"Invalid battery payload: {line}")
                 elif line.startswith("LoRa Recv: "):
                     print(f"[LoRa] {line.strip()}")
             except Exception as e:

@@ -24,6 +24,9 @@ services:
       - MQTT_USER=homeassistant
       - MQTT_PASSWORD=CHANGE_ME
       - DEFENSE_PIN_UGV=CHANGE_ME_ugv_pin
+      - COMMAND_HMAC_SECRET_UGV=CHANGE_ME_ugv_hmac_secret
+      - COMMAND_ALLOWED_SOURCES_UGV=dashboard,homeassistant
+      - COMMAND_MAX_SKEW_SECONDS_UGV=30
       - RTSP_URI=rtsp://localhost:8554/cam
 
   # ---------------------------------------------------------------------------

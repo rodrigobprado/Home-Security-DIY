@@ -17,6 +17,7 @@ namespace: home-security
 resources:
   - ../../base
   - ingress.yaml
+  - postgres-backup.yaml
 
 patches:
   # --- Frigate: storage de produção (HDD dedicado) ---

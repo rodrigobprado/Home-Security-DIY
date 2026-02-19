@@ -3,6 +3,9 @@ Cliente WebSocket permanente para o Home Assistant.
 Mantém uma única conexão, subscreve eventos state_changed e faz fan-out
 para todos os clientes WebSocket do dashboard conectados.
 Reconexão automática com backoff exponencial.
+
+IMPORTANTE: este módulo mantém estado global em memória de processo.
+A API deve rodar com apenas 1 worker de aplicação.
 """
 
 import asyncio

@@ -3,6 +3,8 @@ import os
 import json
 import sys
 import math
+import hmac
+import hashlib
 import paho.mqtt.client as mqtt
 
 # Add common folder to path
@@ -23,6 +25,15 @@ MQTT_PASSWORD = os.environ.get('MQTT_PASSWORD', '')
 DEFENSE_PIN = os.environ.get("DEFENSE_PIN_UAV", "").strip()
 if not DEFENSE_PIN:
     raise RuntimeError("DEFENSE_PIN_UAV env var is required for UAV bridge.")
+COMMAND_HMAC_SECRET = os.environ.get("COMMAND_HMAC_SECRET_UAV", "").strip()
+if not COMMAND_HMAC_SECRET:
+    raise RuntimeError("COMMAND_HMAC_SECRET_UAV env var is required for UAV bridge.")
+COMMAND_ALLOWED_SOURCES = {
+    source.strip() for source in os.environ.get(
+        "COMMAND_ALLOWED_SOURCES_UAV", "dashboard,homeassistant"
+    ).split(",") if source.strip()
+}
+COMMAND_MAX_SKEW_SECONDS = int(os.environ.get("COMMAND_MAX_SKEW_SECONDS_UAV", "30"))
 
 MAVLINK_CONNECTION = os.environ.get('MAVLINK_CONNECTION', 'udpin:0.0.0.0:14550')
 
@@ -67,12 +78,46 @@ def on_connect(client, userdata, flags, rc):
     print(f"Connected to MQTT Broker (RC: {rc})")
     client.subscribe(MQTT_TOPIC_CMD)
 
+def verify_command_auth(payload):
+    source_id = payload.get("source_id")
+    timestamp = payload.get("timestamp")
+    signature = payload.get("signature")
+
+    if source_id not in COMMAND_ALLOWED_SOURCES:
+        return False, f"unauthorized source_id: {source_id}"
+
+    try:
+        ts = int(timestamp)
+    except (TypeError, ValueError):
+        return False, "invalid timestamp"
+
+    if abs(int(time.time()) - ts) > COMMAND_MAX_SKEW_SECONDS:
+        return False, "stale command timestamp"
+
+    if not isinstance(signature, str) or not signature:
+        return False, "missing signature"
+
+    signed_payload = {k: v for k, v in payload.items() if k != "signature"}
+    canonical = json.dumps(signed_payload, sort_keys=True, separators=(",", ":")).encode()
+    expected = hmac.new(
+        COMMAND_HMAC_SECRET.encode(), canonical, hashlib.sha256
+    ).hexdigest()
+    if not hmac.compare_digest(expected, signature):
+        return False, "invalid signature"
+
+    return True, "ok"
+
 def on_message(client, userdata, msg):
     global uav_state
     try:
         payload = json.loads(msg.payload.decode())
         cmd = payload.get('cmd')
         print(f"MQTT CMD: topic={msg.topic} cmd={cmd}")
+
+        authorized, auth_reason = verify_command_auth(payload)
+        if not authorized:
+            print(f"Ignoring unauthorized command: {auth_reason}")
+            return
         
         if cmd == 'arm':
             print("Command: ARM")

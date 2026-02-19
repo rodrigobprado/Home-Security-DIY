@@ -1,5 +1,8 @@
 import time
 import json
+import hmac
+import hashlib
+import os
 import paho.mqtt.client as mqtt
 import sys
 
@@ -8,6 +11,8 @@ MQTT_BROKER = "localhost" # Assumes Mosquitto is running via Docker
 MQTT_PORT = 1883
 MQTT_USER = "homeassistant"
 MQTT_PASSWORD = "CHANGE_ME"
+COMMAND_HMAC_SECRET = os.environ.get("COMMAND_HMAC_SECRET_UGV", "CHANGE_ME_ugv_hmac_secret")
+SOURCE_ID = os.environ.get("COMMAND_SOURCE_ID", "homeassistant")
 
 TOPIC_STATUS = "ugv/status"
 TOPIC_CMD = "ugv/command"
@@ -72,13 +77,13 @@ def main():
 
     # 2. Send Command (Move)
     print("Step 2: Sending Move Command...")
-    cmd = {"cmd": "move", "linear": 0.5, "angular": 0.0}
+    cmd = signed_command({"cmd": "move", "linear": 0.5, "angular": 0.0})
     client.publish(TOPIC_CMD, json.dumps(cmd))
     time.sleep(1) # Wait for processing
 
     # 3. Send Patrol Command
     print("Step 3: Sending Patrol Command...")
-    cmd = {"cmd": "patrol"}
+    cmd = signed_command({"cmd": "patrol"})
     client.publish(TOPIC_CMD, json.dumps(cmd))
     time.sleep(1)
     
@@ -99,6 +104,19 @@ def main():
     
     client.loop_stop()
     client.disconnect()
+
+def signed_command(payload: dict) -> dict:
+    base = {
+        **payload,
+        "source_id": SOURCE_ID,
+        "timestamp": int(time.time()),
+    }
+    canonical = json.dumps(base, sort_keys=True, separators=(",", ":")).encode()
+    base["signature"] = hmac.new(
+        COMMAND_HMAC_SECRET.encode(), canonical, hashlib.sha256
+    ).hexdigest()
+    return base
+
 
 if __name__ == "__main__":
     main()

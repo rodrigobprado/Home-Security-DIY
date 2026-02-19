@@ -13,7 +13,7 @@ class HealthMonitor:
         self.last_heartbeat = time.time()
         
     def update_battery(self, level):
-        self.battery_level = level
+        self.battery_level = max(0, min(100, int(level)))
         
     def report_sensor_failure(self, sensor_name):
         logging.error(f"Sensor Failure Reported: {sensor_name}")
