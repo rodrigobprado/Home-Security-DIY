@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include <LoRa.h>
+#include <SPI.h>
 
 // =============================================================================
 // PIN DEFINITIONS
@@ -7,8 +8,8 @@
 // Driver Motor (BTS7960 / IBT-2)
 #define RPWM_L 16  // Right PWM Left Motor
 #define LPWM_L 17  // Left PWM Left Motor
-#define RPWM_R 18  // Right PWM Right Motor
-#define LPWM_R 19  // Left PWM Right Motor
+#define RPWM_R 25  // Right PWM Right Motor
+#define LPWM_R 26  // Left PWM Right Motor
 
 // Encoders (Interrupt pins)
 #define ENC_L_A 34
@@ -18,11 +19,11 @@
 
 // LoRa SX1276 (SPI)
 #define LORA_SS 5
-#define LORA_RST 14
+#define LORA_RST 27
 #define LORA_DIO0 2
-#define LORA_SCK 18  // SPI SCK (Check your board)
-#define LORA_MISO 19 // SPI MISO
-#define LORA_MOSI 23 // SPI MOSI
+#define LORA_SCK 14  // HSPI SCK
+#define LORA_MISO 12 // HSPI MISO
+#define LORA_MOSI 13 // HSPI MOSI
 
 // =============================================================================
 // GLOBALS
@@ -92,6 +93,7 @@ void setup() {
 
     // LoRa Setup
     Serial.println("Starting LoRa...");
+    SPI.begin(LORA_SCK, LORA_MISO, LORA_MOSI, LORA_SS);
     LoRa.setPins(LORA_SS, LORA_RST, LORA_DIO0);
     if (!LoRa.begin(915E6)) { // 915MHz for Americas (Check local regulations)
         Serial.println("Starting LoRa failed!");

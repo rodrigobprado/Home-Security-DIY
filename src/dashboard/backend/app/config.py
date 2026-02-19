@@ -1,4 +1,5 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import field_validator
 
 
 class Settings(BaseSettings):
@@ -14,6 +15,13 @@ class Settings(BaseSettings):
     # MQTT
     mqtt_broker: str = "mosquitto"
     mqtt_port: int = 1883
+
+    # Dashboard API security
+    dashboard_api_key: str = ""
+    dashboard_allowed_origins: list[str] = [
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+    ]
 
     # PostgreSQL (schema: dashboard)
     database_url: str = (
@@ -40,6 +48,13 @@ class Settings(BaseSettings):
         "cam_garagem",
         "cam_lateral",
     ]
+
+    @field_validator("dashboard_allowed_origins", mode="before")
+    @classmethod
+    def parse_origins(cls, value):
+        if isinstance(value, str):
+            return [origin.strip() for origin in value.split(",") if origin.strip()]
+        return value
 
 
 settings = Settings()

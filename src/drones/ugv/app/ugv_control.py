@@ -33,22 +33,25 @@ MQTT_PASSWORD = os.environ.get('MQTT_PASSWORD', '')
 MQTT_TOPIC_CMD = "ugv/command"
 MQTT_TOPIC_STATUS = "ugv/status"
 MQTT_TOPIC_DEFENSE_STATUS = "ugv/defense/status"
+DEFENSE_PIN = os.environ.get("DEFENSE_PIN_UGV", "").strip()
+if not DEFENSE_PIN:
+    raise RuntimeError("DEFENSE_PIN_UGV env var is required for UGV control.")
 
 # Serial Connection
 ser = None
 health = HealthMonitor()
-defense = DefenseController(pin_code="1234")
+defense = DefenseController(pin_code=DEFENSE_PIN)
 
 def on_connect(client, userdata, flags, rc):
     print(f"Connected to MQTT Broker with result code {rc}")
     client.subscribe(MQTT_TOPIC_CMD)
 
 def on_message(client, userdata, msg):
-    print(f"MQTT MSG: {msg.topic} {msg.payload}")
     try:
         health.update_heartbeat()
         payload = json.loads(msg.payload.decode())
         command = payload.get('cmd')
+        print(f"MQTT CMD: topic={msg.topic} cmd={command}")
         
         # Defense Commands
         if command == 'defense_arm':

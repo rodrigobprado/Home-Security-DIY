@@ -2,11 +2,13 @@ import asyncio
 import logging
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.config import settings
 from app.db.session import init_db
 from app.routers import alerts, cameras, sensors, services, ws
+from app.security import require_api_key
 from app.services import ha_client
 
 logging.basicConfig(level=logging.INFO)
@@ -45,18 +47,18 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # restringir ao domínio do frontend em produção
+    allow_origins=settings.dashboard_allowed_origins,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET"],
+    allow_headers=["Authorization", "Content-Type", "X-API-Key"],
 )
 
 # Routers
 app.include_router(ws.router)
-app.include_router(sensors.router)
-app.include_router(cameras.router)
-app.include_router(alerts.router)
-app.include_router(services.router)
+app.include_router(sensors.router, dependencies=[Depends(require_api_key)])
+app.include_router(cameras.router, dependencies=[Depends(require_api_key)])
+app.include_router(alerts.router, dependencies=[Depends(require_api_key)])
+app.include_router(services.router, dependencies=[Depends(require_api_key)])
 
 
 @app.get("/health")

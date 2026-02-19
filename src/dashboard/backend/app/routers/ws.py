@@ -9,6 +9,7 @@ import logging
 
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
+from app.security import require_ws_api_key
 from app.services import ha_client
 
 logger = logging.getLogger(__name__)
@@ -17,6 +18,7 @@ router = APIRouter()
 
 @router.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket) -> None:
+    await require_ws_api_key(websocket)
     await websocket.accept()
     queue: asyncio.Queue[str] = asyncio.Queue(maxsize=200)
 
