@@ -73,6 +73,14 @@ Exemplo: `feat: adiciona suporte a sensor de vazamento Zigbee`
 
 Siga o guia [src/docs/QUICK_START.md](src/docs/QUICK_START.md) para configurar seu ambiente de desenvolvimento com Docker Compose.
 
+### Rodando testes do Dashboard Backend
+
+```bash
+cd src/dashboard/backend
+python -m pip install -r requirements.txt pytest
+pytest ../../../tests/backend -q
+```
+
 ---
 
 ## Código de Conduta
