@@ -110,6 +110,9 @@ jobs:
       - name: Run ESLint
         run: npm run lint
 
+      - name: Run Type Check
+        run: npm run typecheck
+
       - name: Run Vitest
         run: npm run test
 

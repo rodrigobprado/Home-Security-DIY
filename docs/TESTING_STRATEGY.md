@@ -189,7 +189,7 @@ Executar apos cada deploy em ambiente real:
 3. `validate-k8s` — `kubectl kustomize` + `kubeconform`
 4. `lint-shell` — Validar scripts shell com `shellcheck`
 5. `docs-links` — Validar links Markdown locais
-6. `frontend-quality` — `eslint` + `vitest`
+6. `frontend-quality` — `eslint` + `typecheck` + `vitest`
 7. `backend-quality` — `pytest` do backend dashboard
 
 Ver `.github/workflows/validate.yml` para implementacao completa.
