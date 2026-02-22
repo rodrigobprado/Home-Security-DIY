@@ -149,6 +149,12 @@ Você pode agendar esse comando via `cron` no servidor para manutenção contín
 
 Contribuições são bem-vindas! Leia o [CONTRIBUTING.md](CONTRIBUTING.md) para detalhes sobre código de conduta, fluxo de issues/PRs e validações recomendadas antes do merge.
 
+## Governança
+
+- [CHANGELOG.md](CHANGELOG.md)
+- [CONTRIBUTING.md](CONTRIBUTING.md)
+- [SECURITY.md](SECURITY.md)
+
 ---
 
 ## Licença e Aviso Legal

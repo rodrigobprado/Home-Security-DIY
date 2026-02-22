@@ -61,11 +61,19 @@ services:
     image: eclipse-mosquitto:2
     container_name: home-security-mosquitto
     restart: unless-stopped
+    command:
+      [
+        "sh",
+        "-c",
+        "if [ \"${APP_ENV:-development}\" = \"production\" ]; then exec mosquitto -c /mosquitto/config/mosquitto.prod.conf; else exec mosquitto -c /mosquitto/config/mosquitto.conf; fi",
+      ]
     ports:
       - "127.0.0.1:1883:1883"
+      - "127.0.0.1:8883:8883"
       - "127.0.0.1:9001:9001"
     volumes:
       - ./mosquitto/config:/mosquitto/config:ro
+      - ./mosquitto/certs:/mosquitto/certs:ro
       - mosquitto_data:/mosquitto/data
       - mosquitto_log:/mosquitto/log
     environment:
@@ -105,6 +113,12 @@ services:
         condition: service_healthy
     networks:
       - home-security-net
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080 >/dev/null || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
 
   # ---------------------------------------------------------------------------
   # Frigate NVR
@@ -149,6 +163,12 @@ services:
         condition: service_healthy
     networks:
       - home-security-net
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:5000/api/version >/dev/null || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
 
   # ---------------------------------------------------------------------------
   # Home Assistant
@@ -172,6 +192,12 @@ services:
         condition: service_healthy
       postgres:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8123 >/dev/null || exit 1"]
+      interval: 60s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
 
   # ---------------------------------------------------------------------------
   # Dashboard API (FastAPI)
@@ -184,7 +210,7 @@ services:
     container_name: home-security-dashboard-api
     restart: unless-stopped
     ports:
-      - "8000:8000"
+      - "127.0.0.1:8000:8000"
     environment:
       - HA_URL=http://${HA_HOST:-host.docker.internal}:8123
       - HA_TOKEN=${HA_TOKEN}
@@ -228,6 +254,102 @@ services:
     depends_on:
       dashboard-api:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080 >/dev/null || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+  # ---------------------------------------------------------------------------
+  # UGV Brain (opcional para desenvolvimento local)
+  # Habilite com: docker compose --profile drones up -d ugv
+  # ---------------------------------------------------------------------------
+  ugv:
+    build: ./drones/ugv
+    image: home-security-ugv:latest
+    container_name: home-security-ugv
+    restart: unless-stopped
+    profiles: ["drones"]
+    environment:
+      - MQTT_BROKER=home-security-mosquitto
+      - MQTT_PORT=1883
+      - MQTT_USER=${MQTT_USER}
+      - MQTT_PASSWORD=${MQTT_PASSWORD}
+      - SERIAL_PORT=${UGV_SERIAL_PORT:-/dev/ttyUSB0}
+      - BAUD_RATE=${UGV_BAUD_RATE:-115200}
+      - DEFENSE_PIN_UGV=${DEFENSE_PIN_UGV}
+      - DEFENSE_TOTP_SECRET_UGV=${DEFENSE_TOTP_SECRET_UGV}
+      - DEFENSE_WARNING_SECONDS_UGV=${DEFENSE_WARNING_SECONDS_UGV:-5}
+      - DEFENSE_COOLDOWN_SECONDS_UGV=${DEFENSE_COOLDOWN_SECONDS_UGV:-30}
+      - DEFENSE_MAX_TRIGGERS_PER_DAY_UGV=${DEFENSE_MAX_TRIGGERS_PER_DAY_UGV:-3}
+      - DEFENSE_EXCLUSION_ZONES_UGV=${DEFENSE_EXCLUSION_ZONES_UGV}
+      - DEFENSE_AUDIT_LOG_PATH_UGV=${DEFENSE_AUDIT_LOG_PATH_UGV}
+      - DEFENSE_ACTUATOR_SPEC_UGV=${DEFENSE_ACTUATOR_SPEC_UGV}
+      - COMMAND_HMAC_SECRET_UGV=${COMMAND_HMAC_SECRET_UGV}
+      - COMMAND_ALLOWED_SOURCES_UGV=${COMMAND_ALLOWED_SOURCES_UGV}
+      - COMMAND_MAX_SKEW_SECONDS_UGV=${COMMAND_MAX_SKEW_SECONDS_UGV:-30}
+      - ALLOW_UNSIGNED_HOMEASSISTANT_COMMANDS_UGV=${ALLOW_UNSIGNED_HOMEASSISTANT_COMMANDS_UGV:-false}
+      - APP_ENV=${APP_ENV:-production}
+    volumes:
+      - ./drones/ugv/ros2/routes:/app/ros2/routes
+      - ./drones/common:/app/common:ro
+    networks:
+      - home-security-net
+    depends_on:
+      mosquitto:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "python3 -c \"import os; assert os.getenv('COMMAND_HMAC_SECRET_UGV'); assert os.getenv('DEFENSE_PIN_UGV')\""]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+
+  # ---------------------------------------------------------------------------
+  # UAV Bridge (opcional para desenvolvimento local)
+  # Habilite com: docker compose --profile drones up -d uav
+  # ---------------------------------------------------------------------------
+  uav:
+    build:
+      context: ./drones
+      dockerfile: uav/Dockerfile
+    image: home-security-uav:latest
+    container_name: home-security-uav
+    restart: unless-stopped
+    profiles: ["drones"]
+    environment:
+      - MQTT_BROKER=home-security-mosquitto
+      - MQTT_PORT=1883
+      - MQTT_USER=${MQTT_USER}
+      - MQTT_PASSWORD=${MQTT_PASSWORD}
+      - MAVLINK_CONNECTION=${MAVLINK_CONNECTION:-udpin:0.0.0.0:14550}
+      - DEFENSE_PIN_UAV=${DEFENSE_PIN_UAV}
+      - COMMAND_HMAC_SECRET_UAV=${COMMAND_HMAC_SECRET_UAV}
+      - COMMAND_ALLOWED_SOURCES_UAV=${COMMAND_ALLOWED_SOURCES_UAV}
+      - COMMAND_MAX_SKEW_SECONDS_UAV=${COMMAND_MAX_SKEW_SECONDS_UAV:-30}
+      - ALLOW_UNSIGNED_HOMEASSISTANT_COMMANDS_UAV=${ALLOW_UNSIGNED_HOMEASSISTANT_COMMANDS_UAV:-false}
+      - APP_ENV=${APP_ENV:-production}
+      - MAX_ALTITUDE_M_AGL_UAV=${MAX_ALTITUDE_M_AGL_UAV:-120}
+      - RTH_BATTERY_THRESHOLD_UAV=${RTH_BATTERY_THRESHOLD_UAV:-20}
+      - UAV_MIN_SAFE_DISTANCE_M=${UAV_MIN_SAFE_DISTANCE_M:-30}
+      - GEOFENCE_MIN_LAT_UAV=${GEOFENCE_MIN_LAT_UAV}
+      - GEOFENCE_MAX_LAT_UAV=${GEOFENCE_MAX_LAT_UAV}
+      - GEOFENCE_MIN_LON_UAV=${GEOFENCE_MIN_LON_UAV}
+      - GEOFENCE_MAX_LON_UAV=${GEOFENCE_MAX_LON_UAV}
+    volumes:
+      - ./drones/common:/app/common:ro
+    networks:
+      - home-security-net
+    depends_on:
+      mosquitto:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "python3 -c \"import os; assert os.getenv('COMMAND_HMAC_SECRET_UAV')\""]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
 
 # =============================================================================
 # Networks

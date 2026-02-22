@@ -248,10 +248,16 @@ Decisoes formalizadas em Architecture Decision Records (ADRs):
 
 | ADR | Decisao | Documento |
 |-----|---------|-----------|
-| ADR-001 | Home Assistant como plataforma principal | `docs/adr/ADR-001-home-assistant.md` |
-| ADR-002 | Frigate como NVR com IA | `docs/adr/ADR-002-frigate-nvr.md` |
-| ADR-003 | Zigbee 3.0 como protocolo de sensores | `docs/adr/ADR-003-zigbee-protocolo.md` |
-| ADR-004 | Mini PC Intel N100 como hardware | `docs/adr/ADR-004-hardware-n100.md` |
+| ADR-001 | Home Assistant como plataforma principal | `docs/adr/001-adoption-home-assistant.md` |
+| ADR-002 | Frigate como NVR com IA | `docs/adr/002-adoption-frigate.md` |
+| ADR-003 | Zigbee 3.0 como protocolo de sensores | `docs/adr/003-adoption-zigbee.md` |
+| ADR-004 | K3s como infraestrutura de produção | `docs/adr/004-adoption-kubernetes.md` |
+| ADR-005 | Mini PC N100 como hardware principal | `docs/adr/005-adoption-mini-pc-n100.md` |
+| ADR-006 | Câmeras PoE como padrão | `docs/adr/006-adoption-poe-cameras.md` |
+| ADR-007 | Acesso remoto VPN-only | `docs/adr/007-adoption-vpn-only-remote-access.md` |
+| ADR-008 | PostgreSQL com isolamento por schema | `docs/adr/008-adoption-postgres-schema-isolation.md` |
+| ADR-009 | Compose para dev + K3s para produção | `docs/adr/009-adoption-compose-and-k3s.md` |
+| ADR-010 | External Secrets em produção | `docs/adr/010-adoption-external-secrets.md` |
 
 ---
 

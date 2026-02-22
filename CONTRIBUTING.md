@@ -72,6 +72,7 @@ Exemplo: `feat: adiciona suporte a sensor de vazamento Zigbee`
 ## Desenvolvimento Local
 
 Siga o guia [src/docs/QUICK_START.md](src/docs/QUICK_START.md) para configurar seu ambiente de desenvolvimento com Docker Compose.
+Para onboarding completo de novos contribuidores, consulte também [docs/ONBOARDING.md](docs/ONBOARDING.md).
 
 ### Rodando testes do Dashboard Backend
 

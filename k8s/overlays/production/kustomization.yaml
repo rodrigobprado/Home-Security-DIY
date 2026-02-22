@@ -18,6 +18,7 @@ resources:
   - ../../base
   - ingress.yaml
   - postgres-backup.yaml
+  - external-secrets.yaml
 
 patches:
   # --- Frigate: storage de produção (HDD dedicado) ---

@@ -18,6 +18,13 @@ Apenas a versão mais recente (`main` branch) e as releases marcadas como `stabl
 
 Nós encorajamos a divulgação responsável de vulnerabilidades de segurança. Se você acredita ter encontrado uma vulnerabilidade no Home Security DIY, por favor, siga os passos abaixo:
 
+## Política de Divulgação Responsável
+
+- Reporte privado obrigatório antes de qualquer divulgação pública.
+- Aguarde a confirmação de recebimento da equipe (meta: até 48h).
+- Colabore com detalhes técnicos para reprodução e validação do patch.
+- Após correção disponível, a divulgação coordenada é permitida com crédito ao pesquisador.
+
 ### O que reportar
 
 - Falhas que permitam acesso não autorizado ao sistema (bypass de autenticação).

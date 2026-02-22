@@ -1,5 +1,5 @@
-paho-mqtt>=1.6.1
-pyserial>=3.5
-opencv-python-headless>=4.8.0 # For UGV vision
-numpy>=1.24.0 # For UGV vision
+paho-mqtt==1.6.1
+pyserial==3.5
+opencv-python-headless==4.8.0.76 # For UGV vision
+numpy==1.24.4 # For UGV vision
 # pymavlink>=2.4.37 # Uncomment when using real MAVLink
