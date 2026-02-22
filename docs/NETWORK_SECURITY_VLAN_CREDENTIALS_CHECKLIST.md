@@ -31,7 +31,9 @@ Evidência técnica esperada: export de regras do firewall/switch.
   Evidência: `src/mosquitto/config/acl_file`
 - [x] `allow_anonymous false` configurado.
   Evidência: `src/mosquitto/config/mosquitto.conf`
-- [ ] TLS MQTT ativo em produção (porta 8883 com certificados válidos).
+- [x] Perfil de produção TLS-only versionado (`mosquitto.prod.conf`).
+  Evidência: `src/mosquitto/config/mosquitto.prod.conf`
+- [ ] TLS MQTT ativo em produção (porta 8883 com certificados válidos e certificado instalado).
 - [ ] Porta 1883 não exposta externamente.
 
 ## 4. Gestão de credenciais

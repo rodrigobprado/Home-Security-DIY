@@ -144,14 +144,19 @@ No HACS, instale:
 |-------|---------|-----------|
 | 8123 | Home Assistant | HTTP |
 | 1883 | Mosquitto MQTT | TCP (loopback) |
+| 8883 | Mosquitto MQTT (produção) | TLS |
 | 9001 | Mosquitto WebSocket | TCP (loopback) |
 | 8080 | Zigbee2MQTT Frontend | HTTP (loopback) |
 | 5000 | Frigate Web UI | HTTP (loopback) |
-| 8554 | Frigate RTSP Restream | TCP |
-| 8555 | Frigate WebRTC | TCP/UDP |
+| 8554 | Frigate RTSP Restream | TCP (loopback) |
+| 8555 | Frigate WebRTC | TCP/UDP (loopback) |
 
 > Nota: Dashboard API roda com `uvicorn --workers 1` por restrição arquitetural atual
 > do cliente Home Assistant (`ha_client.py` usa estado em memória por processo).
+
+## Produção: baseline MQTT TLS-only
+
+Para produção, use `src/mosquitto/config/mosquitto.prod.conf` (listener 8883, sem 1883).
 
 ---
 
