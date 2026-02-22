@@ -82,7 +82,7 @@
 |-----|--------|-------------|------|
 | `PRD_AUTONOMOUS_DRONES.md` | ✅ CONCLUÍDO | Agente_Arquiteto_Drones | 2026-02-12 |
 | `PRD_DRONE_DEFENSE_MODULE.md` | ✅ CONCLUÍDO | Agente_Arquiteto_Drones | 2026-02-18 |
-| `PRD_DRONE_COMMUNICATION.md` | ✅ CONCLUÍDO | Agente_Arquiteto_Drones | 2026-02-18 |
+| `PRD_DRONE_COMMUNICATION.md` | ✅ CONCLUÍDO (v1.1) | Agente_Documentador | 2026-02-22 |
 | `PRD_DRONE_FLEET_MANAGEMENT.md` | ✅ CONCLUÍDO | Agente_Arquiteto_Drones | 2026-02-18 |
 | `PRD_DRONE_AI_VISION.md` | ✅ CONCLUÍDO | Agente_Arquiteto_Drones | 2026-02-18 |
 
@@ -95,5 +95,4 @@
 | Pendentes (drones) | 0 |
 | **Total** | **20** |
 
-> **Última atualização**: 2026-02-18 — Todos os PRDs concluídos
-
+> **Última atualização**: 2026-02-22 — Todos os PRDs concluídos (com revisões incrementais)
