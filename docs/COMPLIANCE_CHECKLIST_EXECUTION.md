@@ -107,3 +107,4 @@ Saida:
 - #139: runbook de hardening fisico recorrente em `docs/PHYSICAL_HARDENING_OPERATIONS_RUNBOOK.md`
 - #140: validacao de rede em producao em `docs/NETWORK_PRODUCTION_VALIDATION_PLAYBOOK.md`
 - #141: smoke de integracao em ambiente real em `docs/INTEGRATION_SMOKE_PRODUCTION_RUNBOOK.md`
+- #142: revisao semestral Matter/Thread em `docs/MATTER_THREAD_SEMESTER_REVIEW_RUNBOOK.md`
