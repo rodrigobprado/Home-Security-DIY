@@ -122,6 +122,9 @@ spec:
         app.kubernetes.io/component: mqtt-broker
         app.kubernetes.io/part-of: home-security
     spec:
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: mosquitto
           image: eclipse-mosquitto:2.0.20
@@ -143,9 +146,20 @@ spec:
               readOnly: true
             - name: data
               mountPath: /mosquitto/data
+            - name: tmp
+              mountPath: /tmp
           env:
             - name: TZ
               value: America/Sao_Paulo
+          securityContext:
+            runAsUser: 1883
+            runAsGroup: 1883
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
           resources:
             requests:
               cpu: 50m
@@ -170,6 +184,8 @@ spec:
         - name: data
           persistentVolumeClaim:
             claimName: mosquitto-data
+        - name: tmp
+          emptyDir: {}
 
 ---
 # --- Service ---
