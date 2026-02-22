@@ -20,5 +20,10 @@
 2. Ao iniciar o trabalho, mover a tarefa para `TASKS_IN_PROGRESS.md`.
 3. Ao finalizar, mover para `TASKS_DONE.md`.
 
-> TODO: Adaptar este fluxo às práticas da equipe (ex.: revisão obrigatória, QA, etc.).
+> **Fluxo atual (2026-02)**:
+> - Tarefas criadas como issues GitHub + entradas em `TASKS_BACKLOG.md`
+> - Ao iniciar: issue movida para "In Progress" no GitHub; `TASKS_IN_PROGRESS.md` atualizado
+> - Revisão obrigatória via Pull Request antes de merge para `main`
+> - CI/CD verifica cobertura de testes, typecheck e linting
+> - Ao concluir: issue fechada com `closes #NNN` no commit; entrada movida para `TASKS_DONE.md`
 

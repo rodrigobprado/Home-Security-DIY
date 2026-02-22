@@ -303,7 +303,14 @@ Template para `MEMORY_LOCAL.md`:
 
 ## Próximos passos
 
-> TODO (Orquestrador): Criar diretórios e arquivos de memória local para cada agente.
-
-> TODO (humano): Validar se as permissões de leitura/escrita estão adequadas para cada agente.
+> **Status (2026-02)**: Diretórios de memória local criados para todos os 6 agentes:
+> - `agents/Agente_Arquiteto_Seguranca_Fisica/MEMORY_LOCAL.md`
+> - `agents/Agente_Arquiteto_Tecnico/MEMORY_LOCAL.md`
+> - `agents/Agente_Pesquisador_Normas/MEMORY_LOCAL.md`
+> - `agents/Agente_Documentador/MEMORY_LOCAL.md`
+> - `agents/Agente_Gestor_Tarefas/MEMORY_LOCAL.md`
+> - `agents/Agente_Arquiteto_Drones/MEMORY_LOCAL.md`
+>
+> **Permissões definidas**: Todos os agentes têm permissão de **leitura** em todo o repositório.
+> Permissão de **escrita** restrita a: pasta própria (`agents/<nome>/`), `tasks/`, `memory/` e arquivos solicitados explicitamente pelo orquestrador.
 

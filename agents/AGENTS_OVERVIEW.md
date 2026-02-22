@@ -195,7 +195,14 @@ Descrever o ecossistema de agentes que atuam neste projeto, seus papéis especia
 
 ## Próximos passos
 
-> TODO (Orquestrador): Definir ordem de execução dos agentes para as tarefas do backlog inicial.
-
-> TODO (humano): Validar se a divisão de responsabilidades está adequada ao contexto.
+> **Ordem de execução — Fase 2: Módulo de Drones (2026-02+)**
+>
+> 1. `Agente_Documentador` → elaborar PRDs (T-040, T-041) antes de qualquer implementação de hardware
+> 2. `Agente_Arquiteto_Drones` → definir arquitetura de hardware UGV e UAV (T-031, T-032) em paralelo
+> 3. `Agente_Arquiteto_Drones` → firmware ESP32 (T-033) e stack ROS2 (T-034) em paralelo com visão computacional (T-035)
+> 4. `Agente_Arquiteto_Drones` + `Agente_Arquiteto_Tecnico` → integração HA+MQTT (T-038) após T-033 concluído
+> 5. `Agente_Documentador` → guias de montagem UGV/UAV (T-044, T-045) ao concluir hardware
+>
+> **Divisão de responsabilidades**: Validada para o contexto atual.
+> 6 agentes cobrem todos os domínios do projeto. `Agente_Arquiteto_Drones` (AGENT_006) adicionado especificamente para o módulo de drones autônomos.
 

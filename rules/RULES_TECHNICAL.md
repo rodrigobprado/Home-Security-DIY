@@ -42,7 +42,8 @@ O projeto deve priorizar plataformas open source maduras e com comunidade ativa:
 | **openHAB** | Alternativa para automação | Mais flexível em configurações avançadas, curva de aprendizado maior, boa para usuários técnicos. |
 | **Node-RED** | Automações complexas e integrações | Complemento ao Home Assistant para lógicas visuais complexas, integrações customizadas. |
 
-> TODO (humano): Definir qual plataforma será a principal para este projeto.
+> **Decisão (2026-02)**: Plataforma principal selecionada: **Home Assistant** (versão 2024.12+).
+> Justificativa: maior comunidade, integração nativa com Frigate, Zigbee2MQTT e MQTT; já em produção neste projeto.
 
 ### Tecnologias open source para videovigilância
 
@@ -53,7 +54,8 @@ O projeto deve priorizar plataformas open source maduras e com comunidade ativa:
 | **Shinobi** | NVR alternativo | Interface moderna, código aberto, boa documentação. |
 | **Viseron** | NVR com ML integrado | Foco em detecção inteligente, menos maduro que Frigate. |
 
-> TODO (humano): Selecionar NVR primário após avaliação comparativa (tarefa T-014).
+> **Decisão (2026-02)**: NVR primário selecionado: **Frigate 0.14.1**.
+> Justificativa: detecção de objetos em tempo real com aceleração Intel OpenVINO (iGPU via `/dev/dri`), integração nativa com Home Assistant via MQTT, já em produção neste projeto.
 
 ### Protocolos de comunicação para sensores
 
@@ -66,7 +68,19 @@ O projeto deve priorizar plataformas open source maduras e com comunidade ativa:
 | **Thread/Matter** | Futuro padrão unificado, baixo consumo, mesh | Ainda em adoção, poucos dispositivos | Considerar para novos projetos |
 | **PoE (Power over Ethernet)** | Alimentação e dados em um cabo | Requer switch PoE | Câmeras IP, dispositivos fixos |
 
-> TODO (Agente_Arquiteto_Tecnico): Documentar matriz de decisão para escolha de protocolo por tipo de sensor.
+#### Matriz de decisão — protocolo por tipo de dispositivo
+
+| Tipo de Dispositivo | Protocolo Recomendado | Justificativa |
+|---|---|---|
+| Sensores de abertura / movimento / temperatura | **Zigbee** | Baixo consumo, mesh, sem nuvem, amplo suporte no BR |
+| Câmeras IP (indoor/outdoor fixas) | **Wi-Fi 2.4/5GHz ou PoE** | Largura de banda necessária para stream RTSP |
+| Câmeras em áreas sem cabeamento | **Wi-Fi 5GHz** | Flexibilidade de instalação |
+| Fechaduras eletrônicas premium | **Z-Wave** | Interoperabilidade certificada, menor interferência |
+| Sensores legados / controles remotos antigos | **433MHz** | Compatibilidade retroativa (somente leitura) |
+| Drones UGV/UAV — canal primário | **Wi-Fi 5GHz + MQTT** | Baixa latência, integração direta com broker |
+| Drones UGV/UAV — canal de failover | **LoRa 915MHz** | Longo alcance, resistente a jamming Wi-Fi |
+| Sensores de perímetro rural (longas distâncias) | **LoRa / Meshtastic** | Alcance de km sem infraestrutura Wi-Fi |
+| Novos dispositivos (avaliação futura) | **Matter / Thread** | Adotar quando ecossistema BR estiver maduro (ver issue #108) |
 
 ### Hardware de processamento
 
@@ -79,7 +93,15 @@ O sistema deve rodar em hardware acessível e disponível localmente:
 | **NUC ou equivalente** | Intel i3/i5, 16GB RAM, 512GB SSD | Instalações grandes ou com detecção ML intensiva |
 | **Coral USB/M.2 TPU** | Acelerador de ML | Recomendado para Frigate em qualquer hardware |
 
-> TODO (humano): Definir hardware alvo para cada cenário residencial.
+#### Hardware alvo por cenário residencial
+
+| Cenário | CPU | RAM | Armazenamento | Acelerador ML | Câmeras | Sensores |
+|---|---|---|---|---|---|---|
+| **Apartamento** | Raspberry Pi 4/5 ou Mini PC N100 | 4–8 GB | 64 GB SSD | Coral USB TPU | até 4 | até 20 |
+| **Casa Urbana** | Mini PC Intel N100/N305 (ex.: Beelink) | 8–16 GB | 256 GB SSD | Coral USB TPU + iGPU | até 8 | até 40 |
+| **Imóvel Rural / Drones** | NUC Intel i3/i5 ou equivalente | 16–32 GB | 512 GB SSD + HDD NAS | Coral M.2 TPU + iGPU | até 16 | ilimitado |
+
+> **Referência deste projeto**: Mini PC com Intel iGPU — aceleração OpenVINO ativa no Frigate via `/dev/dri`.
 
 ### Boas práticas de segurança para ambientes residenciais
 
@@ -151,5 +173,21 @@ Cada automação complexa deve ter comentário ou documentação explicando:
 | Automações | `automation.<acao>_<contexto>` | `automation.ligar_luz_movimento_entrada` |
 | Scripts | `script.<acao>_<contexto>` | `script.armar_alarme_noite` |
 
-> TODO (Agente_Arquiteto_Tecnico): Expandir padrões de nomenclatura conforme novos tipos de dispositivos forem adicionados.
+#### Drones — UGV (Unmanned Ground Vehicle)
+
+| Tipo | Padrão | Exemplo |
+|---|---|---|
+| Sensores de telemetria | `sensor.ugv_<campo>` | `sensor.ugv_bateria`, `sensor.ugv_status` |
+| Câmera embarcada | `camera.ugv_<posicao>` | `camera.ugv_frente` |
+| Controles / switches | `switch.ugv_<modo>` | `switch.ugv_patrulha` |
+| Automações | `automation.ugv_<acao>_<contexto>` | `automation.ugv_iniciar_patrulha_alarme` |
+
+#### Drones — UAV (Unmanned Aerial Vehicle)
+
+| Tipo | Padrão | Exemplo |
+|---|---|---|
+| Sensores de telemetria | `sensor.uav_<campo>` | `sensor.uav_bateria`, `sensor.uav_altitude` |
+| Câmera embarcada | `camera.uav_<posicao>` | `camera.uav_embarcada` |
+| Controles / switches | `switch.uav_<modo>` | `switch.uav_decolar` |
+| Automações | `automation.uav_<acao>_<contexto>` | `automation.uav_inspecionar_zona_alerta` |
 

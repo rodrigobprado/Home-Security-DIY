@@ -103,7 +103,10 @@ O projeto abrange:
 - **Guias de instalação e configuração**: passo a passo para cada componente.
 - **Normas e compliance**: levantamento de normas físicas e de privacidade aplicáveis.
 
-> TODO (humano): Validar se os três cenários cobrem as necessidades ou se há cenários adicionais a considerar (ex.: condomínio horizontal, sítio/chácara).
+> **Decisão (2026-02)**: Os três cenários atuais (Rural, Casa Urbana, Apartamento) cobrem os casos principais.
+> - **Condomínio horizontal** → derivar de Casa Urbana com adaptações: perímetro compartilhado, acesso controlado de terceiros, coordenação com síndico/segurança do condomínio.
+> - **Sítio / Chácara** → derivar de Imóvel Rural com ênfase em LoRa para longas distâncias, autonomia energética (solar + nobreak) e conectividade 4G como fallback.
+> Novos cenários completos serão adicionados apenas se houver demanda específica (abrir issue para discutir).
 
 ## Stakeholders
 
@@ -131,7 +134,24 @@ O projeto abrange:
 - Riscos de segurança cibernética em dispositivos IoT mal configurados.
 - Dificuldade de usuários leigos em implementar sem suporte técnico.
 
-> TODO (humano): Revisar premissas e riscos com base no contexto real de implantação.
+> **Revisado (2026-02)** com base na implementação atual:
+>
+> **Premissas confirmadas**:
+> - Home Assistant como plataforma central de automação (em produção)
+> - Frigate 0.14.1 para NVR com detecção de objetos via IA (em produção com Intel iGPU)
+> - PostgreSQL 16 como banco de dados principal (schemas isolados por serviço)
+> - Acesso remoto exclusivamente via VPN — sem port forwarding exposto
+> - Operação 100% local, sem dependência de serviços em nuvem
+>
+> **Premissas adicionadas**:
+> - Hardware mínimo recomendado: Mini PC com Intel iGPU para aceleração do Frigate
+> - Conhecimento técnico do operador: nível intermediário (Docker, Linux básico, YAML)
+> - Rede com suporte a VLANs recomendado (roteador gerenciável)
+>
+> **Riscos adicionados**:
+> - Módulo de drones exige análise jurídica antes de ativação do sistema de defesa (ver issue #104)
+> - Drones UAV com peso >250g requerem registro ANAC/SISANT (ver issue #103)
+> - Atualizações do Home Assistant podem quebrar integrações customizadas — testar antes de atualizar
 
 ## Critérios de sucesso
 
