@@ -47,6 +47,11 @@ ALLOW_UNSIGNED_HOMEASSISTANT_COMMANDS = (
     os.environ.get("ALLOW_UNSIGNED_HOMEASSISTANT_COMMANDS_UGV", "false").strip().lower()
     in {"1", "true", "yes"}
 )
+APP_ENV = os.environ.get("APP_ENV", "production").strip().lower()
+if ALLOW_UNSIGNED_HOMEASSISTANT_COMMANDS and APP_ENV not in {"dev", "development", "test"}:
+    raise RuntimeError(
+        "ALLOW_UNSIGNED_HOMEASSISTANT_COMMANDS_UGV is forbidden outside dev/test environments."
+    )
 
 MQTT_TOPIC_CMD = "ugv/command"
 MQTT_TOPIC_STATUS = "ugv/status"
