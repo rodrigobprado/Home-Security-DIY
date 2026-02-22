@@ -85,6 +85,14 @@ docker compose up -d
 ./scripts/validate-configs.sh
 ```
 
+### 3.5 Executar testes automatizados backend (recomendado)
+
+```bash
+python3 -m venv .venv
+.venv/bin/pip install -r src/dashboard/backend/requirements.txt pytest pytest-cov
+.venv/bin/pytest -q tests/backend
+```
+
 ---
 
 ## 4. Como contribuir

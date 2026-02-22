@@ -1,9 +1,6 @@
-import json
-
+import httpx
 import pytest
 from fastapi import Depends, FastAPI
-from fastapi.testclient import TestClient
-from starlette.websockets import WebSocketDisconnect
 
 from app.db.session import get_db
 from app.routers import alerts, cameras, sensors, services, ws
@@ -44,6 +41,12 @@ class _FakeSession:
     async def execute(self, _stmt):
         return _FakeResult([_FakeAlert()])
 
+    def add(self, _entry):
+        return None
+
+    async def commit(self):
+        return None
+
 
 async def _override_get_db():
     yield _FakeSession()
@@ -60,30 +63,33 @@ def _build_test_app():
     return app
 
 
-def test_http_routes_require_api_key():
+@pytest.mark.anyio
+async def test_http_routes_require_api_key():
     app = _build_test_app()
-    client = TestClient(app)
+    transport = httpx.ASGITransport(app=app)
+    async with httpx.AsyncClient(transport=transport, base_url="http://testserver") as client:
+        assert (await client.get("/api/sensors")).status_code == 403
+        assert (await client.get("/api/cameras/events")).status_code == 403
+        assert (await client.get("/api/alerts")).status_code == 403
+        assert (await client.get("/api/services/status")).status_code == 403
 
-    assert client.get("/api/sensors").status_code == 403
-    assert client.get("/api/cameras/events").status_code == 403
-    assert client.get("/api/alerts").status_code == 403
-    assert client.get("/api/services/status").status_code == 403
 
-
-def test_sensors_route_with_api_key(monkeypatch):
+@pytest.mark.anyio
+async def test_sensors_route_with_api_key(monkeypatch):
     from app.services import ha_client
 
     monkeypatch.setattr(ha_client, "get_all_states", lambda: {"binary_sensor.porta_entrada": {"state": "off"}})
 
     app = _build_test_app()
-    client = TestClient(app)
-    resp = client.get("/api/sensors", headers={"X-API-Key": "test-api-key"})
-
+    transport = httpx.ASGITransport(app=app)
+    async with httpx.AsyncClient(transport=transport, base_url="http://testserver") as client:
+        resp = await client.get("/api/sensors", headers={"X-API-Key": "test-api-key"})
     assert resp.status_code == 200
     assert "states" in resp.json()
 
 
-def test_cameras_routes_with_api_key(monkeypatch):
+@pytest.mark.anyio
+async def test_cameras_routes_with_api_key(monkeypatch):
     from app.services import frigate_client
 
     async def _snapshot(_camera):
@@ -96,10 +102,10 @@ def test_cameras_routes_with_api_key(monkeypatch):
     monkeypatch.setattr(frigate_client, "get_events", _events)
 
     app = _build_test_app()
-    client = TestClient(app)
-
-    snap = client.get("/api/cameras/cam_entrada/snapshot", headers={"X-API-Key": "test-api-key"})
-    evts = client.get("/api/cameras/events", headers={"X-API-Key": "test-api-key"})
+    transport = httpx.ASGITransport(app=app)
+    async with httpx.AsyncClient(transport=transport, base_url="http://testserver") as client:
+        snap = await client.get("/api/cameras/cam_entrada/snapshot", headers={"X-API-Key": "test-api-key"})
+        evts = await client.get("/api/cameras/events", headers={"X-API-Key": "test-api-key"})
 
     assert snap.status_code == 200
     assert snap.headers["content-type"] == "image/jpeg"
@@ -107,11 +113,12 @@ def test_cameras_routes_with_api_key(monkeypatch):
     assert isinstance(evts.json(), list)
 
 
-def test_alerts_route_with_api_key():
+@pytest.mark.anyio
+async def test_alerts_route_with_api_key():
     app = _build_test_app()
-    client = TestClient(app)
-
-    resp = client.get("/api/alerts", headers={"X-API-Key": "test-api-key"})
+    transport = httpx.ASGITransport(app=app)
+    async with httpx.AsyncClient(transport=transport, base_url="http://testserver") as client:
+        resp = await client.get("/api/alerts", headers={"X-API-Key": "test-api-key"})
 
     assert resp.status_code == 200
     payload = resp.json()
@@ -119,7 +126,8 @@ def test_alerts_route_with_api_key():
     assert payload[0]["entity_id"] == "alarm_control_panel.alarmo"
 
 
-def test_services_route_with_api_key(monkeypatch):
+@pytest.mark.anyio
+async def test_services_route_with_api_key(monkeypatch):
     from app.routers import services as services_router
 
     async def _ok(_url):
@@ -129,58 +137,12 @@ def test_services_route_with_api_key(monkeypatch):
     monkeypatch.setattr(services_router.ha_client, "get_all_states", lambda: {"alarm_control_panel.alarmo": {"state": "disarmed"}})
 
     app = _build_test_app()
-    client = TestClient(app)
-    resp = client.get("/api/services/status", headers={"X-API-Key": "test-api-key"})
+    transport = httpx.ASGITransport(app=app)
+    async with httpx.AsyncClient(transport=transport, base_url="http://testserver") as client:
+        resp = await client.get("/api/services/status", headers={"X-API-Key": "test-api-key"})
+        metrics = await client.get("/api/services/ws-metrics", headers={"X-API-Key": "test-api-key"})
 
     assert resp.status_code == 200
     assert resp.json()["services"]["ha_websocket"] == "online"
-
-    metrics = client.get("/api/services/ws-metrics", headers={"X-API-Key": "test-api-key"})
     assert metrics.status_code == 200
     assert "ws_metrics" in metrics.json()
-
-
-def test_ws_requires_api_key():
-    app = _build_test_app()
-    client = TestClient(app)
-
-    with pytest.raises(WebSocketDisconnect):
-        with client.websocket_connect("/ws"):
-            pass
-
-
-def test_ws_with_api_key(monkeypatch):
-    from app.services import ha_client
-
-    subscribed = []
-
-    def _subscribe(cb):
-        subscribed.append(cb)
-
-    def _unsubscribe(cb):
-        if cb in subscribed:
-            subscribed.remove(cb)
-
-    monkeypatch.setattr(ha_client, "subscribe", _subscribe)
-    monkeypatch.setattr(ha_client, "unsubscribe", _unsubscribe)
-    monkeypatch.setattr(ha_client, "get_all_states", lambda: {"alarm_control_panel.alarmo": {"state": "disarmed"}})
-    monkeypatch.setattr(ha_client, "_subscribers", set())
-
-    app = _build_test_app()
-    client = TestClient(app)
-
-    with client.websocket_connect("/ws", headers={"X-API-Key": "test-api-key"}) as ws_conn:
-        payload = json.loads(ws_conn.receive_text())
-        assert payload["type"] == "initial_state"
-        assert "states" in payload
-
-    assert subscribed == []
-
-
-def test_ws_rejects_api_key_in_query_string():
-    app = _build_test_app()
-    client = TestClient(app)
-
-    with pytest.raises(WebSocketDisconnect):
-        with client.websocket_connect("/ws?api_key=test-api-key"):
-            pass

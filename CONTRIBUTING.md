@@ -76,9 +76,9 @@ Siga o guia [src/docs/QUICK_START.md](src/docs/QUICK_START.md) para configurar s
 ### Rodando testes do Dashboard Backend
 
 ```bash
-cd src/dashboard/backend
-python -m pip install -r requirements.txt pytest
-pytest ../../../tests/backend -q
+python3 -m venv .venv
+.venv/bin/pip install -r src/dashboard/backend/requirements.txt pytest pytest-cov
+.venv/bin/pytest -q tests/backend
 ```
 
 ### Cobertura mínima (CI)

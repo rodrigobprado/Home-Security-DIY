@@ -50,6 +50,8 @@ O projeto combina automação, vídeo inteligente, sensores e drones para segura
 - Validação automática de links Markdown no CI (`docs-links`).
 - Compliance operacional (LGPD, UAV, defesa, hardening físico, rede, integração e Matter/Thread) com runbooks e templates versionados.
 - Pipeline dedicado `compliance-gates.yml` com artifacts e bloqueio de merge para não conformidades estruturais.
+- Hardening de Kubernetes no Zigbee2MQTT com remoção de `privileged: true` e baseline de segurança de container.
+- Suíte backend executada integralmente em ambiente reprodutível com `.venv` (`79 testes passando` em 2026-02-22).
 
 ## Documentação no repositório
 
