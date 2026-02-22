@@ -38,6 +38,11 @@ ALLOW_UNSIGNED_HOMEASSISTANT_COMMANDS = (
     os.environ.get("ALLOW_UNSIGNED_HOMEASSISTANT_COMMANDS_UAV", "false").strip().lower()
     in {"1", "true", "yes"}
 )
+APP_ENV = os.environ.get("APP_ENV", "production").strip().lower()
+if ALLOW_UNSIGNED_HOMEASSISTANT_COMMANDS and APP_ENV not in {"dev", "development", "test"}:
+    raise RuntimeError(
+        "ALLOW_UNSIGNED_HOMEASSISTANT_COMMANDS_UAV is forbidden outside dev/test environments."
+    )
 
 MAVLINK_CONNECTION = os.environ.get('MAVLINK_CONNECTION', 'udpin:0.0.0.0:14550')
 
