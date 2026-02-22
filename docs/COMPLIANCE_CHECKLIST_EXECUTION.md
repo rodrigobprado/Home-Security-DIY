@@ -1,0 +1,65 @@
+# Execucao das Tarefas de Compliance e Checklists
+
+Data: 2026-02-22
+Escopo: Issues `#102` a `#108`
+
+## Objetivo
+Consolidar a execucao das tarefas de compliance/checklist em duas frentes:
+1. O que pode ser validado por codigo/repositorio (automatizado).
+2. O que exige validacao juridica, fisica ou operacional em ambiente real.
+
+## Entregas tecnicas realizadas
+1. Retencao padrao de alertas do backend ajustada para 30 dias (baseline LGPD/CFTV).
+Arquivo: `src/dashboard/backend/app/config.py`
+2. Zigbee2MQTT travado com `permit_join: false` por padrao.
+Arquivo: `src/zigbee2mqtt/configuration.yaml`
+3. Auditoria semiautomatica criada para as issues `#102` a `#108`.
+Arquivo: `scripts/compliance_checklist_audit.sh`
+4. Relatorio de status gerado com pass/fail e pendencias manuais.
+Arquivo: `tasks/COMPLIANCE_CHECKLIST_AUDIT_2026-02-22.md`
+
+## Status por issue
+### #102 - LGPD (cameras, dados e retencao)
+- Automatizado: politica de retencao validada em Frigate e backend.
+- Manual pendente: verificacao de angulo de cameras, placas fisicas e log operacional de acesso.
+
+### #103 - ANAC/SISANT/DECEA/ANATEL
+- Automatizado: base regulatoria e regras documentadas.
+- Manual pendente: peso real do UAV, cadastros oficiais e checagem de espaco aereo local.
+
+### #104 - Modulo de defesa nao letal
+- Automatizado: restricoes de HITL e bloqueio de disparo automatico documentados.
+- Manual pendente: parecer juridico por UF (SP/RJ/MG), 2FA operacional e testes de bloqueio.
+
+### #105 - Seguranca fisica e hardening
+- Automatizado: guias/checklists tecnicos documentados.
+- Manual pendente: validacao de campo (perimetro, LUKS, nobreak, DPS e aterramento).
+
+### #106 - Rede, VLANs e credenciais
+- Automatizado: autenticacao MQTT, ACL e `permit_join: false`.
+- Manual pendente: isolamento real de VLANs, TLS MQTT em producao e hardening de SSH/TOTP.
+
+### #107 - Testes de integracao
+- Automatizado: estrategia de testes e checklist documentados.
+- Manual pendente: execucao em ambiente ativo (HA, Dashboard, Frigate, API, sensores, VPN).
+
+### #108 - Matter/Thread
+- Automatizado: documento de avaliacao presente.
+- Manual pendente: validacao de mercado BR, preco, maturidade de suporte e decisao final.
+
+## Como executar a auditoria
+```bash
+bash scripts/compliance_checklist_audit.sh
+```
+
+Saida:
+- `tasks/COMPLIANCE_CHECKLIST_AUDIT_<YYYY-MM-DD>.md`
+
+## Criterio de conclusao para fechar cada issue
+1. Todos os itens automatizados em PASS.
+2. Itens manuais com evidencia objetiva anexada na issue:
+- foto/diagrama para itens fisicos;
+- output de comando/config para itens tecnicos;
+- link de norma/parecer para itens juridicos;
+- logs de teste para itens operacionais.
+3. Comentario final na issue com evidencias + data da validacao.

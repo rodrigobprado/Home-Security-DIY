@@ -57,6 +57,9 @@ homeassistant: true
 # --- Availability ---
 availability: true
 
+# Keep pairing closed by default; enable temporarily only during supervised onboarding.
+permit_join: false
+
 # --- Device options (defaults) ---
 device_options:
   # Retain messages for sensors

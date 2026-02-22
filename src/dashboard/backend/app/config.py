@@ -37,7 +37,8 @@ class Settings(BaseSettings):
         "binary_sensor.ugv_online",
         "binary_sensor.uav_armed",
     ]
-    alert_retention_days: int = 90
+    # LGPD/CFTV baseline: retain operational alerts for 30 days by default.
+    alert_retention_days: int = 30
 
     # Câmeras disponíveis
     cameras: list[str] = [
