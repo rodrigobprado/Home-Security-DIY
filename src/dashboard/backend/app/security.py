@@ -38,11 +38,7 @@ async def require_api_key(
 
 async def require_ws_api_key(websocket: WebSocket) -> None:
     expected = _configured_api_key()
-    token = (
-        websocket.headers.get("x-api-key")
-        or websocket.query_params.get("api_key")
-        or websocket.query_params.get("token")
-    )
+    token = websocket.headers.get("x-api-key")
     auth = websocket.headers.get("authorization", "")
     if not token and auth.lower().startswith("bearer "):
         token = auth.split(" ", 1)[1].strip()
