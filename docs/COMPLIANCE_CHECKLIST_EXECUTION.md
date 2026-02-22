@@ -54,8 +54,9 @@ Arquivo: `tasks/COMPLIANCE_CHECKLIST_AUDIT_2026-02-22.md`
 - Manual pendente: execucao em ambiente ativo (HA, Dashboard, Frigate, API, sensores, VPN).
 
 ### #108 - Matter/Thread
-- Automatizado: documento de avaliacao presente.
-- Manual pendente: validacao de mercado BR, preco, maturidade de suporte e decisao final.
+- Automatizado: decisao operacional registrada com checklist objetivo.
+- Evidencias: `docs/MATTER_THREAD_EVALUATION.md` e `docs/MATTER_THREAD_DECISION_2026-02-22.md`.
+- Resultado atual: manter Zigbee e reavaliar em 6 meses.
 
 ## Como executar a auditoria
 ```bash
