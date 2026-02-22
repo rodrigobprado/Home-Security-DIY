@@ -33,7 +33,9 @@ Arquivo: `tasks/COMPLIANCE_CHECKLIST_AUDIT_2026-02-22.md`
 
 ### #104 - Modulo de defesa nao letal
 - Automatizado: restricoes de HITL e bloqueio de disparo automatico documentados.
-- Manual pendente: parecer juridico por UF (SP/RJ/MG), 2FA operacional e testes de bloqueio.
+- Automatizado: pre-requisitos tecnicos de seguranca implementados no controlador de defesa (2FA, aviso pre-disparo, zonas de exclusao, trilha imutavel).
+- Evidencias centralizadas em `docs/LEGALIDADE_MODULO_DEFESA_SP_RJ_MG.md`.
+- Manual pendente: parecer juridico por UF (SP/RJ/MG) e aprovacao legal formal para uso real.
 
 ### #105 - Seguranca fisica e hardening
 - Automatizado: guias/checklists tecnicos documentados.
