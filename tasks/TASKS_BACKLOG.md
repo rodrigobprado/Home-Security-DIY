@@ -56,13 +56,14 @@
 |----|--------|-----------|-------------|------------|-----------------|
 | T-037 | Desenvolver módulo de defesa não letal | Especificar e implementar sistema CO₂ + OC com autenticação, auditoria e protocolos de segurança. | Agente_Arquiteto_Drones | Média | PRD_DRONE_DEFENSE_MODULE |
 | T-040 | Elaborar PRD do módulo de defesa | Detalhar requisitos funcionais e não funcionais do sistema de defesa não letal. | Agente_Documentador | Média | PRD_DRONE_DEFENSE_MODULE |
-| T-041 | Elaborar PRD de comunicação de drones | Detalhar requisitos de rede, protocolos, failover e streaming para drones. | Agente_Documentador | Média | PRD_DRONE_COMMUNICATION |
 | T-044 | Criar guia de montagem UGV | Documentar passo a passo de montagem do drone terrestre com BOM e instruções. | Agente_Documentador | Baixa | PRD_AUTONOMOUS_DRONES |
 | T-045 | Criar guia de montagem UAV | Documentar passo a passo de montagem do drone aéreo com BOM e instruções. | Agente_Documentador | Baixa | PRD_AUTONOMOUS_DRONES |
 
 > ✅ T-038 (Integração MQTT drones + Home Assistant) concluída em 2026-02-22
 >
 > ✅ T-039 (Dashboard de frota com mapa operacional e comandos) concluída em 2026-02-22
+>
+> ✅ T-041 (PRD de comunicação de drones, revisão v1.1 com rastreabilidade) concluída em 2026-02-22
 >
 > ✅ T-042 (Pesquisar normas ANAC/DECEA) e T-043 (Pesquisar legislação defesa não letal) concluídas em 2026-02-12
 
@@ -132,9 +133,9 @@
 | Normas e compliance | 7 | 7 | 0 |
 | Documentação e PRDs | 4 | 4 | 0 |
 | Privacidade e segurança | 2 | 2 | 0 |
-| Drones autônomos | 15 | 10 | 5 |
+| Drones autônomos | 15 | 11 | 4 |
 | **Revisão e melhorias** | **23** | **23** | **0** |
-| **Total** | **68** | **63** | **5** |
+| **Total** | **68** | **64** | **4** |
 
 ---
 
@@ -156,11 +157,10 @@
 
 | Ordem | ID | Título | Justificativa |
 |-------|----|--------|---------------|
-| 1 | T-041 | PRD de comunicação de drones | Especificação para rede/failover/streaming |
-| 2 | T-037 | Módulo de defesa não letal | Depende de base de comunicação e segurança operacional |
-| 3 | T-040 | PRD do módulo de defesa | Formalização de requisitos e riscos legais |
-| 4 | T-044 | Guia de montagem UGV | Habilita replicabilidade do hardware terrestre |
-| 5 | T-045 | Guia de montagem UAV | Replicabilidade da plataforma aérea |
+| 1 | T-037 | Módulo de defesa não letal | Depende de base de comunicação e segurança operacional |
+| 2 | T-040 | PRD do módulo de defesa | Formalização de requisitos e riscos legais |
+| 3 | T-044 | Guia de montagem UGV | Habilita replicabilidade do hardware terrestre |
+| 4 | T-045 | Guia de montagem UAV | Replicabilidade da plataforma aérea |
 
 ---
 

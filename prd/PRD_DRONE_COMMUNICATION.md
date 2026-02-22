@@ -4,15 +4,15 @@
 >
 > Modulo Reativo Avancado -- Rede de Comunicacao
 >
-> Versao: 1.0 | Data: 2026-02-18 | Responsavel: Agente_Arquiteto_Drones
+> Versao: 1.1 | Data: 2026-02-22 | Responsavel: Agente_Documentador
 
 ---
 
 ## 1. Visao geral
 
 - **Nome do produto/funcionalidade**: Rede de Comunicacao Redundante para Drones Autonomos
-- **Responsavel**: Agente_Arquiteto_Drones
-- **Data**: 2026-02-18
+- **Responsavel**: Agente_Documentador
+- **Data**: 2026-02-22
 - **PRDs relacionados**: PRD_AUTONOMOUS_DRONES, PRD_DRONE_FLEET_MANAGEMENT, PRD_DRONE_DEFENSE_MODULE, PRD_NETWORK_SECURITY
 
 ---
@@ -287,6 +287,17 @@ FALLBACK: Modo autonomo total
 | `/lora_driver` | Driver para modulo LoRa (SPI) |
 | `/link_monitor` | Monitora qualidade de todos os links |
 
+### 6.6 Rastreabilidade com implementacao atual (2026-02-22)
+
+| Item | Implementado em | Evidencia |
+|------|------------------|-----------|
+| Failover Wi-Fi -> LoRa (UGV) | `src/drones/ugv/app/ugv_control.py` | Topicos `ugv/link/metrics`, `ugv/link/state`, `ugv/lora/command`; limiares `WIFI_RSSI_THRESHOLD_UGV` e `FAILOVER_TIMEOUT_SECONDS_UGV` |
+| Failover Wi-Fi -> LoRa (UAV) | `src/drones/uav/mavlink_bridge.py` | Topicos `uav/link/metrics`, `uav/link/state`, `uav/lora/command`; limiares `WIFI_RSSI_THRESHOLD_UAV` e `FAILOVER_TIMEOUT_SECONDS_UAV` |
+| Comandos MQTT autenticados (HMAC + timestamp) | `src/drones/ugv/app/ugv_control.py`, `src/drones/uav/mavlink_bridge.py` | Variaveis `COMMAND_HMAC_SECRET_*`, `COMMAND_ALLOWED_SOURCES_*`, `COMMAND_MAX_SKEW_SECONDS_*` |
+| Integracao Home Assistant (controle e telemetria) | `src/homeassistant/mqtt.yaml`, `src/homeassistant/automations.yaml` | Entidades `sensor.ugv_battery`, `sensor.ugv_status`, `sensor.uav_battery`, `sensor.uav_status` + automacoes de alarme |
+| Dashboard de frota (controle manual) | `src/dashboard/backend/app/routers/drones.py`, `src/dashboard/frontend/src/components/OperationalMap.jsx` | Endpoint `POST /api/drones/command` + botoes `start_patrol`, `return_home`, `emergency_stop` |
+| Streaming e transporte de video UGV | `src/drones/ugv/docker-compose.ugv.yml` | Servico `mediamtx` para RTSP e integracao com processamento local |
+
 ---
 
 ## 7. Hardware e componentes recomendados
@@ -348,6 +359,12 @@ FALLBACK: Modo autonomo total
 | CA-011 | Video gravado localmente e sincronizado apos reconexao | Teste de gravacao + reconexao |
 | CA-012 | Todos os modulos de radio sao homologados ANATEL | Verificacao de certificados |
 | CA-013 | MQTT integra corretamente com Home Assistant | Teste de integracao |
+| CA-014 | Topicos de failover UGV/UAV publicados corretamente (`*/link/state`) | Teste funcional com perda de RSSI e timeout |
+| CA-015 | Comandos criticos LoRa (STOP/RTH) executam em UGV/UAV | Teste funcional em topicos `*/lora/command` |
+| CA-016 | Dashboard envia comandos para API e API publica em MQTT | Teste de integracao `POST /api/drones/command` |
+| CA-017 | Mapa operacional mostra posicao UGV/UAV com atualizacao por WebSocket | Teste de interface com eventos `state_changed` |
+| CA-018 | Trilha de patrulha de 24h visivel no dashboard de frota | Teste de interface e persistencia em memoria |
+| CA-019 | Entidades de bateria e status dos drones atualizam no Home Assistant | Teste de integracao em `src/homeassistant/mqtt.yaml` |
 
 ---
 
@@ -397,6 +414,9 @@ FALLBACK: Modo autonomo total
 - `docs/ARQUITETURA_DRONES_AUTONOMOS.md` -- Secao 5 (Arquitetura de Comunicacao)
 - `rules/RULES_COMPLIANCE_AND_STANDARDS.md` -- REGRA-DRONE-08, 09, 10, 18
 - `standards/STANDARDS_TO_RESEARCH.md` -- Secao 8.3 (ANATEL)
+- `docs/DRONE_COMMUNICATION_REDUNDANCY.md` -- Validacao de failover implementada
+- `docs/DRONE_HOMEASSISTANT_MQTT_INTEGRATION.md` -- Topicos MQTT e automacoes HA
+- `src/dashboard/backend/app/routers/drones.py` -- Endpoint de comando operacional
 
 ### Regulamentacao
 
@@ -415,6 +435,6 @@ FALLBACK: Modo autonomo total
 
 ---
 
-> **Status**: Rascunho v1.0
+> **Status**: Finalizado v1.1
 >
 > **Proxima revisao**: Apos testes de alcance e cobertura em campo
