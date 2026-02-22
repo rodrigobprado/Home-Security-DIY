@@ -3,6 +3,7 @@ import hashlib
 import hmac
 import json
 import logging
+import os
 import struct
 import time
 from pathlib import Path
@@ -30,7 +31,7 @@ class DefenseController:
         cooldown_seconds=30,
         max_triggers_per_day=3,
         exclusion_zones=None,
-        audit_log_path="/tmp/ugv_defense_audit.log",
+        audit_log_path="/var/lib/home-security/audit/ugv_defense_audit.log",
     ):
         if not pin_code:
             raise ValueError("DefenseController requires a non-empty pin_code.")
@@ -90,6 +91,7 @@ class DefenseController:
             self.audit_log_path.parent.mkdir(parents=True, exist_ok=True)
             with self.audit_log_path.open("a", encoding="utf-8") as fp:
                 fp.write(json.dumps(entry, ensure_ascii=True) + "\n")
+            os.chmod(self.audit_log_path, 0o600)
             self.audit_head = digest
         except Exception as exc:
             logging.error("Audit log write failed: %s", exc)

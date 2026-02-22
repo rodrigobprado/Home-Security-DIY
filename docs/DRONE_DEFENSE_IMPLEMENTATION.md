@@ -46,6 +46,7 @@ Interface de configuracao:
 - `DEFENSE_MAX_TRIGGERS_PER_DAY_UGV`
 - `DEFENSE_EXCLUSION_ZONES_UGV`
 - `DEFENSE_AUDIT_LOG_PATH_UGV`
+  - recomendado: caminho persistente fora de `/tmp` (ex.: `/var/lib/home-security/audit/ugv_defense_audit.log`)
 
 ## Consulta juridica (registro minimo obrigatorio)
 

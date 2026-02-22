@@ -79,7 +79,7 @@ DEFENSE_EXCLUSION_ZONES = {
     if z.strip()
 }
 DEFENSE_AUDIT_LOG_PATH = os.environ.get(
-    "DEFENSE_AUDIT_LOG_PATH_UGV", "/tmp/ugv_defense_audit.log"
+    "DEFENSE_AUDIT_LOG_PATH_UGV", "/var/lib/home-security/audit/ugv_defense_audit.log"
 ).strip()
 DEFENSE_ACTUATOR_SPEC = os.environ.get(
     "DEFENSE_ACTUATOR_SPEC_UGV", "solenoid_12v_nc+co2_valve"
