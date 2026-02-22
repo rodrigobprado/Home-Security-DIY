@@ -909,11 +909,11 @@
 
 ### Checklist obrigatório – Sistema de segurança
 
-- [ ] **LGPD**: Verificar se câmeras captam apenas área privada (exceção art. 4º, I)
-- [ ] **LGPD**: Se captar área pública/vizinhos, implementar controles completos
-- [ ] **LGPD**: Placas de aviso em áreas monitoradas
-- [ ] **LGPD**: Política de retenção definida (recomendado: 30 dias)
-- [ ] **LGPD**: Controle de acesso às gravações com log
+- [x] **LGPD**: Verificar se câmeras captam apenas área privada (exceção art. 4º, I)
+- [x] **LGPD**: Se captar área pública/vizinhos, implementar controles completos
+- [x] **LGPD**: Placas de aviso em áreas monitoradas
+- [x] **LGPD**: Política de retenção definida (recomendado: 30 dias)
+- [x] **LGPD**: Controle de acesso às gravações com log
 - [ ] **Cerca elétrica**: Altura mínima 2,20m, sinalização a cada 10m
 - [ ] **Cerca elétrica**: Instalação por profissional habilitado
 - [ ] **NBR 5410**: DPS instalado no quadro de distribuição
@@ -938,4 +938,3 @@
 - [ ] **Defesa**: Implementar 2FA para armamento do módulo
 - [ ] **Defesa**: Configurar aviso sonoro/visual pré-disparo (mín. 5s)
 - [ ] **Logs**: Garantir registro imutável de operações e disparos
-
