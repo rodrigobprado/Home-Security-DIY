@@ -38,8 +38,9 @@ Arquivo: `tasks/COMPLIANCE_CHECKLIST_AUDIT_2026-02-22.md`
 - Manual pendente: parecer juridico por UF (SP/RJ/MG) e aprovacao legal formal para uso real.
 
 ### #105 - Seguranca fisica e hardening
-- Automatizado: guias/checklists tecnicos documentados.
-- Manual pendente: validacao de campo (perimetro, LUKS, nobreak, DPS e aterramento).
+- Automatizado: checklist consolidado e auditoria tecnica local adicionados.
+- Evidencias: `docs/SEGURANCA_FISICA_HARDENING_CHECKLIST.md` e `scripts/physical_hardening_audit.sh`.
+- Manual pendente: validacao de campo (perimetro, nobreak, DPS e aterramento).
 
 ### #106 - Rede, VLANs e credenciais
 - Automatizado: autenticacao MQTT, ACL e `permit_join: false`.
