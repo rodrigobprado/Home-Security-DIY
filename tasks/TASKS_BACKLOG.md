@@ -54,7 +54,6 @@
 
 | ID | Título | Descrição | Responsável | Prioridade | PRD relacionado |
 |----|--------|-----------|-------------|------------|-----------------|
-| T-044 | Criar guia de montagem UGV | Documentar passo a passo de montagem do drone terrestre com BOM e instruções. | Agente_Documentador | Baixa | PRD_AUTONOMOUS_DRONES |
 | T-045 | Criar guia de montagem UAV | Documentar passo a passo de montagem do drone aéreo com BOM e instruções. | Agente_Documentador | Baixa | PRD_AUTONOMOUS_DRONES |
 
 > ✅ T-038 (Integração MQTT drones + Home Assistant) concluída em 2026-02-22
@@ -66,6 +65,8 @@
 > ✅ T-041 (PRD de comunicação de drones, revisão v1.1 com rastreabilidade) concluída em 2026-02-22
 >
 > ✅ T-037 (Módulo de defesa não letal com 2FA/TOTP, bloqueios de segurança e auditoria imutável) concluída em 2026-02-22
+>
+> ✅ T-044 (Guia de montagem UGV alinhado ao firmware atual e checklists de validação) concluída em 2026-02-22
 >
 > ✅ T-042 (Pesquisar normas ANAC/DECEA) e T-043 (Pesquisar legislação defesa não letal) concluídas em 2026-02-12
 
@@ -135,9 +136,9 @@
 | Normas e compliance | 7 | 7 | 0 |
 | Documentação e PRDs | 4 | 4 | 0 |
 | Privacidade e segurança | 2 | 2 | 0 |
-| Drones autônomos | 15 | 13 | 2 |
+| Drones autônomos | 15 | 14 | 1 |
 | **Revisão e melhorias** | **23** | **23** | **0** |
-| **Total** | **68** | **66** | **2** |
+| **Total** | **68** | **67** | **1** |
 
 ---
 
@@ -159,8 +160,7 @@
 
 | Ordem | ID | Título | Justificativa |
 |-------|----|--------|---------------|
-| 1 | T-044 | Guia de montagem UGV | Habilita replicabilidade do hardware terrestre |
-| 2 | T-045 | Guia de montagem UAV | Replicabilidade da plataforma aérea |
+| 1 | T-045 | Guia de montagem UAV | Replicabilidade da plataforma aérea |
 
 ---
 

@@ -1,109 +1,144 @@
-# Guia de Montagem e Wiring do UGV
+# Guia de Montagem do UGV (T-044)
 
-Data: 2026-02-17
-Referência: **Tarefa T-044**
+Data: 2026-02-22  
+Referencia: `tasks/TASKS_BACKLOG.md` (T-044)
 
-Este guia detalha a montagem física e elétrica do Drone Terrestre Autônomo (UGV), complementando a [Arquitetura de Hardware](docs/ARQUITETURA_HARDWARE_UGV.md).
+Este guia documenta a montagem mecanica e eletrica do UGV alinhada ao firmware atual (`T-033`) e ao stack ROS2 (`T-034`).
 
----
+## 1. BOM (MVP)
 
-## 1. Lista de Materiais (BOM)
+| Item | Qtd | Especificacao recomendada | Faixa estimada (R$) |
+|------|-----|---------------------------|---------------------|
+| Raspberry Pi 5 (8 GB) | 1 | Computacao de alto nivel (ROS2, visao, MQTT) | 650-1100 |
+| ESP32 DevKit V1 | 1 | Controle de motores/encoders/telemetria | 35-70 |
+| Driver BTS7960 | 2 | Ponte H de alta corrente (esq/dir) | 80-180 |
+| Motores DC com encoder | 2 | 12V, caixa planetaria, alto torque | 300-1000 |
+| Bateria Li-Ion 4S + BMS | 1 | 14.8V nominal (8-12Ah) | 350-900 |
+| Step-down DC-DC | 1-2 | 5V para SBC e MCU (margem de corrente) | 80-220 |
+| LiDAR 2D | 1 | RPLidar A1/A2 | 700-1800 |
+| Camera frontal | 1 | CSI ou USB 1080p | 180-450 |
+| IMU | 1 | BNO055 ou MPU6050 | 40-260 |
+| Chassis 2WD/4WD | 1 | Estrutura metalica/aluminio | 350-900 |
+| Cabos e conectores | 1 kit | XT60, fusivel, chave geral, cabos 14-18 AWG | 120-300 |
 
-### Eletrônica Principal
-| Item | Quantidade | Especificação Recomendada | Função |
-|------|------------|---------------------------|--------|
-| **Cérebro Alto** | 1 | Raspberry Pi 4 (4GB+) ou Pi 5 | Processamento ROS2, Visão, Wi-Fi |
-| **Cérebro Baixo** | 1 | ESP32 DevKit V1 (30 pinos) | Controle de motores, odometria, sensores |
-| **Driver Motor** | 2 | BTS7960 (43A) | Ponte H de alta potência para motores 12V |
-| **Conversor DC-DC** | 1 | LM2596 (Step-Down) | Baixar 12V da bateria para 5V (Raspberry/ESP32) |
-| **Bateria** | 1 | Li-Ion 3S (11.1V/12.6V) 5000mAh+ | Alimentação principal |
+## 2. Arquitetura de montagem
 
-### Sensores & Periféricos
-| Item | Quantidade | Especificação Recomendada | Função |
-|------|------------|---------------------------|--------|
-| **Câmera** | 1 | RPi Camera V3 (Wide) ou Webcam USB | Visão computacional |
-| **Lidar** | 1 | RPLidar A1M8 (USB) | Navegação e mapeamento (SLAM) |
-| **IMU** | 1 | MPU6050 ou BNO055 | Acelerômetro/Giroscópio (I2C) |
-| **LoRa (Opcional)** | 1 | Módulo SX1276 / RFM95W | Comunicação de longa distância (backup) |
-
-### Mecânica
-| Item | Quantidade | Especificação Recomendada | Função |
-|------|------------|---------------------------|--------|
-| **Motores** | 2 | DC 12V Planetário c/ Encoder | Propulsão e feedback de velocidade |
-| **Rodas** | 2/4 | Off-road 120mm+ | Tração |
-| **Chassis** | 1 | Perfil de Alumínio 2020 ou Impressão 3D | Estrutura |
-| **Roda Boba** | 1 | Caster Wheel (se usar 2 rodas motrizes) | Apoio traseiro/dianteiro |
-
----
-
-## 2. Diagrama de Ligação (Wiring)
-
-### 2.1 Alimentação (Power Distribution)
 ```mermaid
 graph TD
-    BAT[Bateria 12V] --> |XT60| SWITCH[Chave Liga/Desliga]
-    SWITCH --> |12V| DRIVER_L[BTS7960 Esq]
-    SWITCH --> |12V| DRIVER_R[BTS7960 Dir]
-    SWITCH --> |12V| DCDC[LM2596 Step-Down]
-    DCDC --> |5V Regulado| RPI[Raspberry Pi 5V PIN]
-    DCDC --> |5V Regulado| ESP[ESP32 VIN PIN]
-    GND[GND Comum] --- BAT
-    GND --- DRIVER_L
-    GND --- DRIVER_R
-    GND --- DCDC
-    GND --- RPI
-    GND --- ESP
+    BAT[Bateria 4S + BMS] --> FUSE[Fusivel + chave geral]
+    FUSE --> DCDC[Conversor 5V]
+    FUSE --> DRV_L[BTS7960 Esquerdo]
+    FUSE --> DRV_R[BTS7960 Direito]
+    DCDC --> RPI[Raspberry Pi]
+    DCDC --> ESP[ESP32]
+    ESP --> DRV_L
+    ESP --> DRV_R
+    ESP --> ENC[Encoders]
+    ESP --> IMU[IMU I2C]
+    RPI --> CAM[Camera]
+    RPI --> LIDAR[LiDAR]
+    RPI <--USB--> ESP
 ```
 
-### 2.2 Conexões ESP32 (Pinout)
+## 3. Pinagem validada com firmware T-033
 
-**Atenção**: O ESP32 opera em 3.3V, mas muitos sensores são 5V. Use divisores de tensão se necessário (para encoders 5V).
+Arquivo de referencia: `src/drones/ugv/firmware/src/main.cpp`
 
-| Componente | Pino Componente | Pino ESP32 (GPIO) | Notas |
-|------------|-----------------|-------------------|-------|
-| **Motor Esq** | RPWM | 16 | PWM Frente |
-| | LPWM | 17 | PWM Trás |
-| | R_EN + L_EN | 3.3V | Habilitar Driver |
-| **Motor Dir** | RPWM | 18 | PWM Frente |
-| | LPWM | 19 | PWM Trás |
-| | R_EN + L_EN | 3.3V | Habilitar Driver |
-| **Encoder Esq** | A (Sinal) | 34 | Input Only |
-| | B (Sinal) | 35 | Input Only |
-| **Encoder Dir** | A (Sinal) | 32 | Input |
-| | B (Sinal) | 33 | Input |
-| **IMU (I2C)** | SDA | 21 | Padrão I2C |
-| | SCL | 22 | Padrão I2C |
-| **Raspberry Pi** | USB | USB | Serial Communication |
+### 3.1 Motores (BTS7960)
 
----
+| Funcao | GPIO ESP32 |
+|--------|------------|
+| RPWM_L | 16 |
+| LPWM_L | 17 |
+| RPWM_R | 25 |
+| LPWM_R | 26 |
 
-## 3. Instruções de Montagem
+### 3.2 Encoders
 
-### Passo 1: Preparação do Chassis
-1. Monte a estrutura base (alumínio ou 3D).
-2. Fixe os suportes dos motores com parafusos M3/M4 e trava-rosca.
+| Funcao | GPIO ESP32 |
+|--------|------------|
+| ENC_L_A | 34 |
+| ENC_L_B | 35 |
+| ENC_R_A | 32 |
+| ENC_R_B | 33 |
 
-### Passo 2: Motores e Drivers
-1. Instale os motores e as rodas.
-2. Fixe as placas BTS7960 próximas aos motores para reduzir o comprimento dos cabos de potência.
-3. Conecte os fios grossos (14-16 AWG) da Bateria -> BTS7960 -> Motor.
+### 3.3 Sensores e LoRa
 
-### Passo 3: Eletrônica Central
-1. Monte o Raspberry Pi e o ESP32 em uma plataforma central elevada (protegida de poeira/água).
-2. Conecte o cabo USB entre RPi e ESP32.
-3. Conecte o Lidar e a Câmera às portas USB/CSI do Raspberry Pi.
+| Funcao | GPIO ESP32 |
+|--------|------------|
+| BATTERY_ADC_PIN | 39 |
+| LORA_SS | 5 |
+| LORA_RST | 27 |
+| LORA_DIO0 | 2 |
+| LORA_SCK | 14 |
+| LORA_MISO | 12 |
+| LORA_MOSI | 13 |
 
-### Passo 4: Primeiros Testes
-1. **Sem hélice/rodas no chão**: Ligue a chave geral.
-2. Verifique se o LED do ESP32 e do Raspberry Pi acendem.
-3. Acesse o RPi via SSH e verifique se detecta o ESP32 (`ls /dev/ttyUSB*`).
-4. Rode o script de teste de motores (cuidado com o sentido de rotação).
+### 3.4 Restricao importante
 
----
+- `GPIO 18/19` devem permanecer **sem uso** neste projeto para evitar conflito historico com SPI/LoRa (issue #30).
 
-## 4. Troubleshooting Comum
+## 4. Procedimento de montagem
 
-- **Motor gira ao contrário**: Inverta os fios M+ e M- no born do driver BTS7960.
-- **Odometria negativa indo pra frente**: Inverta os pinos A e B do encoder no código ou no fio.
-- **Undervoltage no RPi**: Use fios curtos e grossos do LM2596 até o GPIO do Pi, ou use um cabo USB-C de alta qualidade cortado.
-- **Interferência no Lidar**: Mantenha cabos de motor (PWM ruidoso) longe do cabo USB do Lidar. Use anéis de ferrite.
+1. Montar chassis e fixar motores com trava-rosca.
+2. Instalar drivers BTS7960 proximos aos motores (reduz ruido em cabos de potencia).
+3. Montar distribuicao de energia:
+   - bateria -> fusivel -> chave geral -> drivers/DC-DC
+   - garantir GND comum entre bateria, ESP32, drivers e Raspberry
+4. Fixar Raspberry e ESP32 em area protegida de vibracao/umidade.
+5. Conectar ESP32 aos drivers conforme pinagem validada.
+6. Conectar encoders/IMU no ESP32.
+7. Conectar camera e LiDAR no Raspberry.
+8. Conectar USB serial entre Raspberry e ESP32.
+
+## 5. Checklist pre-energizacao
+
+- [ ] Polaridade da bateria verificada.
+- [ ] Fusivel instalado e dimensionado.
+- [ ] Chave geral funcional.
+- [ ] GND comum confirmado em multimetro.
+- [ ] Sem curto entre 5V e GND.
+- [ ] Pinagem conforme tabela da secao 3.
+- [ ] GPIO 18/19 nao conectados.
+- [ ] Cabos de potencia separados de cabos de sinal/USB.
+
+## 6. Checklist de validacao pos-montagem
+
+### 6.1 Firmware e serial
+
+- [ ] ESP32 reconhecido no host (`/dev/ttyUSB*`).
+- [ ] Telemetria serial recebida (`O`, `B`, `W`).
+- [ ] Watchdog aciona parada ao perder comando.
+
+### 6.2 Motores e odometria
+
+- [ ] Comando `M <left> <right>` move os lados corretos.
+- [ ] `STOP` para imediatamente.
+- [ ] Encoders aumentam/reduzem de forma coerente com direcao.
+
+### 6.3 Stack ROS2/MQTT
+
+- [ ] UGV publica status em `ugv/status`.
+- [ ] Patrulha publica waypoints em `ugv/patrol/waypoints`.
+- [ ] Link de comunicacao reporta `ugv/link/state`.
+
+## 7. Troubleshooting
+
+- Motor invertido: inverter pares de fio do motor no driver correspondente.
+- Odometria invertida: revisar fase A/B do encoder.
+- Reboot do Raspberry em aceleracao: aumentar margem de corrente do DC-DC e reduzir queda em cabos.
+- LiDAR instavel: separar cabos USB dos cabos PWM e usar ferrite.
+- ESP32 reiniciando sob carga: revisar GND comum e ripple no barramento.
+
+## 8. Seguranca eletrica e operacional
+
+- Nunca energizar com rodas livres sem area protegida.
+- Usar E-stop fisico acessivel.
+- Isolar terminais de bateria e usar conectores adequados (XT60 ou equivalente).
+- Nao realizar manutencao com chave geral ligada.
+
+## 9. Referencias cruzadas
+
+- Arquitetura de hardware: `docs/ARQUITETURA_HARDWARE_UGV.md`
+- Firmware de baixo nivel: `src/drones/ugv/firmware/src/main.cpp`
+- Guia de firmware: `src/drones/ugv/firmware/README.md`
