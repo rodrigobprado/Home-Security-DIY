@@ -185,8 +185,21 @@ Execute após cada deploy em ambiente real:
 | `docs-links` | script local | Links Markdown internos |
 | `frontend-quality` | eslint + typecheck + vitest | Qualidade e testes do frontend |
 | `backend-quality` | pytest | Testes backend do dashboard |
+| `compliance-gates` | scripts + pytest | Auditorias de compliance + contratos de evidência |
 
 Ver `.github/workflows/validate.yml` para implementação completa.
+Ver `.github/workflows/compliance-gates.yml` para o gate de compliance.
+
+### Cobertura de compliance operacional
+
+O gate de compliance inclui também contratos de documentação operacional:
+- `test_lgpd_operational_evidence_contract.py`
+- `test_uav_regulatory_evidence_contract.py`
+- `test_defense_legal_evidence_contract.py`
+- `test_physical_hardening_operations_contract.py`
+- `test_network_production_validation_contract.py`
+- `test_integration_smoke_production_runbook_contract.py`
+- `test_matter_thread_semester_review_contract.py`
 
 **Cobertura mínima no CI:**
 - Backend: `pytest-cov` com `--cov-fail-under=70` para `app/`

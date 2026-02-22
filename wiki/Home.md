@@ -48,6 +48,8 @@ O projeto combina automação, vídeo inteligente, sensores e drones para segura
 - Observabilidade WebSocket: endpoint `GET /api/services/ws-metrics`.
 - Política de retenção de alertas com script de limpeza (`scripts/cleanup_alerts.py`).
 - Validação automática de links Markdown no CI (`docs-links`).
+- Compliance operacional (LGPD, UAV, defesa, hardening físico, rede, integração e Matter/Thread) com runbooks e templates versionados.
+- Pipeline dedicado `compliance-gates.yml` com artifacts e bloqueio de merge para não conformidades estruturais.
 
 ## Documentação no repositório
 

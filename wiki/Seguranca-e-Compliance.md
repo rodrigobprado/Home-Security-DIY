@@ -16,6 +16,22 @@ O sistema Home Security DIY adota **defesa em profundidade** em duas dimensões:
 
 ---
 
+## Compliance Operacional (T-047 a T-053)
+
+Além da camada técnica já implementada, o projeto possui runbooks operacionais para coleta de evidências e fechamento de conformidade em campo:
+
+- LGPD operacional (câmeras): `docs/LGPD_OPERATIONAL_EVIDENCE_RUNBOOK.md`
+- Regulatório UAV (ANAC/SISANT/DECEA/ANATEL): `docs/UAV_REGULATORY_EVIDENCE_RUNBOOK.md`
+- Jurídico + técnico do módulo de defesa: `docs/DEFENSE_LEGAL_EVIDENCE_RUNBOOK.md`
+- Hardening físico recorrente: `docs/PHYSICAL_HARDENING_OPERATIONS_RUNBOOK.md`
+- Rede em produção (VLAN/TLS/TOTP/SSH): `docs/NETWORK_PRODUCTION_VALIDATION_PLAYBOOK.md`
+- Smoke de integração em ambiente real: `docs/INTEGRATION_SMOKE_PRODUCTION_RUNBOOK.md`
+- Revisão semestral Matter/Thread: `docs/MATTER_THREAD_SEMESTER_REVIEW_RUNBOOK.md`
+
+Templates de execução/evidência: `tasks/templates/`.
+
+---
+
 ## Modelo de Ameaças (STRIDE)
 
 Metodologia: **STRIDE** (Spoofing, Tampering, Repudiation, Information Disclosure, Denial of Service, Elevation of Privilege).
