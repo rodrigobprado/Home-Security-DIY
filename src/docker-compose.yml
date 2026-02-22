@@ -118,9 +118,9 @@ services:
     shm_size: "256mb"
     ports:
       - "127.0.0.1:5000:5000" # Web UI
-      - "8554:8554" # RTSP restream
-      - "8555:8555" # WebRTC
-      - "8555:8555/udp"
+      - "127.0.0.1:8554:8554" # RTSP restream (loopback only)
+      - "127.0.0.1:8555:8555" # WebRTC (loopback only)
+      - "127.0.0.1:8555:8555/udp"
     volumes:
       - ./frigate/config.yml:/config/config.yml:ro
       - ${FRIGATE_MEDIA_PATH:-./frigate/media}:/media/frigate
