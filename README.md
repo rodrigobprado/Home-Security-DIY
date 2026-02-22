@@ -114,6 +114,7 @@ O projeto inclui uma camada reativa avançada com **frota modular de drones aut�
 - 📄 [Arquitetura UGV (Terrestre)](docs/ARQUITETURA_HARDWARE_UGV.md)
 - 📄 [Arquitetura UAV (Aéreo)](docs/ARQUITETURA_HARDWARE_UAV.md)
 - 🔗 [Integração MQTT com Home Assistant](docs/DRONE_HOMEASSISTANT_MQTT_INTEGRATION.md)
+- 🛡️ [Implementação do Módulo de Defesa (T-037)](docs/DRONE_DEFENSE_IMPLEMENTATION.md)
 - 🛠️ [Guia de Montagem UGV](docs/GUIA_MONTAGEM_UGV.md)
 - 🛡️ [Módulo de Defesa e Segurança](prd/PRD_DRONE_DEFENSE_MODULE.md)
 

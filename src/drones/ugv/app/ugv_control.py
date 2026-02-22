@@ -57,9 +57,28 @@ MQTT_TOPIC_PATROL_WAYPOINTS = "ugv/patrol/waypoints"
 MQTT_TOPIC_LINK_METRICS = "ugv/link/metrics"
 MQTT_TOPIC_LORA_CMD = "ugv/lora/command"
 MQTT_TOPIC_LINK_STATE = "ugv/link/state"
+MQTT_TOPIC_VISION_SAFETY = "ugv/vision/safety"
+MQTT_TOPIC_DEFENSE_AUDIT = "ugv/defense/audit"
 DEFENSE_PIN = os.environ.get("DEFENSE_PIN_UGV", "").strip()
 if not DEFENSE_PIN:
     raise RuntimeError("DEFENSE_PIN_UGV env var is required for UGV control.")
+DEFENSE_TOTP_SECRET = os.environ.get("DEFENSE_TOTP_SECRET_UGV", "").strip()
+DEFENSE_WARNING_SECONDS = int(os.environ.get("DEFENSE_WARNING_SECONDS_UGV", "5"))
+DEFENSE_COOLDOWN_SECONDS = int(os.environ.get("DEFENSE_COOLDOWN_SECONDS_UGV", "30"))
+DEFENSE_MAX_TRIGGERS_PER_DAY = int(os.environ.get("DEFENSE_MAX_TRIGGERS_PER_DAY_UGV", "3"))
+DEFENSE_EXCLUSION_ZONES = {
+    z.strip().lower()
+    for z in os.environ.get(
+        "DEFENSE_EXCLUSION_ZONES_UGV", "sidewalk,service_entry,neighbor_gate"
+    ).split(",")
+    if z.strip()
+}
+DEFENSE_AUDIT_LOG_PATH = os.environ.get(
+    "DEFENSE_AUDIT_LOG_PATH_UGV", "/tmp/ugv_defense_audit.log"
+).strip()
+DEFENSE_ACTUATOR_SPEC = os.environ.get(
+    "DEFENSE_ACTUATOR_SPEC_UGV", "solenoid_12v_nc+co2_valve"
+).strip()
 ROS2_PATROL_TOPIC = os.environ.get("ROS2_PATROL_TOPIC", "/ugv/patrol/goal")
 ROS2_ENABLED = os.environ.get("ROS2_ENABLED", "true").strip().lower() in {"1", "true", "yes"}
 ROS2_PATROL_ROUTE_FILE = os.environ.get(
@@ -71,12 +90,22 @@ FAILOVER_TIMEOUT_SECONDS = int(os.environ.get("FAILOVER_TIMEOUT_SECONDS_UGV", "3
 # Serial Connection
 ser = None
 health = HealthMonitor()
-defense = DefenseController(pin_code=DEFENSE_PIN)
+defense = DefenseController(
+    pin_code=DEFENSE_PIN,
+    totp_secret=DEFENSE_TOTP_SECRET,
+    warning_seconds=DEFENSE_WARNING_SECONDS,
+    cooldown_seconds=DEFENSE_COOLDOWN_SECONDS,
+    max_triggers_per_day=DEFENSE_MAX_TRIGGERS_PER_DAY,
+    exclusion_zones=sorted(DEFENSE_EXCLUSION_ZONES),
+    audit_log_path=DEFENSE_AUDIT_LOG_PATH,
+)
 PATROL_ROUTES = {}
 CURRENT_LINK_MODE = "wifi"
 LAST_LINK_REASON = "startup"
 last_mqtt_rx_ts = time.time()
 last_link_rssi = -60
+defense_blocked = False
+defense_block_reasons = []
 
 
 def load_patrol_routes():
@@ -179,6 +208,7 @@ def on_connect(client, userdata, flags, rc):
     client.subscribe(MQTT_TOPIC_WAYPOINTS_SET)
     client.subscribe(MQTT_TOPIC_LINK_METRICS)
     client.subscribe(MQTT_TOPIC_LORA_CMD)
+    client.subscribe(MQTT_TOPIC_VISION_SAFETY)
 
 
 def on_disconnect(client, userdata, rc):
@@ -277,13 +307,27 @@ def verify_command_auth(payload):
     return True, "ok"
 
 def on_message(client, userdata, msg):
-    global last_mqtt_rx_ts, last_link_rssi
+    global last_mqtt_rx_ts, last_link_rssi, defense_blocked, defense_block_reasons
     try:
         health.update_heartbeat()
         payload = json.loads(msg.payload.decode())
-        command = payload.get('cmd')
+        command = payload.get("cmd")
         print(f"MQTT CMD: topic={msg.topic} cmd={command}")
         last_mqtt_rx_ts = time.time()
+
+        if msg.topic == MQTT_TOPIC_LINK_METRICS:
+            rssi = payload.get("wifi_rssi")
+            try:
+                last_link_rssi = int(rssi)
+            except (TypeError, ValueError):
+                pass
+            return
+
+        if msg.topic == MQTT_TOPIC_VISION_SAFETY:
+            defense_blocked = bool(payload.get("defense_blocked", False))
+            raw_reasons = payload.get("reasons")
+            defense_block_reasons = raw_reasons if isinstance(raw_reasons, list) else []
+            return
 
         authorized, auth_reason = verify_command_auth(payload)
         if not authorized:
@@ -320,29 +364,128 @@ def on_message(client, userdata, msg):
             )
             return
 
-        if msg.topic == MQTT_TOPIC_LINK_METRICS:
-            rssi = payload.get("wifi_rssi")
-            try:
-                last_link_rssi = int(rssi)
-            except (TypeError, ValueError):
-                pass
-            return
-
         if msg.topic == MQTT_TOPIC_LORA_CMD:
             handle_lora_command(client, payload)
             return
 
         is_healthy, reason = health.check_health()
 
-        # Defense Commands
-        if command == 'defense_arm':
-            if not is_healthy:
-                print(f"Blocking defense_arm due to health failure: {reason}")
-                return
-            defense.arm(payload.get('pin', ''))
+        # Defense commands
+        if command == "defense_mode":
+            ok, detail = defense.set_mode(payload.get("mode", ""))
+            client.publish(
+                MQTT_TOPIC_DEFENSE_STATUS,
+                json.dumps(
+                    {
+                        **defense.get_status(),
+                        "command": "defense_mode",
+                        "result": "ok" if ok else "rejected",
+                        "detail": detail,
+                    }
+                ),
+            )
             return
-        elif command == 'defense_disarm':
-            defense.disarm("Request")
+
+        if command == "defense_arm":
+            if not is_healthy:
+                client.publish(
+                    MQTT_TOPIC_DEFENSE_STATUS,
+                    json.dumps(
+                        {
+                            **defense.get_status(),
+                            "command": "defense_arm",
+                            "result": "rejected",
+                            "detail": f"health:{reason}",
+                        }
+                    ),
+                )
+                return
+            ok, detail = defense.arm(
+                payload.get("pin", ""),
+                payload.get("totp", ""),
+                source_id=str(payload.get("source_id", "unknown")),
+            )
+            client.publish(
+                MQTT_TOPIC_DEFENSE_STATUS,
+                json.dumps(
+                    {
+                        **defense.get_status(),
+                        "command": "defense_arm",
+                        "result": "ok" if ok else "rejected",
+                        "detail": detail,
+                    }
+                ),
+            )
+            return
+        if command == "defense_disarm":
+            defense.disarm("request")
+            client.publish(
+                MQTT_TOPIC_DEFENSE_STATUS,
+                json.dumps(
+                    {
+                        **defense.get_status(),
+                        "command": "defense_disarm",
+                        "result": "ok",
+                    }
+                ),
+            )
+            return
+        if command in {"defense_auto_fire", "defense_set_automatic"}:
+            client.publish(
+                MQTT_TOPIC_DEFENSE_STATUS,
+                json.dumps(
+                    {
+                        **defense.get_status(),
+                        "command": command,
+                        "result": "rejected",
+                        "detail": "automatic_mode_forbidden",
+                    }
+                ),
+            )
+            return
+        if command == "defense_fire":
+            if not is_healthy:
+                client.publish(
+                    MQTT_TOPIC_DEFENSE_STATUS,
+                    json.dumps(
+                        {
+                            **defense.get_status(),
+                            "command": "defense_fire",
+                            "result": "rejected",
+                            "detail": f"health:{reason}",
+                        }
+                    ),
+                )
+                return
+            ok, detail = defense.request_fire(
+                zone=str(payload.get("zone", "")).strip().lower(),
+                defense_blocked=defense_blocked,
+                block_reasons=defense_block_reasons,
+                source_id=str(payload.get("source_id", "unknown")),
+            )
+            defense_payload = defense.get_status()
+            defense_payload.update(
+                {
+                    "command": "defense_fire",
+                    "result": "ok" if ok else "pending_or_rejected",
+                    "detail": detail,
+                    "vision_blocked": defense_blocked,
+                    "vision_reasons": defense_block_reasons,
+                }
+            )
+            client.publish(MQTT_TOPIC_DEFENSE_STATUS, json.dumps(defense_payload))
+            client.publish(
+                MQTT_TOPIC_DEFENSE_AUDIT,
+                json.dumps(
+                    {
+                        "ts": int(time.time()),
+                        "event": "defense_fire_attempt",
+                        "result": detail,
+                        "zone": str(payload.get("zone", "")).strip().lower() or None,
+                        "source_id": str(payload.get("source_id", "unknown")),
+                    }
+                ),
+            )
             return
 
         # Nav Commands (Only if Healthy)
@@ -350,9 +493,9 @@ def on_message(client, userdata, msg):
             print(f"Ignoring command due to health failure: {reason}")
             return
 
-        if command == 'move':
-            left = int(payload.get('linear', 0) * 100)
-            right = int(payload.get('angular', 0) * 100)
+        if command == "move":
+            left = int(payload.get("linear", 0) * 100)
+            right = int(payload.get("angular", 0) * 100)
             send_motor_cmd(left, right)
         elif command == "stop":
             send_motor_cmd(0, 0)
@@ -387,7 +530,6 @@ def on_message(client, userdata, msg):
                     "route": route_name,
                 },
             )
-            
         elif command == 'patrol':
             route_name = str(payload.get("route", "perimeter_day")).strip() or "perimeter_day"
             waypoints = payload.get("waypoints")
@@ -420,7 +562,7 @@ def on_message(client, userdata, msg):
                     "ros2": {"sent": ros2_ok, "detail": ros2_reason},
                 },
             )
-            
+
     except Exception as e:
         print(f"Error parsing command: {e}")
 
@@ -523,7 +665,15 @@ def main():
             client.publish(MQTT_TOPIC_STATUS, json.dumps(status))
             
             # Defense Status
-            client.publish(MQTT_TOPIC_DEFENSE_STATUS, json.dumps(defense.get_status()))
+            defense_status = defense.get_status()
+            defense_status.update(
+                {
+                    "actuator_spec": DEFENSE_ACTUATOR_SPEC,
+                    "vision_blocked": defense_blocked,
+                    "vision_reasons": defense_block_reasons,
+                }
+            )
+            client.publish(MQTT_TOPIC_DEFENSE_STATUS, json.dumps(defense_status))
             
             last_pub_time = time.time()
         

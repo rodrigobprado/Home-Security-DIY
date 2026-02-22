@@ -29,6 +29,13 @@ services:
       - MQTT_USER=homeassistant
       - MQTT_PASSWORD=CHANGE_ME
       - DEFENSE_PIN_UGV=CHANGE_ME_ugv_pin
+      - DEFENSE_TOTP_SECRET_UGV=JBSWY3DPEHPK3PXP
+      - DEFENSE_WARNING_SECONDS_UGV=5
+      - DEFENSE_COOLDOWN_SECONDS_UGV=30
+      - DEFENSE_MAX_TRIGGERS_PER_DAY_UGV=3
+      - DEFENSE_EXCLUSION_ZONES_UGV=sidewalk,service_entry,neighbor_gate
+      - DEFENSE_AUDIT_LOG_PATH_UGV=/tmp/ugv_defense_audit.log
+      - DEFENSE_ACTUATOR_SPEC_UGV=solenoid_12v_nc+co2_valve
       - COMMAND_HMAC_SECRET_UGV=CHANGE_ME_ugv_hmac_secret
       - COMMAND_ALLOWED_SOURCES_UGV=dashboard,homeassistant
       - COMMAND_MAX_SKEW_SECONDS_UGV=30
