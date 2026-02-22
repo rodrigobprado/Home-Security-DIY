@@ -15,7 +15,7 @@ function BatteryBar({ percent }) {
 
 function DroneCard({ title, icon, isOnlineEntity, batteryEntity, stateEntity, extraEntities = [] }) {
   const { states } = useStore()
-  const isOnline = states[isOnlineEntity]?.state === 'on'
+  const isOnline = states[isOnlineEntity]?.state === 'on' || states[isOnlineEntity]?.state === 'true'
   const battery = states[batteryEntity]?.state ?? '--'
   const droneState = states[stateEntity]?.state ?? 'desconhecido'
 
@@ -48,7 +48,7 @@ export default function DroneStatus() {
         icon="🤖"
         isOnlineEntity="binary_sensor.ugv_online"
         batteryEntity="sensor.ugv_battery"
-        stateEntity="sensor.ugv_state"
+        stateEntity="sensor.ugv_status"
         extraEntities={[
           { id: 'sensor.ugv_detections', label: 'Detecções' },
           { id: 'sensor.ugv_wi_fi_signal', label: 'Wi-Fi (dBm)' },
@@ -59,9 +59,9 @@ export default function DroneStatus() {
         icon="🚁"
         isOnlineEntity="binary_sensor.uav_armed"
         batteryEntity="sensor.uav_battery"
-        stateEntity="sensor.uav_mode"
+        stateEntity="sensor.uav_status"
         extraEntities={[
-          { id: 'sensor.uav_altitude', label: 'Altitude (m)' },
+          { id: 'binary_sensor.uav_altitude', label: 'Altitude (m)' },
         ]}
       />
     </div>
