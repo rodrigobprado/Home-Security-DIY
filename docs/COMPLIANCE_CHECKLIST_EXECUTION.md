@@ -104,3 +104,4 @@ Saida:
 - #136: evidencias operacionais LGPD em `docs/LGPD_OPERATIONAL_EVIDENCE_RUNBOOK.md`
 - #137: evidencias regulatorias UAV em `docs/UAV_REGULATORY_EVIDENCE_RUNBOOK.md`
 - #138: evidencias juridicas do modulo de defesa em `docs/DEFENSE_LEGAL_EVIDENCE_RUNBOOK.md`
+- #139: runbook de hardening fisico recorrente em `docs/PHYSICAL_HARDENING_OPERATIONS_RUNBOOK.md`
