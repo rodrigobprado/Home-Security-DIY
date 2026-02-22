@@ -74,3 +74,28 @@ Saida:
 - link de norma/parecer para itens juridicos;
 - logs de teste para itens operacionais.
 3. Comentario final na issue com evidencias + data da validacao.
+
+## Gate de compliance no CI (T-046)
+- Workflow: `.github/workflows/compliance-gates.yml`
+- Gatilhos: `pull_request` e `push` para `main` (alem de `workflow_dispatch`)
+- O que executa:
+- `scripts/physical_hardening_audit.sh`
+- `scripts/network_security_audit.sh`
+- `scripts/integration_smoke_check.sh`
+- testes de contrato:
+- `tests/backend/test_lgpd_compliance_contract.py`
+- `tests/backend/test_drone_regulatory_compliance_contract.py`
+- `tests/backend/test_defense_legality_compliance_contract.py`
+- `tests/backend/test_physical_hardening_compliance_contract.py`
+- `tests/backend/test_network_security_compliance_contract.py`
+- `tests/backend/test_integration_checklist_contract.py`
+- `tests/backend/test_matter_thread_decision_contract.py`
+
+### Politica de bloqueio
+- O workflow falha se os relatorios estruturais (`PHYSICAL_HARDENING_AUDIT` e `NETWORK_SECURITY_AUDIT`) contiverem item `FAIL`.
+- O relatorio `INTEGRATION_SMOKE` e executado no CI como evidencia operacional; falhas ali devem ser tratadas no plano de integracao do ambiente.
+- Itens `WARN` nao bloqueiam merge, mas exigem tratativa operacional/documental.
+
+### Evidencias no CI
+- Artifact publicado: `compliance-gate-report`
+- Conteudo: relatorios `*.md`, logs de execucao e `compliance-gate-summary.txt`

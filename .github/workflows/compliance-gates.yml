@@ -1,0 +1,102 @@
+name: Compliance Gates
+
+permissions:
+  contents: read
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "docs/**"
+      - "scripts/**"
+      - "tests/backend/**"
+      - "src/**"
+      - ".github/workflows/compliance-gates.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "docs/**"
+      - "scripts/**"
+      - "tests/backend/**"
+      - "src/**"
+      - ".github/workflows/compliance-gates.yml"
+  workflow_dispatch:
+
+jobs:
+  compliance-gates:
+    name: Compliance Gates
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install test dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest
+
+      - name: Run compliance audit scripts
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/compliance
+          mkdir -p tasks
+
+          bash scripts/physical_hardening_audit.sh | tee artifacts/compliance/physical_hardening_audit.log
+          bash scripts/network_security_audit.sh | tee artifacts/compliance/network_security_audit.log
+          bash scripts/integration_smoke_check.sh | tee artifacts/compliance/integration_smoke_check.log
+
+          cp tasks/PHYSICAL_HARDENING_AUDIT_*.md artifacts/compliance/ 2>/dev/null || true
+          cp tasks/NETWORK_SECURITY_AUDIT_*.md artifacts/compliance/ 2>/dev/null || true
+          cp tasks/INTEGRATION_SMOKE_*.md artifacts/compliance/ 2>/dev/null || true
+
+      - name: Run compliance contract tests
+        run: |
+          set -euo pipefail
+          pytest -q \
+            tests/backend/test_lgpd_compliance_contract.py \
+            tests/backend/test_drone_regulatory_compliance_contract.py \
+            tests/backend/test_defense_legality_compliance_contract.py \
+            tests/backend/test_physical_hardening_compliance_contract.py \
+            tests/backend/test_network_security_compliance_contract.py \
+            tests/backend/test_integration_checklist_contract.py \
+            tests/backend/test_matter_thread_decision_contract.py \
+            | tee artifacts/compliance/compliance_contract_tests.log
+
+      - name: Enforce script gate results
+        run: |
+          set -euo pipefail
+          REPORT_FILE="artifacts/compliance/compliance-gate-summary.txt"
+          gate_files=(
+            artifacts/compliance/PHYSICAL_HARDENING_AUDIT_*.md
+            artifacts/compliance/NETWORK_SECURITY_AUDIT_*.md
+          )
+          fail_count="$(grep -E -c '\|[^|]+\| FAIL \|' "${gate_files[@]}" || true)"
+          warn_count="$(grep -R -E -c '\|[^|]+\| WARN \|' artifacts/compliance/*.md || true)"
+
+          {
+            echo "Compliance gate summary"
+            echo "Generated at: $(date -Iseconds)"
+            echo ""
+            echo "FAIL entries: ${fail_count}"
+            echo "WARN entries: ${warn_count}"
+          } > "${REPORT_FILE}"
+
+          if [ "${fail_count}" -gt 0 ]; then
+            echo "Compliance gates failed: at least one FAIL entry was found."
+            exit 1
+          fi
+
+      - name: Upload compliance artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: compliance-gate-report
+          path: artifacts/compliance
