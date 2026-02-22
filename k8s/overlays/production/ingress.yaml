@@ -5,10 +5,10 @@
 # Expõe Home Assistant, Frigate e Zigbee2MQTT via domínio local.
 #
 # Configurar DNS local ou /etc/hosts:
-#   192.168.10.X  security.home.local
-#   192.168.10.X  frigate.home.local
-#   192.168.10.X  zigbee.home.local
-#   192.168.10.X  dashboard.home.local
+#   192.168.15.123  homeassistant-home-security.toca.lan
+#   192.168.15.123  frigate-home-security.toca.lan
+#   192.168.15.123  zigbee2mqtt-home-security.toca.lan
+#   192.168.15.123  dashboard-home-security.toca.lan
 
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -26,13 +26,13 @@ spec:
   tls:
     - secretName: home-security-tls
       hosts:
-        - security.home.local
-        - frigate.home.local
-        - zigbee.home.local
-        - dashboard.home.local
+        - homeassistant-home-security.toca.lan
+        - frigate-home-security.toca.lan
+        - zigbee2mqtt-home-security.toca.lan
+        - dashboard-home-security.toca.lan
   rules:
     # --- Home Assistant ---
-    - host: security.home.local
+    - host: homeassistant-home-security.toca.lan
       http:
         paths:
           - path: /
@@ -44,7 +44,7 @@ spec:
                   number: 8123
 
     # --- Frigate NVR ---
-    - host: frigate.home.local
+    - host: frigate-home-security.toca.lan
       http:
         paths:
           - path: /
@@ -56,7 +56,7 @@ spec:
                   number: 5000
 
     # --- Zigbee2MQTT ---
-    - host: zigbee.home.local
+    - host: zigbee2mqtt-home-security.toca.lan
       http:
         paths:
           - path: /
@@ -68,7 +68,7 @@ spec:
                   number: 8080
 
     # --- Dashboard Operacional ---
-    - host: dashboard.home.local
+    - host: dashboard-home-security.toca.lan
       http:
         paths:
           - path: /

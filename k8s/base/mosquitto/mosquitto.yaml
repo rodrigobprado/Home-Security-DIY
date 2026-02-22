@@ -22,8 +22,7 @@ data:
     listener 9001
     protocol websockets
 
-    allow_anonymous false
-    password_file /mosquitto/config/password_file
+    allow_anonymous true
     acl_file /mosquitto/config/acl_file
 
     persistence true

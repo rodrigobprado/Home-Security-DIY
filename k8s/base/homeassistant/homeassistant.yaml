@@ -106,6 +106,14 @@ data:
                 ⚪ Desarmado
               {% endif %}
             icon: mdi:shield-home
+  customize.yaml: |
+    {}
+  automations.yaml: |
+    []
+  scripts.yaml: |
+    {}
+  scenes.yaml: |
+    []
 
 ---
 # --- Deployment ---
@@ -147,6 +155,18 @@ spec:
             - name: config-files
               mountPath: /config/configuration.yaml
               subPath: configuration.yaml
+            - name: config-files
+              mountPath: /config/customize.yaml
+              subPath: customize.yaml
+            - name: config-files
+              mountPath: /config/automations.yaml
+              subPath: automations.yaml
+            - name: config-files
+              mountPath: /config/scripts.yaml
+              subPath: scripts.yaml
+            - name: config-files
+              mountPath: /config/scenes.yaml
+              subPath: scenes.yaml
             - name: localtime
               mountPath: /etc/localtime
               readOnly: true
