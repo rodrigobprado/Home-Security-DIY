@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
 from app.db.session import init_db
-from app.routers import alerts, cameras, sensors, services, ws
+from app.routers import alerts, cameras, drones, sensors, services, ws
 from app.security import require_api_key
 from app.services import frigate_client, ha_client
 
@@ -38,6 +38,7 @@ async def lifespan(app: FastAPI):
             pass
     await ha_client.close()
     await frigate_client.close()
+    await drones.close()
     await services.close()
 
 
@@ -52,7 +53,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.dashboard_allowed_origins,
     allow_credentials=True,
-    allow_methods=["GET"],
+    allow_methods=["GET", "POST", "PUT", "OPTIONS"],
     allow_headers=["Authorization", "Content-Type", "X-API-Key"],
 )
 
@@ -61,6 +62,7 @@ app.include_router(ws.router)
 app.include_router(sensors.router, dependencies=[Depends(require_api_key)])
 app.include_router(cameras.router, dependencies=[Depends(require_api_key)])
 app.include_router(alerts.router, dependencies=[Depends(require_api_key)])
+app.include_router(drones.router, dependencies=[Depends(require_api_key)])
 app.include_router(services.router, dependencies=[Depends(require_api_key)])
 
 
