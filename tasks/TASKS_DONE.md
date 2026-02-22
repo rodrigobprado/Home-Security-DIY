@@ -123,6 +123,7 @@
 | T-039 | Desenvolver dashboard de monitoramento de frota | 2026-02-22 | Mapa operacional configurável (upload), posição UGV/UAV em tempo real, trilhas 24h e comandos manuais via FastAPI + React |
 | T-037 | Desenvolver módulo de defesa não letal | 2026-02-22 | 2FA (PIN + TOTP), bloqueio de modo automático, aviso pré-disparo, zonas de exclusão, bloqueio por visão e auditoria imutável (hash chain) |
 | T-044 | Criar guia de montagem UGV | 2026-02-22 | Guia refeito e alinhado ao firmware T-033, com pinagem validada (sem GPIO 18/19), BOM e checklists de pré/pós validação |
+| T-045 | Criar guia de montagem UAV | 2026-02-22 | Guia consolidado com integração MAVLink/MQTT, critérios de validação operacional e restrições legais VLOS |
 
 ### Entregáveis produzidos pelo Agente_Arquiteto_Drones
 
@@ -145,8 +146,8 @@
 | Normas e compliance | 7 | 7 | 100% |
 | Documentação e PRDs | 4 | 4 | 100% |
 | Privacidade e segurança | 2 | 2 | 100% |
-| Drones autônomos | 15 | 14 | 93% |
-| **Total** | **45** | **44** | **98%** |
+| Drones autônomos | 15 | 15 | 100% |
+| **Total** | **45** | **45** | **100%** |
 
 ---
 
@@ -155,12 +156,12 @@
 ### Sistema de segurança base: ✅ 100% concluído
 Todas as 30 tarefas originais foram concluídas.
 
-### Módulo de drones autônomos: 🚀 Em andamento (93%)
-- 14 de 15 tarefas concluídas (T-031, T-032, T-033, T-034, T-035, T-036, T-037, T-038, T-039, T-040, T-041, T-042, T-043, T-044)
-- 1 tarefa pendente (T-045)
+### Módulo de drones autônomos: ✅ Concluído (100%)
+- 15 de 15 tarefas concluídas (T-031, T-032, T-033, T-034, T-035, T-036, T-037, T-038, T-039, T-040, T-041, T-042, T-043, T-044, T-045)
+- 0 tarefas pendentes
 
 ### Próximas tarefas prioritárias (drones):
-1. **T-045**: Criar guia de montagem UAV
+1. **Sem pendências no backlog de drones**
 
 ---
 

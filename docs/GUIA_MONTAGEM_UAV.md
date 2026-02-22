@@ -213,7 +213,49 @@ graph TD
 
 ---
 
-## 7. Verificações de Segurança Pré-Voo
+## 7. Integração com software atual (MAVLink + MQTT)
+
+Referência de implementação: `src/drones/uav/mavlink_bridge.py`
+
+### 7.1 Variáveis de ambiente principais
+
+- `MAVLINK_CONNECTION` (ex.: `udpin:0.0.0.0:14550`)
+- `DEFENSE_PIN_UAV`
+- `COMMAND_HMAC_SECRET_UAV`
+- `COMMAND_ALLOWED_SOURCES_UAV`
+- `COMMAND_MAX_SKEW_SECONDS_UAV`
+- `WIFI_RSSI_THRESHOLD_UAV`
+- `FAILOVER_TIMEOUT_SECONDS_UAV`
+
+### 7.2 Tópicos MQTT utilizados
+
+- Status: `uav/status`
+- Localização: `uav/location`
+- Comandos: `uav/command`
+- Canal redundante: `uav/lora/command`
+- Métricas de link: `uav/link/metrics`
+- Estado de link/failover: `uav/link/state`
+
+### 7.3 Comandos operacionais aceitos pelo bridge
+
+- `arm`
+- `disarm`
+- `takeoff`
+- `land`
+- `inspect_zone`
+- `return_home`
+- `stop`
+
+### 7.4 Critérios mínimos de validação da integração
+
+- [ ] Publicação periódica de `uav/status` e `uav/location`.
+- [ ] Comando `return_home` muda modo para RTL no bridge.
+- [ ] Comando `stop` muda modo para HOLD no bridge.
+- [ ] Failover para `lora` quando RSSI ficar abaixo do limiar ou timeout de link.
+
+---
+
+## 8. Verificações de Segurança Pré-Voo
 
 - [ ] Hélices fixas e sem rachaduras
 - [ ] Bateria acima de 80% de carga
@@ -224,6 +266,14 @@ graph TD
 - [ ] Área de decolagem livre de obstáculos (≥5 m de raio)
 - [ ] Bateria LiPo/Li-Ion inspecionada: sem inchaço, sem odor
 
-> **Atenção legal**: UAV com peso total >250 g exige registro no SISANT (ANAC).
-> Operação para segurança patrimonial é classificada como não-recreativa → RETA obrigatório.
-> Ver `standards/STANDARDS_TO_RESEARCH.md` seção 5 para detalhes de regulamentação.
+---
+
+## 9. Restrições legais operacionais (obrigatório)
+
+- Operação deve ser mantida em **VLOS** (linha de visada visual direta do piloto/operador).
+- Operação de segurança patrimonial é **não recreativa** e requer conformidade regulatória.
+- UAV com peso >250g requer registro no SISANT (ANAC) e observância de regras de espaço aéreo.
+- Planejar geofence e altitude operacional compatíveis com a legislação local.
+
+> Atenção: este repositório não substitui consulta jurídica/regulatória especializada.
+> Ver `docs/LEGAL_AND_ETHICS.md` e `standards/STANDARDS_TO_RESEARCH.md`.
