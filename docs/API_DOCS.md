@@ -279,8 +279,10 @@ curl -H "X-API-Key: ${DASHBOARD_API_KEY}" \
 
 **Exemplo WebSocket:**
 
-```text
-ws://localhost:8000/ws?api_key=${DASHBOARD_API_KEY}
+```bash
+websocat \
+  -H "X-API-Key: ${DASHBOARD_API_KEY}" \
+  ws://localhost:8000/ws
 ```
 
 ---

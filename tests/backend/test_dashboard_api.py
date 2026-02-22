@@ -169,9 +169,18 @@ def test_ws_with_api_key(monkeypatch):
     app = _build_test_app()
     client = TestClient(app)
 
-    with client.websocket_connect("/ws?api_key=test-api-key") as ws_conn:
+    with client.websocket_connect("/ws", headers={"X-API-Key": "test-api-key"}) as ws_conn:
         payload = json.loads(ws_conn.receive_text())
         assert payload["type"] == "initial_state"
         assert "states" in payload
 
     assert subscribed == []
+
+
+def test_ws_rejects_api_key_in_query_string():
+    app = _build_test_app()
+    client = TestClient(app)
+
+    with pytest.raises(WebSocketDisconnect):
+        with client.websocket_connect("/ws?api_key=test-api-key"):
+            pass
