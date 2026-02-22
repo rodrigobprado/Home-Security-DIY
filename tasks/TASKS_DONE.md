@@ -114,6 +114,7 @@
 | T-031 | Definir arquitetura de hardware UGV | 2026-02-22 | Documento técnico completo com BOM, custos, diagrama e compatibilidade ROS2/Nav2 |
 | T-034 | Implementar stack ROS2 para navegação | 2026-02-22 | Dockerfile ROS2 (Nav2/SLAM/Gazebo), patrol funcional via MQTT/ROS2 e recuperação de câmera aprimorada |
 | T-033 | Desenvolver firmware de controle baixo nível | 2026-02-22 | PID por roda, watchdog serial fail-safe, telemetria de bateria e testes unitários de controle |
+| T-036 | Implementar sistema de comunicação redundante | 2026-02-22 | Failover Wi-Fi->LoRa (UGV/UAV), comandos de emergência, estados de link e documentação de latência/recuperação |
 
 ### Entregáveis produzidos pelo Agente_Arquiteto_Drones
 
@@ -146,16 +147,16 @@
 ### Sistema de segurança base: ✅ 100% concluído
 Todas as 30 tarefas originais foram concluídas.
 
-### Módulo de drones autônomos: 🚀 Em andamento (33%)
-- 5 de 15 tarefas concluídas (T-031, T-033, T-034, T-042, T-043)
-- 10 tarefas pendentes (T-032, T-035 a T-041, T-044, T-045)
+### Módulo de drones autônomos: 🚀 Em andamento (40%)
+- 6 de 15 tarefas concluídas (T-031, T-033, T-034, T-036, T-042, T-043)
+- 9 tarefas pendentes (T-032, T-035, T-037 a T-041, T-044, T-045)
 
 ### Próximas tarefas prioritárias (drones):
-1. **T-036**: Implementar sistema de comunicação redundante
-2. **T-035**: Implementar pipeline de visão computacional
-3. **T-038**: Integração com Home Assistant
-4. **T-032**: Definir arquitetura de hardware UAV
-5. **T-039**: Dashboard de frota
+1. **T-035**: Implementar pipeline de visão computacional
+2. **T-038**: Integração com Home Assistant
+3. **T-032**: Definir arquitetura de hardware UAV
+4. **T-039**: Dashboard de frota
+5. **T-041**: Elaborar PRD de comunicação de drones
 
 ---
 

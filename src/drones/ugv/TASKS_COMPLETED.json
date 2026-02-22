@@ -33,5 +33,15 @@
         "description": "Criar integração MQTT UGV <-> Home Assistant",
         "status": "pending",
         "file": "src/drones/ugv/app/ugv_control.py"
+    },
+    {
+        "id": "T-036",
+        "description": "Implementar comunicação redundante Wi-Fi -> LoRa (UGV/UAV)",
+        "status": "completed",
+        "files": [
+            "src/drones/ugv/app/ugv_control.py",
+            "src/drones/uav/mavlink_bridge.py",
+            "docs/DRONE_COMMUNICATION_REDUNDANCY.md"
+        ]
     }
 ]
