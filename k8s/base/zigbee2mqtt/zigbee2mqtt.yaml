@@ -90,6 +90,9 @@ spec:
         app.kubernetes.io/component: zigbee-bridge
         app.kubernetes.io/part-of: home-security
     spec:
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: zigbee2mqtt
           image: koenkk/zigbee2mqtt:latest
@@ -105,6 +108,8 @@ spec:
               subPath: configuration.yaml
             - name: zigbee-device
               mountPath: /dev/ttyACM0
+            - name: tmp
+              mountPath: /tmp
           env:
             - name: TZ
               value: America/Sao_Paulo
@@ -126,7 +131,14 @@ spec:
               cpu: 500m
               memory: 256Mi
           securityContext:
-            privileged: true
+            runAsUser: 1000
+            runAsGroup: 1000
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
           livenessProbe:
             httpGet:
               path: /
@@ -150,6 +162,8 @@ spec:
           hostPath:
             path: /dev/ttyUSB0
             type: CharDevice
+        - name: tmp
+          emptyDir: {}
       # Schedule on node with Zigbee USB dongle
       nodeSelector:
         home-security/zigbee-coordinator: "true"
