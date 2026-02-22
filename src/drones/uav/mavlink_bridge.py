@@ -50,10 +50,18 @@ MQTT_TOPIC_LINK_METRICS = "uav/link/metrics"
 MQTT_TOPIC_LINK_STATE = "uav/link/state"
 WIFI_RSSI_THRESHOLD = int(os.environ.get("WIFI_RSSI_THRESHOLD_UAV", "-78"))
 FAILOVER_TIMEOUT_SECONDS = int(os.environ.get("FAILOVER_TIMEOUT_SECONDS_UAV", "30"))
+MAX_ALTITUDE_M_AGL = float(os.environ.get("MAX_ALTITUDE_M_AGL_UAV", "120.0"))
+RTH_BATTERY_THRESHOLD = float(os.environ.get("RTH_BATTERY_THRESHOLD_UAV", "20.0"))
+MIN_SAFE_DISTANCE_M = float(os.environ.get("UAV_MIN_SAFE_DISTANCE_M", "30.0"))
+GEOFENCE_MIN_LAT = float(os.environ.get("GEOFENCE_MIN_LAT_UAV", "-23.5515"))
+GEOFENCE_MAX_LAT = float(os.environ.get("GEOFENCE_MAX_LAT_UAV", "-23.5495"))
+GEOFENCE_MIN_LON = float(os.environ.get("GEOFENCE_MIN_LON_UAV", "-46.6345"))
+GEOFENCE_MAX_LON = float(os.environ.get("GEOFENCE_MAX_LON_UAV", "-46.6320"))
 last_mqtt_rx_ts = time.time()
 current_link_mode = "wifi"
 last_link_reason = "startup"
 last_link_rssi = -60
+last_regulatory_reason = "ok"
 
 # UAV State (Simulation)
 uav_state = {
@@ -86,6 +94,33 @@ def update_simulated_physics():
             uav_state["lon"] += 0.0001 * math.cos(t * 0.1)
             uav_state["alt"] = 15.0 + math.sin(t * 0.5)
             uav_state["heading"] = (uav_state["heading"] + 1) % 360
+
+
+def enforce_regulatory_safety():
+    global last_regulatory_reason
+    if not uav_state["armed"]:
+        last_regulatory_reason = "disarmed"
+        return
+
+    if uav_state["battery"] < RTH_BATTERY_THRESHOLD:
+        uav_state["mode"] = "RTL"
+        last_regulatory_reason = "rth_battery_low"
+        return
+
+    if uav_state["alt"] > MAX_ALTITUDE_M_AGL:
+        uav_state["alt"] = MAX_ALTITUDE_M_AGL
+        uav_state["mode"] = "RTL"
+        last_regulatory_reason = "altitude_limit_rtl"
+        return
+
+    outside_lat = uav_state["lat"] < GEOFENCE_MIN_LAT or uav_state["lat"] > GEOFENCE_MAX_LAT
+    outside_lon = uav_state["lon"] < GEOFENCE_MIN_LON or uav_state["lon"] > GEOFENCE_MAX_LON
+    if outside_lat or outside_lon:
+        uav_state["mode"] = "RTL"
+        last_regulatory_reason = "geofence_rtl"
+        return
+
+    last_regulatory_reason = "ok"
 
 def on_connect(client, userdata, flags, rc):
     print(f"Connected to MQTT Broker (RC: {rc})")
@@ -227,6 +262,7 @@ def main():
     
     while True:
         update_simulated_physics()
+        enforce_regulatory_safety()
         
         if time.time() - last_pub_time > 1.0:
             stale = (time.time() - last_mqtt_rx_ts) > FAILOVER_TIMEOUT_SECONDS
@@ -246,6 +282,13 @@ def main():
                     "reason": last_link_reason,
                     "wifi_rssi": last_link_rssi,
                     "failover_timeout_s": FAILOVER_TIMEOUT_SECONDS,
+                },
+                "compliance": {
+                    "max_altitude_m_agl": MAX_ALTITUDE_M_AGL,
+                    "rth_battery_threshold_pct": RTH_BATTERY_THRESHOLD,
+                    "min_safe_distance_m": MIN_SAFE_DISTANCE_M,
+                    "vlos_required": True,
+                    "regulatory_reason": last_regulatory_reason,
                 },
             }
             client.publish(MQTT_TOPIC_STATUS, json.dumps(status))
