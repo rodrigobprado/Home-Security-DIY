@@ -91,6 +91,7 @@
 | T-024 | Elaborar PRD de dashboard de monitoramento | 2026-02-12 | PRD_MONITORING_DASHBOARD.md criado |
 | T-025 | Elaborar PRDs dos três cenários residenciais | 2026-02-12 | PRD_PERIMETER_RURAL.md, PRD_PERIMETER_URBAN_HOUSE.md, PRD_APARTMENT_SECURITY.md criados |
 | T-041 | Elaborar PRD de comunicação de drones | 2026-02-22 | Revisão v1.1 de `PRD_DRONE_COMMUNICATION.md` com rastreabilidade para failover, MQTT/HA e dashboard de frota |
+| T-040 | Elaborar PRD do módulo de defesa | 2026-02-22 | Revisão v1.1 de `PRD_DRONE_DEFENSE_MODULE.md` com segurança operacional, rastreabilidade e lacunas para T-037 |
 
 ### Entregáveis produzidos pelo Agente_Documentador
 
@@ -142,8 +143,8 @@
 | Normas e compliance | 7 | 7 | 100% |
 | Documentação e PRDs | 4 | 4 | 100% |
 | Privacidade e segurança | 2 | 2 | 100% |
-| Drones autônomos | 15 | 11 | 73% |
-| **Total** | **45** | **41** | **91%** |
+| Drones autônomos | 15 | 12 | 80% |
+| **Total** | **45** | **42** | **93%** |
 
 ---
 
@@ -152,15 +153,14 @@
 ### Sistema de segurança base: ✅ 100% concluído
 Todas as 30 tarefas originais foram concluídas.
 
-### Módulo de drones autônomos: 🚀 Em andamento (73%)
-- 11 de 15 tarefas concluídas (T-031, T-032, T-033, T-034, T-035, T-036, T-038, T-039, T-041, T-042, T-043)
-- 4 tarefas pendentes (T-037, T-040, T-044, T-045)
+### Módulo de drones autônomos: 🚀 Em andamento (80%)
+- 12 de 15 tarefas concluídas (T-031, T-032, T-033, T-034, T-035, T-036, T-038, T-039, T-040, T-041, T-042, T-043)
+- 3 tarefas pendentes (T-037, T-044, T-045)
 
 ### Próximas tarefas prioritárias (drones):
 1. **T-037**: Desenvolver módulo de defesa não letal
-2. **T-040**: Elaborar PRD do módulo de defesa
-3. **T-044**: Criar guia de montagem UGV
-4. **T-045**: Criar guia de montagem UAV
+2. **T-044**: Criar guia de montagem UGV
+3. **T-045**: Criar guia de montagem UAV
 
 ---
 

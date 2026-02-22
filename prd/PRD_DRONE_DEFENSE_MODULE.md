@@ -4,15 +4,15 @@
 >
 > Modulo Reativo Avancado -- Sistema de Defesa
 >
-> Versao: 1.0 | Data: 2026-02-18 | Responsavel: Agente_Arquiteto_Drones
+> Versao: 1.1 | Data: 2026-02-22 | Responsavel: Agente_Documentador
 
 ---
 
 ## 1. Visao geral
 
 - **Nome do produto/funcionalidade**: Modulo de Defesa Nao Letal para Drones (UGV/UAV)
-- **Responsavel**: Agente_Arquiteto_Drones
-- **Data**: 2026-02-18
+- **Responsavel**: Agente_Documentador
+- **Data**: 2026-02-22
 - **PRDs relacionados**: PRD_AUTONOMOUS_DRONES, PRD_DRONE_AI_VISION, PRD_DRONE_COMMUNICATION, PRD_DRONE_FLEET_MANAGEMENT
 
 ---
@@ -312,6 +312,26 @@ Desenvolver um modulo de defesa nao letal que:
 | `drone/{id}/defense/event` | Drone -> HA | Evento de disparo com metadados |
 | `drone/{id}/defense/block` | Drone -> HA | Notificacao de bloqueio |
 
+### 6.5 Rastreabilidade com implementacao atual (2026-02-22)
+
+| Item | Implementado em | Evidencia |
+|------|------------------|-----------|
+| Estado base do controlador de defesa | `src/drones/common/defense_controller.py` | Maquina de estados (`idle`, `warning`, `armed`, `active`), timeout de armamento, lockout por PIN invalido |
+| Integracao do UGV com controle de defesa | `src/drones/ugv/app/ugv_control.py` | Comandos `defense_arm`/`defense_disarm` e publicacao em `ugv/defense/status` |
+| Guard-rail de seguranca por saude do sistema | `src/drones/ugv/app/ugv_control.py` | Bloqueio de armamento quando `HealthMonitor` indica falha |
+| Seguranca por variavel obrigatoria de PIN | `src/drones/ugv/app/ugv_control.py`, `src/drones/uav/mavlink_bridge.py` | `DEFENSE_PIN_UGV` e `DEFENSE_PIN_UAV` obrigatorios |
+| Bloqueio por deteccao de risco (criancas/animais) no pipeline de visao | `src/drones/ugv/app/ugv_vision.py`, `src/drones/uav/uav_vision.py` | Publicacao de `defense_blocked` em topicos de seguranca |
+
+### 6.6 Lacunas para a implementacao de produto (T-037)
+
+| Lacuna | Situacao atual | Acao prevista |
+|--------|----------------|---------------|
+| Hardware de disparo CO2 + OC | Nao implementado em firmware/hardware | Implementar stack de atuacao e telemetria no T-037 |
+| 2FA completo com token criptografado | PIN local disponivel, sem fluxo 2FA completo | Integrar fator adicional e token assinado |
+| Geofence de exclusao de disparo | Nao implementado no controlador de defesa | Adicionar validacao de zona antes de autorizar trigger |
+| Auditoria forense (video + hash encadeado) | Logs basicos de estado | Implementar trilha de auditoria imutavel e exportavel |
+| Pipeline legal por estado/jurisdicao | Documentacao parcial | Integrar checklist legal operacional antes de armamento |
+
 ---
 
 ## 7. Hardware e componentes recomendados
@@ -382,6 +402,10 @@ Desenvolver um modulo de defesa nao letal que:
 | CA-013 | Video buffer grava 30s antes e 60s apos disparo | Teste de gravacao |
 | CA-014 | Rele fisico desconecta solenoide quando modo DESATIVADO | Teste eletrico com multimetro |
 | CA-015 | Disparo ocorre em menos de 500ms apos confirmacao | Teste de latencia |
+| CA-016 | Comando `defense_arm` publica estado em `ugv/defense/status` | Teste de integracao MQTT |
+| CA-017 | `defense_arm` e bloqueado quando health check estiver em falha | Teste funcional com simulacao de falha |
+| CA-018 | Eventos de `defense_blocked` aparecem no pipeline de visao UGV/UAV | Teste de integracao visao + controle |
+| CA-019 | Fluxo de armamento respeita timeout automatico de 60s | Teste funcional de expiracao |
 
 ---
 
@@ -433,6 +457,9 @@ Desenvolver um modulo de defesa nao letal que:
 - `rules/RULES_COMPLIANCE_AND_STANDARDS.md` -- REGRA-DRONE-11 a 25
 - `standards/STANDARDS_TO_RESEARCH.md` -- Secao 8.4 (Legislacao de defesa nao letal)
 - `prd/PRD_AUTONOMOUS_DRONES.md` -- Secao 4.7 (Modulo de defesa)
+- `src/drones/common/defense_controller.py` -- Implementacao base do controlador de defesa
+- `src/drones/ugv/app/ugv_control.py` -- Integracao operacional do modulo no UGV
+- `docs/DRONE_AI_VISION_PIPELINE.md` -- Bloqueios por seguranca no pipeline de deteccao
 
 ### Legislacao e regulamentacao
 
@@ -460,6 +487,6 @@ Desenvolver um modulo de defesa nao letal que:
 
 ---
 
-> **Status**: Rascunho v1.0
+> **Status**: Finalizado v1.1
 >
 > **Proxima revisao**: Apos validacao juridica e testes de prototipo
