@@ -43,5 +43,15 @@
             "src/drones/uav/mavlink_bridge.py",
             "docs/DRONE_COMMUNICATION_REDUNDANCY.md"
         ]
+    },
+    {
+        "id": "T-035",
+        "description": "Implementar visão computacional com YOLOv8/TFLite e tracking",
+        "status": "completed",
+        "files": [
+            "src/drones/ugv/app/ugv_vision.py",
+            "src/drones/uav/uav_vision.py",
+            "docs/DRONE_AI_VISION_PIPELINE.md"
+        ]
     }
 ]
