@@ -188,6 +188,24 @@ Este documento registra as principais decisões de design do projeto, incluindo 
 
 ---
 
+## ADR-010 — External Secrets em Produção
+
+**Decisão**: Adotar External Secrets Operator (ESO) como padrão operacional de produção para injeção de segredos em runtime.
+
+**Motivos**:
+- Evita versionamento de segredos reais em manifests.
+- Permite rotação centralizada e auditável.
+- Reduz risco de exposição acidental em PRs.
+
+**Trade-off**:
+- Adiciona dependência operacional de um operador no cluster.
+
+**Implementação**:
+- `k8s/overlays/production/external-secrets.yaml`
+- `docs/K8S_SECRETS_MANAGEMENT.md`
+
+---
+
 ## Referências
 
 - `docs/MATTER_THREAD_EVALUATION.md` — análise completa Matter/Thread

@@ -18,6 +18,12 @@
 - [Testes e Validação](Testes-e-Validacao)
 - [Resiliência](Resiliencia)
 
+### Governança
+- [README (repo)](https://github.com/rodrigobprado/Home-Security-DIY/blob/main/README.md)
+- [CONTRIBUTING (repo)](https://github.com/rodrigobprado/Home-Security-DIY/blob/main/CONTRIBUTING.md)
+- [SECURITY (repo)](https://github.com/rodrigobprado/Home-Security-DIY/blob/main/SECURITY.md)
+- [CHANGELOG (repo)](https://github.com/rodrigobprado/Home-Security-DIY/blob/main/CHANGELOG.md)
+
 ### Segurança
 - [Segurança e Compliance](Seguranca-e-Compliance)
 

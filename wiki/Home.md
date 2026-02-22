@@ -52,10 +52,16 @@ O projeto combina automação, vídeo inteligente, sensores e drones para segura
 - Pipeline dedicado `compliance-gates.yml` com artifacts e bloqueio de merge para não conformidades estruturais.
 - Hardening de Kubernetes no Zigbee2MQTT com remoção de `privileged: true` e baseline de segurança de container.
 - Suíte backend executada integralmente em ambiente reprodutível com `.venv` (`79 testes passando` em 2026-02-22).
+- Novos runbooks operacionais publicados: backup/restore PostgreSQL, atualização sem downtime do Home Assistant e transição mock->hardware dos drones.
+- Política de SLO/SLA dos serviços críticos publicada em `docs/SLOS_SLAS_CRITICAL_SERVICES.md`.
+- ADRs 005-010 formalizados em `docs/adr/`.
+- Changelog versionado na raiz do projeto (`CHANGELOG.md`).
+- Estratégia de secrets no Kubernetes com External Secrets em produção (`k8s/overlays/production/external-secrets.yaml`).
 
 ## Documentação no repositório
 
 - `README.md` — visão geral e quickstart
 - `docs/` — arquitetura, hardening, threat model, ADRs
+- `docs/*RUNBOOK*.md` — guias operacionais de manutenção e recuperação
 - `prd/` — Product Requirements Documents
 - `k8s/docs/` — guias de deploy em K3s

@@ -51,6 +51,8 @@ docker exec -i home-security-postgres psql -U postgres homedb < backup.sql
 kubectl exec -n home-security postgres-0 -- psql -U postgres homedb < backup.sql
 ```
 
+Runbook detalhado: `docs/POSTGRES_BACKUP_RESTORE_RUNBOOK.md`
+
 ## Atualização de serviços
 
 ```bash
@@ -62,6 +64,12 @@ docker compose up -d
 kubectl rollout restart deployment/dashboard-api -n home-security
 kubectl rollout restart deployment/dashboard-frontend -n home-security
 ```
+
+Atualização controlada do Home Assistant: `docs/HOME_ASSISTANT_ZERO_DOWNTIME_UPDATE_RUNBOOK.md`
+
+Transição de drones mock -> hardware: `docs/DRONES_MOCK_TO_HARDWARE_RUNBOOK.md`
+
+Metas operacionais (SLO/SLA): `docs/SLOS_SLAS_CRITICAL_SERVICES.md`
 
 ## Hardening e resiliência
 
