@@ -39,6 +39,26 @@ else
   emit "Script de certificados MQTT" "FAIL" "Script ausente ou não executável"
 fi
 
+if [ -f src/mosquitto/config/mosquitto.prod.conf ]; then
+  emit "Perfil TLS-only de produção do Mosquitto" "PASS" "src/mosquitto/config/mosquitto.prod.conf presente"
+else
+  emit "Perfil TLS-only de produção do Mosquitto" "FAIL" "mosquitto.prod.conf ausente"
+fi
+
+if [ "${APP_ENV:-}" = "production" ]; then
+  if grep -q '^listener 8883' src/mosquitto/config/mosquitto.prod.conf; then
+    emit "MQTT TLS em produção (listener 8883)" "PASS" "listener 8883 encontrado"
+  else
+    emit "MQTT TLS em produção (listener 8883)" "FAIL" "listener 8883 não encontrado"
+  fi
+
+  if grep -q '^listener 1883' src/mosquitto/config/mosquitto.prod.conf; then
+    emit "MQTT sem listener plaintext em produção" "FAIL" "listener 1883 presente em mosquitto.prod.conf"
+  else
+    emit "MQTT sem listener plaintext em produção" "PASS" "listener 1883 ausente em mosquitto.prod.conf"
+  fi
+fi
+
 if grep -q '^permit_join:\s*false' src/zigbee2mqtt/configuration.yaml; then
   emit "Zigbee2MQTT com pareamento fechado por padrão" "PASS" "permit_join: false"
 else
