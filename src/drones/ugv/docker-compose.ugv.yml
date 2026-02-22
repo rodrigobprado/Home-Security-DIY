@@ -36,6 +36,8 @@ services:
       - ROS2_ENABLED=true
       - ROS2_PATROL_TOPIC=/ugv/patrol/goal
       - ROS2_PATROL_ROUTE_FILE=/app/ros2/routes/patrol_routes.json
+      - WIFI_RSSI_THRESHOLD_UGV=-78
+      - FAILOVER_TIMEOUT_SECONDS_UGV=30
     depends_on:
       - ugv-ros2-nav
 

@@ -50,6 +50,9 @@ MQTT_TOPIC_DEFENSE_STATUS = "ugv/defense/status"
 MQTT_TOPIC_WAYPOINTS_SET = "ugv/patrol/waypoints/set"
 MQTT_TOPIC_WAYPOINTS_STATE = "ugv/patrol/waypoints/state"
 MQTT_TOPIC_PATROL_WAYPOINTS = "ugv/patrol/waypoints"
+MQTT_TOPIC_LINK_METRICS = "ugv/link/metrics"
+MQTT_TOPIC_LORA_CMD = "ugv/lora/command"
+MQTT_TOPIC_LINK_STATE = "ugv/link/state"
 DEFENSE_PIN = os.environ.get("DEFENSE_PIN_UGV", "").strip()
 if not DEFENSE_PIN:
     raise RuntimeError("DEFENSE_PIN_UGV env var is required for UGV control.")
@@ -58,12 +61,18 @@ ROS2_ENABLED = os.environ.get("ROS2_ENABLED", "true").strip().lower() in {"1", "
 ROS2_PATROL_ROUTE_FILE = os.environ.get(
     "ROS2_PATROL_ROUTE_FILE", "/app/ros2/routes/patrol_routes.json"
 )
+WIFI_RSSI_THRESHOLD = int(os.environ.get("WIFI_RSSI_THRESHOLD_UGV", "-78"))
+FAILOVER_TIMEOUT_SECONDS = int(os.environ.get("FAILOVER_TIMEOUT_SECONDS_UGV", "30"))
 
 # Serial Connection
 ser = None
 health = HealthMonitor()
 defense = DefenseController(pin_code=DEFENSE_PIN)
 PATROL_ROUTES = {}
+CURRENT_LINK_MODE = "wifi"
+LAST_LINK_REASON = "startup"
+last_mqtt_rx_ts = time.time()
+last_link_rssi = -60
 
 
 def load_patrol_routes():
@@ -164,6 +173,71 @@ def on_connect(client, userdata, flags, rc):
     print(f"Connected to MQTT Broker with result code {rc}")
     client.subscribe(MQTT_TOPIC_CMD)
     client.subscribe(MQTT_TOPIC_WAYPOINTS_SET)
+    client.subscribe(MQTT_TOPIC_LINK_METRICS)
+    client.subscribe(MQTT_TOPIC_LORA_CMD)
+
+
+def on_disconnect(client, userdata, rc):
+    print(f"Disconnected from MQTT Broker rc={rc}")
+
+
+def set_link_mode(client, mode, reason):
+    global CURRENT_LINK_MODE, LAST_LINK_REASON
+    if mode == CURRENT_LINK_MODE and reason == LAST_LINK_REASON:
+        return
+    CURRENT_LINK_MODE = mode
+    LAST_LINK_REASON = reason
+    try:
+        client.publish(
+            MQTT_TOPIC_LINK_STATE,
+            json.dumps(
+                {
+                    "mode": CURRENT_LINK_MODE,
+                    "reason": LAST_LINK_REASON,
+                    "ts": int(time.time()),
+                    "rssi": last_link_rssi,
+                }
+            ),
+        )
+    except Exception as exc:
+        print(f"Failed to publish link mode: {exc}")
+
+
+def handle_lora_command(client, payload):
+    cmd = str(payload.get("cmd", "")).strip().upper()
+    if cmd == "STOP":
+        send_motor_cmd(0, 0)
+        publish_status(
+            client,
+            {
+                "state": "emergency_stop",
+                "command": "lora_stop",
+                "status": "executed",
+            },
+        )
+    elif cmd == "RTH":
+        route_name = "garage_to_gate"
+        waypoints = PATROL_ROUTES.get(route_name, [])
+        if waypoints:
+            publish_patrol_route(client, route_name, waypoints)
+            publish_status(
+                client,
+                {
+                    "state": "patrol",
+                    "command": "lora_rth",
+                    "status": "started_mqtt_only",
+                    "route": route_name,
+                },
+            )
+    elif cmd == "ALARM":
+        publish_status(
+            client,
+            {
+                "state": "alert",
+                "command": "lora_alarm",
+                "status": "forwarded",
+            },
+        )
 
 def verify_command_auth(payload):
     source_id = payload.get("source_id")
@@ -195,11 +269,13 @@ def verify_command_auth(payload):
     return True, "ok"
 
 def on_message(client, userdata, msg):
+    global last_mqtt_rx_ts, last_link_rssi
     try:
         health.update_heartbeat()
         payload = json.loads(msg.payload.decode())
         command = payload.get('cmd')
         print(f"MQTT CMD: topic={msg.topic} cmd={command}")
+        last_mqtt_rx_ts = time.time()
 
         authorized, auth_reason = verify_command_auth(payload)
         if not authorized:
@@ -234,6 +310,18 @@ def on_message(client, userdata, msg):
                     }
                 ),
             )
+            return
+
+        if msg.topic == MQTT_TOPIC_LINK_METRICS:
+            rssi = payload.get("wifi_rssi")
+            try:
+                last_link_rssi = int(rssi)
+            except (TypeError, ValueError):
+                pass
+            return
+
+        if msg.topic == MQTT_TOPIC_LORA_CMD:
+            handle_lora_command(client, payload)
             return
 
         is_healthy, reason = health.check_health()
@@ -302,7 +390,7 @@ def send_motor_cmd(left, right):
         print(f"Sent to ESP32: {cmd.strip()}")
 
 def main():
-    global ser
+    global ser, last_mqtt_rx_ts
     print("UGV Brain Starting...")
     load_patrol_routes()
     
@@ -319,12 +407,14 @@ def main():
         client.username_pw_set(MQTT_USER, MQTT_PASSWORD)
     
     client.on_connect = on_connect
+    client.on_disconnect = on_disconnect
     client.on_message = on_message
     
     try:
         client.connect(MQTT_BROKER, MQTT_PORT, 60)
         health.update_heartbeat()
         client.loop_start()
+        last_mqtt_rx_ts = time.time()
     except Exception as e:
         print(f"Error connecting to MQTT: {e}")
         return
@@ -370,13 +460,24 @@ def main():
 
         # Publish Telemetry (1Hz)
         if time.time() - last_pub_time > 1.0:
+            stale = (time.time() - last_mqtt_rx_ts) > FAILOVER_TIMEOUT_SECONDS
+            if stale or last_link_rssi < WIFI_RSSI_THRESHOLD:
+                set_link_mode(client, "lora", "wifi_timeout_or_low_rssi")
+            else:
+                set_link_mode(client, "wifi", "wifi_healthy")
             
             # UGV Status
             status = {
                 "state": "idle" if is_healthy else "error",
                 "health_reason": reason,
                 "battery": health.battery_level,
-                "odometry": {"left": ticks_l, "right": ticks_r}
+                "odometry": {"left": ticks_l, "right": ticks_r},
+                "comm": {
+                    "mode": CURRENT_LINK_MODE,
+                    "reason": LAST_LINK_REASON,
+                    "wifi_rssi": last_link_rssi,
+                    "failover_timeout_s": FAILOVER_TIMEOUT_SECONDS,
+                },
             }
             client.publish(MQTT_TOPIC_STATUS, json.dumps(status))
             
