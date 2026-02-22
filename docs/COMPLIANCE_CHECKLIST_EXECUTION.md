@@ -21,7 +21,9 @@ Arquivo: `tasks/COMPLIANCE_CHECKLIST_AUDIT_2026-02-22.md`
 ## Status por issue
 ### #102 - LGPD (cameras, dados e retencao)
 - Automatizado: politica de retencao validada em Frigate e backend.
-- Manual pendente: verificacao de angulo de cameras, placas fisicas e log operacional de acesso.
+- Automatizado: log operacional de acesso as cameras implementado na API do dashboard.
+- Evidencias centralizadas em `docs/LGPD_CAMERA_DATA_RETENTION_CHECKLIST.md`.
+- Manual pendente: verificacao fisica de angulo de cameras e placas no local instalado.
 
 ### #103 - ANAC/SISANT/DECEA/ANATEL
 - Automatizado: base regulatoria e regras documentadas.
