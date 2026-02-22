@@ -62,12 +62,19 @@ jobs:
           set -euo pipefail
           pytest -q \
             tests/backend/test_lgpd_compliance_contract.py \
+            tests/backend/test_lgpd_operational_evidence_contract.py \
             tests/backend/test_drone_regulatory_compliance_contract.py \
+            tests/backend/test_uav_regulatory_evidence_contract.py \
             tests/backend/test_defense_legality_compliance_contract.py \
+            tests/backend/test_defense_legal_evidence_contract.py \
             tests/backend/test_physical_hardening_compliance_contract.py \
+            tests/backend/test_physical_hardening_operations_contract.py \
             tests/backend/test_network_security_compliance_contract.py \
+            tests/backend/test_network_production_validation_contract.py \
             tests/backend/test_integration_checklist_contract.py \
+            tests/backend/test_integration_smoke_production_runbook_contract.py \
             tests/backend/test_matter_thread_decision_contract.py \
+            tests/backend/test_matter_thread_semester_review_contract.py \
             | tee artifacts/compliance/compliance_contract_tests.log
 
       - name: Enforce script gate results
