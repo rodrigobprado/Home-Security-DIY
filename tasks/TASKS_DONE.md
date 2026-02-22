@@ -117,6 +117,7 @@
 | T-036 | Implementar sistema de comunicação redundante | 2026-02-22 | Failover Wi-Fi->LoRa (UGV/UAV), comandos de emergência, estados de link e documentação de latência/recuperação |
 | T-035 | Implementar pipeline de visão computacional | 2026-02-22 | YOLOv8/TFLite no UGV, tracking estilo SORT, filtro de segurança e pipeline correspondente no UAV |
 | T-032 | Definir arquitetura de hardware UAV | 2026-02-22 | Arquitetura de hardware aérea completa com BOM, autonomia, comunicação redundante e critérios de aceite cobertos |
+| T-038 | Integrar drones com Home Assistant | 2026-02-22 | Integração MQTT completa (telemetria/status, botões de comando, automações de alarme e notificações de detecção) |
 
 ### Entregáveis produzidos pelo Agente_Arquiteto_Drones
 
@@ -139,8 +140,8 @@
 | Normas e compliance | 7 | 7 | 100% |
 | Documentação e PRDs | 4 | 4 | 100% |
 | Privacidade e segurança | 2 | 2 | 100% |
-| Drones autônomos | 15 | 2 | 13% |
-| **Total** | **45** | **32** | **71%** |
+| Drones autônomos | 15 | 9 | 60% |
+| **Total** | **45** | **39** | **87%** |
 
 ---
 
@@ -149,16 +150,16 @@
 ### Sistema de segurança base: ✅ 100% concluído
 Todas as 30 tarefas originais foram concluídas.
 
-### Módulo de drones autônomos: 🚀 Em andamento (53%)
-- 8 de 15 tarefas concluídas (T-031, T-032, T-033, T-034, T-035, T-036, T-042, T-043)
-- 7 tarefas pendentes (T-037 a T-041, T-044, T-045)
+### Módulo de drones autônomos: 🚀 Em andamento (60%)
+- 9 de 15 tarefas concluídas (T-031, T-032, T-033, T-034, T-035, T-036, T-038, T-042, T-043)
+- 6 tarefas pendentes (T-037, T-039, T-040, T-041, T-044, T-045)
 
 ### Próximas tarefas prioritárias (drones):
-1. **T-038**: Integração com Home Assistant
-2. **T-039**: Dashboard de frota
-3. **T-041**: Elaborar PRD de comunicação de drones
-4. **T-037**: Desenvolver módulo de defesa não letal
-5. **T-040**: Elaborar PRD do módulo de defesa
+1. **T-039**: Dashboard de frota
+2. **T-041**: Elaborar PRD de comunicação de drones
+3. **T-037**: Desenvolver módulo de defesa não letal
+4. **T-040**: Elaborar PRD do módulo de defesa
+5. **T-044**: Criar guia de montagem UGV
 
 ---
 

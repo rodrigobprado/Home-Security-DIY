@@ -43,6 +43,10 @@ COMMAND_ALLOWED_SOURCES = {
     ).split(",") if source.strip()
 }
 COMMAND_MAX_SKEW_SECONDS = int(os.environ.get("COMMAND_MAX_SKEW_SECONDS_UGV", "30"))
+ALLOW_UNSIGNED_HOMEASSISTANT_COMMANDS = (
+    os.environ.get("ALLOW_UNSIGNED_HOMEASSISTANT_COMMANDS_UGV", "false").strip().lower()
+    in {"1", "true", "yes"}
+)
 
 MQTT_TOPIC_CMD = "ugv/command"
 MQTT_TOPIC_STATUS = "ugv/status"
@@ -247,6 +251,10 @@ def verify_command_auth(payload):
     if source_id not in COMMAND_ALLOWED_SOURCES:
         return False, f"unauthorized source_id: {source_id}"
 
+    if ALLOW_UNSIGNED_HOMEASSISTANT_COMMANDS and source_id == "homeassistant":
+        if not isinstance(signature, str) or not signature:
+            return True, "unsigned_homeassistant_allowed"
+
     try:
         ts = int(timestamp)
     except (TypeError, ValueError):
@@ -346,6 +354,39 @@ def on_message(client, userdata, msg):
             left = int(payload.get('linear', 0) * 100)
             right = int(payload.get('angular', 0) * 100)
             send_motor_cmd(left, right)
+        elif command == "stop":
+            send_motor_cmd(0, 0)
+            publish_status(
+                client,
+                {
+                    "state": "idle",
+                    "command": "stop",
+                    "status": "executed",
+                },
+            )
+        elif command == "return_home":
+            route_name = "garage_to_gate"
+            waypoints = PATROL_ROUTES.get(route_name, [])
+            if not waypoints:
+                publish_status(
+                    client,
+                    {
+                        "state": "error",
+                        "command": "return_home",
+                        "status": "route_not_found",
+                    },
+                )
+                return
+            publish_patrol_route(client, route_name, waypoints)
+            publish_status(
+                client,
+                {
+                    "state": "patrol",
+                    "command": "return_home",
+                    "status": "started_mqtt_only",
+                    "route": route_name,
+                },
+            )
             
         elif command == 'patrol':
             route_name = str(payload.get("route", "perimeter_day")).strip() or "perimeter_day"
