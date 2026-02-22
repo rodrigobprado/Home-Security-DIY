@@ -54,7 +54,6 @@
 
 | ID | Título | Descrição | Responsável | Prioridade | PRD relacionado |
 |----|--------|-----------|-------------|------------|-----------------|
-| T-031 | Definir arquitetura de hardware UGV | Especificar chassis, motores, controladores, sensores e computador embarcado para drone terrestre. | Agente_Arquiteto_Drones | Alta | PRD_AUTONOMOUS_DRONES |
 | T-032 | Definir arquitetura de hardware UAV | Especificar frame, propulsão, flight controller, sensores e computador embarcado para drone aéreo. | Agente_Arquiteto_Drones | Média | PRD_AUTONOMOUS_DRONES |
 | T-033 | Desenvolver firmware de controle baixo nível | Criar firmware ESP32/Arduino para controle de motores, leitura de sensores e comunicação serial. | Agente_Arquiteto_Drones | Alta | PRD_AUTONOMOUS_DRONES |
 | T-034 | Implementar stack ROS2 para navegação | Configurar ROS2 Humble/Iron com Nav2, SLAM, localização e planejamento de trajetória. | Agente_Arquiteto_Drones | Alta | PRD_AUTONOMOUS_DRONES |

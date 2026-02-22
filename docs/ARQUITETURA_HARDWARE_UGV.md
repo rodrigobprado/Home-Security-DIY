@@ -1,112 +1,210 @@
 # Arquitetura de Hardware - Drone Terrestre (UGV)
 
-Data: 2026-02-17
-Referência: **Tarefa T-031 (TASKS_BACKLOG)**
+Data: 2026-02-22
+Referencia: Tarefa T-031 (TASKS_BACKLOG) e Issue #86
 
 ---
 
-## 1. Visão Geral
+## 1. Visao Geral
 
-Este documento define a arquitetura de hardware para o UGV (Unmanned Ground Vehicle) do projeto Home Security DIY. O objetivo é construir um robô móvel capaz de navegar autonomamente em ambientes externos (quintal, jardim), com capacidade de superar pequenos obstáculos, transmitir vídeo e executar patrulhas.
+Este documento define a arquitetura de hardware para o UGV (Unmanned Ground Vehicle)
+do projeto Home Security DIY, com foco em patrulha de perimetro residencial, deteccao
+visual e navegacao autonoma assistida por ROS2/Nav2.
 
-O design prioriza **custo-benefício**, **modularidade** e **facilidade de reparo**.
+Objetivos de engenharia:
+- operacao outdoor (quintal/jardim/corredor lateral),
+- modularidade para manutencao e upgrade,
+- custo controlado para MVP,
+- compatibilidade com stack ROS2 prevista no projeto (T-034).
 
 ---
 
-## 2. Diagrama de Blocos
+## 2. Requisitos Funcionais de Hardware (MVP)
+
+- Locomocao diferencial (2WD com caster ou 4WD skid-steer).
+- Navegacao local com odometria + IMU + LiDAR 2D.
+- Visao frontal para deteccao de intrusos e teleoperacao.
+- Telemetria e comandos via MQTT atraves do computador embarcado.
+- Autonomia alvo: 45 a 90 minutos por carga (perfil patrulha intermitente).
+
+---
+
+## 3. Diagrama de Blocos
 
 ```mermaid
 graph TD
-    subgraph "Power System"
-        BAT[Bateria Li-Ion 3S/4S] --> PMS[Power Management Board]
-        PMS --> |12V| MOTORS[Drivers de Motor]
-        PMS --> |5V| SBC[Computador de Bordo - RPi4/5]
-        PMS --> |5V/3.3V| MCU[Microcontrolador - ESP32]
+    subgraph Energia
+        BAT[Bateria Li-Ion 4S + BMS] --> PDU[Power Distribution 12-16.8V]
+        PDU --> BEC5[DC-DC 5V 8A]
+        PDU --> BEC12[DC-DC 12V 5A]
+        PDU --> HBRIDGE[Drivers de motor BTS7960]
     end
 
-    subgraph "Computação & Controle"
-        SBC <--> |Serial/USB| MCU
-        SBC --> |CSI/USB| CAM_MAIN[Câmera Principal - Nav/Detecção]
-        SBC --> |USB| CAM_DEPTH[Câmera de Profundidade/Lidar]
-        MCU --> |PWM| MOTOR_L[Motor Esquerdo]
-        MCU --> |PWM| MOTOR_R[Motor Direito]
-        MCU <-- |Encoder| ENC_L[Encoder Esquerdo]
-        MCU <-- |Encoder| ENC_R[Encoder Direito]
+    subgraph Computacao e Controle
+        SBC[Computador embarcado RPi5 8GB] <--> MCU[ESP32 DevKit]
+        SBC --> CAM[Camera principal USB/CSI]
+        SBC --> LIDAR[LiDAR 2D RPLidar A1/A2]
+        SBC --> WIFI[Wi-Fi 5/6]
+        SBC --> LORA[Modulo LoRa opcional]
+        MCU --> ENC[Leitura de encoders]
+        MCU --> IMU[IMU I2C]
+        MCU --> PWM[PWM para BTS7960]
     end
 
-    subgraph "Sensores & Periféricos"
-        MCU <-- |I2C| IMU[IMU - Acelerômetro/Giroscópio]
-        MCU <-- |ADC| BAT_SENSE[Sensor de Tensão]
-        SBC --> |USB| GPS[GPS/GNSS (Opcional)]
-        SBC --> |USB/SPI| LORA[Módulo LoRa (Backup Link)]
-        SBC --> |Audio Out| SPEAKER[Alto-falante]
-    end
+    HBRIDGE --> MLEFT[Motor esquerdo c/ caixa e encoder]
+    HBRIDGE --> MRIGHT[Motor direito c/ caixa e encoder]
+    BEC5 --> SBC
+    BEC5 --> MCU
+    BEC12 --> CAM
 ```
 
 ---
 
-## 3. Especificações de Hardware
+## 4. Especificacao Tecnica por Subsistema
 
-### 3.1 Chassis e Locomoção
-- **Tipo**: Diferencial (Skid-steer) ou Ackermann (Direção).
-- **Escolha**: **Diferencial (Tank/Skid-steer)** pela simplicidade mecânica e capacidade de giro em torno do próprio eixo (zero turn radius).
-- **Rodas**: 4 ou 6 rodas off-road grandes (120mm+) ou esteiras para terrenos irregulares (grama, terra).
-- **Motores**: 2x ou 4x Motores DC com caixa de redução (Geared Motors). Torque priorizado sobre velocidade.
-  - *Sugestão*: Motores de vidro elétrico de carro (baixo custo, alto torque) ou motores planetários 12V.
+### 4.1 Chassis
 
-### 3.2 Computação (Cérebro)
-Sistema híbrido com "Cérebro Alto" (Navegação/IA) e "Cérebro Baixo" (Controle de Hardware).
+- Tipo: skid-steer 4WD (recomendado para outdoor) ou 2WD + caster (versao economica).
+- Material: aluminio 2 mm + suportes impressos em PETG/ABS.
+- Dimensoes alvo: 420 x 320 x 220 mm (C x L x A).
+- Carga util minima: 4 kg (SBC, bateria, sensores e margem para expansao).
+- Protecao ambiental: minimo IP54 para caixa eletrica e conectores externos.
+- Terreno alvo: piso irregular leve, grama baixa, brita fina e concreto.
 
-| Nível | Componente Recomendado | Função |
-|-------|------------------------|--------|
-| **High-Level** | Raspberry Pi 4 (4GB+) ou 5 | Rodar ROS2, Nav2, Visão Computacional, Streaming de Vídeo, Wi-Fi. |
-| **Low-Level** | **ESP32** (DevKit V1) | Gerar PWM para motores, ler encoders, ler IMU, monitorar bateria, safety watchdog. |
+### 4.2 Motores e Tracao
 
-### 3.3 Sensores
+- Arquitetura: 2 canais de tracao (esquerda/direita) com controle diferencial.
+- Tipo: motor DC com caixa planetaria 12V ou 24V com encoder Hall.
+- Especificacao minima por canal:
+  - torque continuo >= 1.5 N.m,
+  - corrente nominal 3-6 A,
+  - pico suportado >= 15 A,
+  - encoder incremental >= 11 PPR (com multiplicacao por gearbox).
+- Velocidade alvo de patrulha: 0.4 a 1.2 m/s.
 
-1. **Visão (Navegação/Detecção)**:
-   - Câmera USB Grande Angular (160° FOV) ou Raspberry Pi Camera Module 3.
-   - *Opcional*: Intel RealSense ou OAK-D Lite para navegação estéreo (profundidade).
-2. **LiDAR (Mapeamento 2D)**:
-   - **RPLidar A1** ou LD19. Custo acessível e suportado nativamente pelo ROS2 Nav2. Essencial para SLAM.
-3. **IMU (Odometria)**:
-   - **MPU6050** ou BNO055 (melhor, com fusão interna). Conectado ao ESP32.
-4. **Odometria de Rodas**:
-   - Encoders magnéticos de efeito Hall nos motores.
+### 4.3 Controlador de Baixo Nivel (MCU)
 
-### 3.4 Sistema de Energia
+- Componente: ESP32 DevKit V1 (WROOM, dual-core).
+- Responsabilidades:
+  - controle PWM dos motores,
+  - leitura de encoder e IMU,
+  - watchdog de seguranca,
+  - fail-safe (parada em perda de heartbeat do SBC).
+- Interface com SBC: serial USB (MVP) com protocolo de comandos/telemetria.
 
-- **Bateria**: Pack Li-Ion 3S (11.1V / 12.6V) ou 4S (14.8V). 5000mAh a 10000mAh.
-- **BMS**: Placa de proteção obrigatória para carga/descarga.
-- **Reguladores**:
-  - DC-DC Step-Down (Buck) 12V -> 5V 5A (para Raspberry Pi).
-  - DC-DC para Motores (direto da bateria ou regulado se sensível).
+### 4.4 Computador Embarcado (SBC)
 
-### 3.5 Drivers de Motor
+- Recomendado: Raspberry Pi 5 (8GB).
+- Alternativas:
+  - Raspberry Pi 4 (4GB/8GB) para MVP de custo menor,
+  - Jetson Orin Nano para cenarios de IA embarcada pesada.
+- Responsabilidades:
+  - ROS2 Humble,
+  - Nav2/SLAM,
+  - pipeline de visao,
+  - bridge MQTT com Home Assistant.
 
-- **Ponte H**: IBT-2 (BTS7960) para motores de alta corrente (>5A).
-- L298N **NÃO RECOMENDADO** (muita perda de calor, baixa eficiência).
+### 4.5 Sensores
+
+- LiDAR 2D: RPLidar A1/A2 (driver ROS2 disponivel).
+- Camera principal: CSI wide-angle ou USB UVC 1080p/30fps.
+- IMU: BNO055 (preferencial) ou MPU6050 (economica).
+- Odometria: encoders Hall nos eixos dos motores.
+- Sensor de bateria: divisor resistivo + ADC no ESP32.
+- Ultrassonico frontal (opcional de seguranca): HC-SR04 industrializado.
+
+### 4.6 Energia
+
+- Bateria: Li-Ion 4S (14.8V nominal), 8 Ah a 12 Ah.
+- BMS: 4S com balanceamento e protecao de sobrecorrente/sobretensao.
+- Conversao:
+  - 5V/8A dedicado ao SBC,
+  - 5V/2A para perifericos,
+  - trilho direto para drivers de motor.
+- Protecoes obrigatorias:
+  - fusivel principal,
+  - chave geral de corte,
+  - E-stop fisico acessivel.
+
+### 4.7 Drivers de Motor
+
+- Modelo: BTS7960 (43A) por canal.
+- Motivo: melhor margem termica e corrente que L298N.
+- Nao recomendado: L298N para este caso (queda de tensao e aquecimento elevado).
 
 ---
 
-## 4. Lista de Materiais (BOM) Estimada - Versão MVP
+## 5. BOM (Bill of Materials) - MVP
 
-| Componente | Modelo Sugerido | Custo Est. (BRL) |
-|------------|-----------------|------------------|
-| Computador | Raspberry Pi 4 4GB | R$ 500 - 800 |
-| Microcontrolador | ESP32 DevKit V1 | R$ 40 - 60 |
-| Lidar | RPLidar A1M8 | R$ 600 - 900 |
-| Câmera | RPi Camera V3 Wide | R$ 200 - 300 |
-| Motores (x2) | Motor DC Planetário 12V c/ Encoder | R$ 300 - 500 |
-| Driver Motor (x2)| BTS7960 43A | R$ 60 - 100 |
-| Bateria | Li-Ion 3S 3P (Custom) | R$ 200 - 400 |
-| Chassis | Custom (Impressão 3D + Alumínio) | R$ 200 - 400 |
-| **TOTAL** | | **R$ 2.100 - 3.460** |
+Valores estimados em BRL (fevereiro/2026), variando por importacao/cambio.
+
+| Item | Especificacao | Qtd | Faixa (R$) | Fornecedores sugeridos |
+|---|---|---:|---:|---|
+| Chassis base | Plataforma 4WD metalica (ou custom aluminio) | 1 | 350-900 | RoboCore, FilipeFlop, Mercado Livre |
+| Motor DC com encoder | 12V, caixa planetaria, alto torque | 2-4 | 300-1.000 | RoboCore, UsinaInfo, AliExpress |
+| Driver de motor | BTS7960 43A | 2 | 80-180 | FilipeFlop, Mercado Livre |
+| Computador embarcado | Raspberry Pi 5 8GB | 1 | 650-1.100 | FilipeFlop, KaBuM, Mercado Livre |
+| MCU | ESP32 DevKit V1 | 1 | 35-70 | FilipeFlop, UsinaInfo |
+| LiDAR 2D | RPLidar A1/A2 | 1 | 700-1.800 | Slamtec reseller, AliExpress |
+| Camera | CSI wide-angle ou USB UVC | 1 | 180-450 | Raspberry Store, Mercado Livre |
+| IMU | BNO055 (ou MPU6050) | 1 | 40-260 | FilipeFlop, UsinaInfo |
+| Bateria | Li-Ion 4S 8-12Ah com BMS | 1 | 350-900 | Montagem local especializada |
+| Conversores DC-DC | Buck 5V 8A + acessorios | 2 | 80-220 | Mercado Livre, UsinaInfo |
+| Estrutura eletrica | fusivel, chave geral, conectores, cabos | 1 kit | 120-300 | Eletronica local |
+| Caixa eletrica IP54 | policarbonato/ABS | 1 | 90-250 | Leroy/Mercado Livre |
+
+### 5.1 Custo Total por Unidade (MVP)
+
+- Configuracao minima funcional: R$ 3.000 a R$ 4.500
+- Configuracao recomendada (robusta): R$ 4.800 a R$ 7.200
+- Configuracao expandida (IA pesada): R$ 7.500 a R$ 11.000
 
 ---
 
-## 5. Próximos Passos (Implementação)
+## 6. Compatibilidade com ROS2/Nav2 (Aceite Tecnico)
 
-1. **Firmware (T-033)**: Criar código para o ESP32 (`micro-ros` ou protocolo serial custom) para receber comandos de velocidade (`cmd_vel`) e enviar odometria.
-2. **ROS2 Stack (T-034)**: Configurar Docker container com ROS2 Humble no Raspberry Pi.
-3. **Integração**: Conectar ESP32 ao RPi via USB Serial.
+Compatibilidade alvo: ROS2 Humble + Nav2 em Linux arm64.
+
+Itens de compatibilidade confirmados por arquitetura:
+- LiDAR 2D com driver ROS (`sensor_msgs/LaserScan`) para SLAM/Nav2.
+- Odometria por encoder + IMU para estimativa de pose (`odom -> base_link`).
+- Controle de base diferencial com interface `cmd_vel`.
+- SBC com recursos suficientes para Nav2 + telemetria + camera (RPi5 recomendado).
+
+Topicos/frames previstos para integracao (MVP):
+- `/cmd_vel` (geometry_msgs/Twist)
+- `/odom` (nav_msgs/Odometry)
+- `/scan` (sensor_msgs/LaserScan)
+- `/imu/data` (sensor_msgs/Imu)
+- `map -> odom -> base_link` (TF tree)
+
+Riscos tecnicos conhecidos:
+- latencia de controle em serial USB mal configurada,
+- ruido de encoder em baixa velocidade,
+- queda de tensao em picos de motor sem margem no DC-DC.
+
+Mitigacoes:
+- watchdog e heartbeat entre SBC e MCU,
+- filtragem de odometria (EKF),
+- margem de corrente >= 30% no sistema de energia.
+
+---
+
+## 7. Checklist de Aceite da Issue #86
+
+- [x] BOM completa com fornecedores e custos estimados.
+- [x] Especificacao do chassis (indoor/outdoor, carga, IP rating).
+- [x] Especificacao dos motores (tipo, torque, encoder).
+- [x] Especificacao do microcontrolador/computador embarcado.
+- [x] Especificacao dos sensores (LiDAR, camera, IMU, odometria).
+- [x] Diagrama de blocos da arquitetura de hardware.
+- [x] Estimativa de custo total por unidade.
+- [x] Compatibilidade com ROS2 Nav2 documentada.
+
+---
+
+## 8. Proximos Passos
+
+1. T-033: implementar firmware de controle de base diferencial no ESP32.
+2. T-034: subir stack ROS2/Nav2 no SBC com bringup de sensores.
+3. T-044: gerar guia de montagem UGV com esquema eletrico e pinagem final.
