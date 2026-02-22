@@ -2,7 +2,7 @@ import json
 from datetime import datetime
 
 from fastapi import APIRouter, Depends, Query
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 from sqlalchemy import desc, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -58,8 +58,22 @@ async def list_device_positions(db: AsyncSession = Depends(get_db)) -> list[dict
 
 
 class MapConfigPayload(BaseModel):
+    MAX_FLOORPLAN_DATA_URL_LENGTH = 2_000_000
     floorplan_image_data_url: str | None = None
     geo_bounds: dict[str, float] | None = None
+
+    @field_validator("floorplan_image_data_url")
+    @classmethod
+    def validate_floorplan_data_url(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        if len(value) > cls.MAX_FLOORPLAN_DATA_URL_LENGTH:
+            raise ValueError("floorplan image payload exceeds maximum allowed size.")
+        if not value.startswith("data:image/"):
+            raise ValueError("floorplan image must use data:image/* base64 format.")
+        if ";base64," not in value:
+            raise ValueError("floorplan image must be base64 encoded data URL.")
+        return value
 
 
 @router.get("/map/config")

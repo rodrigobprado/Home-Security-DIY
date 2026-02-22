@@ -271,6 +271,10 @@ Usada para atualizacoes em tempo real no dashboard. Permite subscribe a mudancas
 | `GET` | `/api/services/ws-metrics` | Metricas operacionais de WebSocket |
 | `GET` | `/api/map/devices` | Posicao dos dispositivos no mapa |
 
+Notas de segurança para configuração de mapa:
+- `floorplan_image_data_url` deve ser `data:image/*;base64,...`
+- tamanho máximo aceito: 2 MB
+
 **Exemplo REST:**
 
 ```bash
