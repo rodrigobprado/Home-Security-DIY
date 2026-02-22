@@ -140,6 +140,38 @@
         brightness: 255
 
 # ---------------------------------------------------------------------------
+# Alarme disparado -> UAV inspeciona zona de alerta (T-038)
+# ---------------------------------------------------------------------------
+- id: alarm_triggered_dispatch_uav
+  alias: "Segurança - Alarme disparado - Acionar UAV"
+  description: "Dispara comando MQTT para o UAV inspecionar a zona de alerta"
+  trigger:
+    - platform: state
+      entity_id: alarm_control_panel.alarmo
+      to: "triggered"
+  action:
+    - service: mqtt.publish
+      data:
+        topic: uav/command
+        payload: '{"cmd":"inspect_zone","source_id":"homeassistant"}'
+
+# ---------------------------------------------------------------------------
+# Alarme disparado -> UGV patrulha perímetro (T-038)
+# ---------------------------------------------------------------------------
+- id: alarm_triggered_dispatch_ugv
+  alias: "Segurança - Alarme disparado - Acionar UGV"
+  description: "Dispara comando MQTT para o UGV iniciar patrulha de perímetro"
+  trigger:
+    - platform: state
+      entity_id: alarm_control_panel.alarmo
+      to: "triggered"
+  action:
+    - service: mqtt.publish
+      data:
+        topic: ugv/command
+        payload: '{"cmd":"patrol","route":"perimeter_day","source_id":"homeassistant"}'
+
+# ---------------------------------------------------------------------------
 # Desativar resposta ao desarmar alarme
 # ---------------------------------------------------------------------------
 - id: alarm_disarmed_response
@@ -217,6 +249,29 @@
         data:
           image: >
             /api/frigate/notifications/{{ trigger.payload_json['after']['id'] }}/snapshot.jpg
+
+# ---------------------------------------------------------------------------
+# Notificação de intruso detectado pelos drones (T-038)
+# ---------------------------------------------------------------------------
+- id: drone_intrusion_notification
+  alias: "Segurança - Intruso detectado por drone"
+  description: "Notifica quando o pipeline de visão de UGV/UAV reporta detecção"
+  trigger:
+    - platform: mqtt
+      topic: ugv/vision/detections
+    - platform: mqtt
+      topic: uav/vision/detections
+  condition:
+    - condition: template
+      value_template: "{{ trigger.payload_json.count | int(0) > 0 }}"
+  action:
+    - service: notify.notify
+      data:
+        title: "🚨 Intruso detectado por drone"
+        message: >
+          {% set count = trigger.payload_json.count | int(0) %}
+          {% set topic = trigger.topic %}
+          Alerta via {{ topic }}: {{ count }} detecção(ões) às {{ now().strftime('%H:%M:%S') }}.
 
 # =============================================================================
 # MONITORAMENTO DE SAÚDE DO SISTEMA

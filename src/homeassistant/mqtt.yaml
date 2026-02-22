@@ -18,7 +18,7 @@ sensor:
     device_class: signal_strength
     icon: mdi:wifi
 
-  - name: "UGV State"
+  - name: "UGV Status"
     state_topic: "ugv/status"
     value_template: "{{ value_json.state }}"
     icon: mdi:robot
@@ -46,6 +46,16 @@ sensor:
     state_topic: "uav/status"
     value_template: "{{ value_json.mode }}"
     icon: mdi:airplane-takeoff
+
+  - name: "UAV Status"
+    state_topic: "uav/status"
+    value_template: >
+      {% if value_json.armed %}
+        airborne_{{ value_json.mode | lower }}
+      {% else %}
+        ground_{{ value_json.mode | lower }}
+      {% endif %}
+    icon: mdi:airplane
 
 # --- Binary Sensors ---
 binary_sensor:
@@ -87,13 +97,33 @@ binary_sensor:
 button:
   - name: "UGV Start Patrol"
     command_topic: "ugv/command"
-    payload_press: '{"cmd": "patrol"}'
+    payload_press: '{"cmd":"patrol","route":"perimeter_day","source_id":"homeassistant"}'
     icon: mdi:shield-check
+
+  - name: "UGV Return Home"
+    command_topic: "ugv/command"
+    payload_press: '{"cmd":"return_home","source_id":"homeassistant"}'
+    icon: mdi:home-map-marker
 
   - name: "UGV Emergency Stop"
     command_topic: "ugv/command"
-    payload_press: '{"cmd": "stop"}'
+    payload_press: '{"cmd":"stop","source_id":"homeassistant"}'
     icon: mdi:alert-octagon-outline
+
+  - name: "UAV Inspect Zone"
+    command_topic: "uav/command"
+    payload_press: '{"cmd":"inspect_zone","source_id":"homeassistant"}'
+    icon: mdi:airplane-search
+
+  - name: "UAV Return Home"
+    command_topic: "uav/command"
+    payload_press: '{"cmd":"return_home","source_id":"homeassistant"}'
+    icon: mdi:airplane-landing
+
+  - name: "UAV STOP"
+    command_topic: "uav/command"
+    payload_press: '{"cmd":"stop","source_id":"homeassistant"}'
+    icon: mdi:alert-octagon
 # --- Camera ---
 # Note: Cameras are usually configured in 'camera:' section, not under 'mqtt:' unless it's an MQTT camera.
 # We will use Generic Camera integration for RTSP, configured in configuration.yaml or UI.

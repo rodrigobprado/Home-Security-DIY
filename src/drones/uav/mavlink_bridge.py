@@ -34,6 +34,10 @@ COMMAND_ALLOWED_SOURCES = {
     ).split(",") if source.strip()
 }
 COMMAND_MAX_SKEW_SECONDS = int(os.environ.get("COMMAND_MAX_SKEW_SECONDS_UAV", "30"))
+ALLOW_UNSIGNED_HOMEASSISTANT_COMMANDS = (
+    os.environ.get("ALLOW_UNSIGNED_HOMEASSISTANT_COMMANDS_UAV", "false").strip().lower()
+    in {"1", "true", "yes"}
+)
 
 MAVLINK_CONNECTION = os.environ.get('MAVLINK_CONNECTION', 'udpin:0.0.0.0:14550')
 
@@ -116,6 +120,10 @@ def verify_command_auth(payload):
     if source_id not in COMMAND_ALLOWED_SOURCES:
         return False, f"unauthorized source_id: {source_id}"
 
+    if ALLOW_UNSIGNED_HOMEASSISTANT_COMMANDS and source_id == "homeassistant":
+        if not isinstance(signature, str) or not signature:
+            return True, "unsigned_homeassistant_allowed"
+
     try:
         ts = int(timestamp)
     except (TypeError, ValueError):
@@ -184,6 +192,16 @@ def on_message(client, userdata, msg):
             print("Command: LAND")
             uav_state["mode"] = "LAND"
             uav_state["alt"] = 0.0
+        elif cmd == 'return_home':
+            print("Command: RETURN_HOME")
+            uav_state["mode"] = "RTL"
+        elif cmd == 'stop':
+            print("Command: STOP/HOLD")
+            uav_state["mode"] = "HOLD"
+        elif cmd == 'inspect_zone':
+            print("Command: INSPECT_ZONE")
+            uav_state["mode"] = "AUTO"
+            uav_state["alt"] = 12.0
             
     except Exception as e:
         print(f"Error executing command: {e}")
