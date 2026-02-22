@@ -143,7 +143,14 @@ O **Sonoff ZBDongle-P (CC2652P)** suporta firmware multiprotocolo (Zigbee + Thre
 
 **Matter/Thread e o futuro do smart home, mas Zigbee 3.0 e a escolha certa para seguranca residencial hoje.** O ecossistema Zigbee e mais completo, mais barato e mais maduro para as necessidades do projeto. A migracao deve ser gradual e oportunista, priorizando dispositivos dual-protocol.
 
-**Proxima revisao**: Janeiro 2027 (reavaliar estado do Matter)
+### Decisao operacional registrada em 2026-02-22
+
+- Decisao: **manter Zigbee** como protocolo principal.
+- Motivo: pre-condicoes de migracao Matter/Thread ainda nao foram comprovadas no ambiente alvo.
+- Acao: reavaliar em 6 meses com checklist objetivo.
+- Registro: `docs/MATTER_THREAD_DECISION_2026-02-22.md`.
+
+**Proxima revisao**: 2026-08-22 (reavaliar estado do Matter)
 
 ---
 
