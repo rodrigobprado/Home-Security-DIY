@@ -102,3 +102,4 @@ Saida:
 
 ## Backlog operacional aberto em 2026-02-22
 - #136: evidencias operacionais LGPD em `docs/LGPD_OPERATIONAL_EVIDENCE_RUNBOOK.md`
+- #137: evidencias regulatorias UAV em `docs/UAV_REGULATORY_EVIDENCE_RUNBOOK.md`
