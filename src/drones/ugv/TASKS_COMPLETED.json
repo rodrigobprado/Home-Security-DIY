@@ -8,19 +8,25 @@
     {
         "id": "T-033",
         "description": "Criar firmware base (ESP32) para controle de motores",
-        "status": "completed",
+        "status": "pending",
         "directory": "src/drones/ugv/firmware"
     },
     {
         "id": "T-034",
-        "description": "Configurar ambiente ROS2 (Docker) para navegação",
+        "description": "Configurar ambiente ROS2 (Docker) para navegação com Nav2/SLAM e comando patrol",
         "status": "completed",
-        "file": "src/drones/ugv/docker-compose.ugv.yml"
+        "files": [
+            "src/drones/ugv/Dockerfile",
+            "src/drones/ugv/docker-compose.ugv.yml",
+            "src/drones/ugv/app/ugv_control.py",
+            "src/drones/ugv/app/ugv_vision.py",
+            "src/drones/ugv/ros2/routes/patrol_routes.json"
+        ]
     },
     {
         "id": "T-038",
         "description": "Criar integração MQTT UGV <-> Home Assistant",
-        "status": "completed",
+        "status": "pending",
         "file": "src/drones/ugv/app/ugv_control.py"
     }
 ]

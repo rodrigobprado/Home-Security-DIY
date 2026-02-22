@@ -7,6 +7,7 @@ from datetime import datetime
 
 # Configuration
 RTSP_URL = os.environ.get('RTSP_URI', 'rtsp://localhost:8554/cam')
+CAMERA_DEVICE = int(os.environ.get("CAMERA_DEVICE", "0"))
 MQTT_BROKER = os.environ.get('MQTT_BROKER', 'localhost')
 MQTT_PORT = int(os.environ.get('MQTT_PORT', 1883))
 MQTT_USER = os.environ.get('MQTT_USER', '')
@@ -46,12 +47,30 @@ def main():
         print(f"Error connecting to MQTT: {e}")
         return
 
-    # Camera Setup (simulate reading from /dev/video0 if RTSP fails, or just use 0)
-    # In production with mediamtx, we might push TO mediamtx via ffmpeg, 
-    # and read FROM /dev/video0 here.
-    cap = cv2.VideoCapture(0) # Open local camera
-    if not cap.isOpened():
-        print("Cannot open camera")
+    # Camera Setup:
+    # 1) try RTSP first (production path via mediamtx),
+    # 2) fallback to local device.
+    def open_capture():
+        for source in (RTSP_URL, CAMERA_DEVICE):
+            cap = cv2.VideoCapture(source)
+            if cap.isOpened():
+                print(f"Vision source connected: {source}")
+                client.publish(
+                    MQTT_TOPIC_VISION_HEALTH,
+                    json.dumps(
+                        {
+                            "status": "camera_connected",
+                            "source": str(source),
+                            "timestamp": datetime.now().isoformat(),
+                        }
+                    ),
+                )
+                return cap, source
+        return None, None
+
+    cap, current_source = open_capture()
+    if cap is None:
+        print("Cannot open any camera source")
         client.publish(
             MQTT_TOPIC_VISION_HEALTH,
             json.dumps({"status": "camera_unavailable", "timestamp": datetime.now().isoformat()}),
@@ -71,8 +90,8 @@ def main():
                 print("Camera read failed repeatedly. Reopening capture...")
                 cap.release()
                 time.sleep(2)
-                cap = cv2.VideoCapture(0)
-                if not cap.isOpened():
+                cap, current_source = open_capture()
+                if cap is None:
                     client.publish(
                         MQTT_TOPIC_VISION_HEALTH,
                         json.dumps(
@@ -80,6 +99,17 @@ def main():
                         ),
                     )
                     time.sleep(10)
+                else:
+                    client.publish(
+                        MQTT_TOPIC_VISION_HEALTH,
+                        json.dumps(
+                            {
+                                "status": "camera_recovered",
+                                "source": str(current_source),
+                                "timestamp": datetime.now().isoformat(),
+                            }
+                        ),
+                    )
                 retries = 0
             time.sleep(0.5)
             continue

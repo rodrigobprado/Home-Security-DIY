@@ -5,6 +5,9 @@ import json
 import sys
 import hmac
 import hashlib
+import shutil
+import subprocess
+from pathlib import Path
 import paho.mqtt.client as mqtt
 
 # Add common folder to path
@@ -44,18 +47,123 @@ COMMAND_MAX_SKEW_SECONDS = int(os.environ.get("COMMAND_MAX_SKEW_SECONDS_UGV", "3
 MQTT_TOPIC_CMD = "ugv/command"
 MQTT_TOPIC_STATUS = "ugv/status"
 MQTT_TOPIC_DEFENSE_STATUS = "ugv/defense/status"
+MQTT_TOPIC_WAYPOINTS_SET = "ugv/patrol/waypoints/set"
+MQTT_TOPIC_WAYPOINTS_STATE = "ugv/patrol/waypoints/state"
+MQTT_TOPIC_PATROL_WAYPOINTS = "ugv/patrol/waypoints"
 DEFENSE_PIN = os.environ.get("DEFENSE_PIN_UGV", "").strip()
 if not DEFENSE_PIN:
     raise RuntimeError("DEFENSE_PIN_UGV env var is required for UGV control.")
+ROS2_PATROL_TOPIC = os.environ.get("ROS2_PATROL_TOPIC", "/ugv/patrol/goal")
+ROS2_ENABLED = os.environ.get("ROS2_ENABLED", "true").strip().lower() in {"1", "true", "yes"}
+ROS2_PATROL_ROUTE_FILE = os.environ.get(
+    "ROS2_PATROL_ROUTE_FILE", "/app/ros2/routes/patrol_routes.json"
+)
 
 # Serial Connection
 ser = None
 health = HealthMonitor()
 defense = DefenseController(pin_code=DEFENSE_PIN)
+PATROL_ROUTES = {}
+
+
+def load_patrol_routes():
+    global PATROL_ROUTES
+    routes_file = Path(ROS2_PATROL_ROUTE_FILE)
+    default_routes = {
+        "perimeter_day": [
+            {"x": 0.0, "y": 0.0, "yaw": 0.0},
+            {"x": 2.0, "y": 0.0, "yaw": 0.0},
+            {"x": 2.0, "y": 2.0, "yaw": 1.57},
+            {"x": 0.0, "y": 2.0, "yaw": 3.14},
+        ],
+        "garage_to_gate": [
+            {"x": 0.0, "y": 0.0, "yaw": 0.0},
+            {"x": 1.0, "y": -0.5, "yaw": -0.5},
+            {"x": 3.0, "y": -1.0, "yaw": 0.0},
+        ],
+    }
+
+    if not routes_file.exists():
+        PATROL_ROUTES = default_routes
+        return
+
+    try:
+        data = json.loads(routes_file.read_text(encoding="utf-8"))
+        if isinstance(data, dict) and data:
+            PATROL_ROUTES = data
+        else:
+            PATROL_ROUTES = default_routes
+    except Exception as exc:
+        print(f"Failed to load patrol routes ({routes_file}): {exc}")
+        PATROL_ROUTES = default_routes
+
+
+def save_patrol_routes():
+    routes_file = Path(ROS2_PATROL_ROUTE_FILE)
+    try:
+        routes_file.parent.mkdir(parents=True, exist_ok=True)
+        routes_file.write_text(
+            json.dumps(PATROL_ROUTES, ensure_ascii=True, indent=2),
+            encoding="utf-8",
+        )
+    except Exception as exc:
+        print(f"Failed to persist patrol routes: {exc}")
+
+
+def publish_status(client, payload):
+    client.publish(MQTT_TOPIC_STATUS, json.dumps(payload))
+
+
+def publish_patrol_route(client, route_name, waypoints):
+    client.publish(
+        MQTT_TOPIC_PATROL_WAYPOINTS,
+        json.dumps(
+            {
+                "route": route_name,
+                "waypoint_count": len(waypoints),
+                "waypoints": waypoints,
+                "ts": int(time.time()),
+            }
+        ),
+    )
+
+
+def send_route_to_ros2(route_name, waypoints):
+    if not ROS2_ENABLED:
+        return False, "ros2_disabled"
+    if not shutil.which("ros2"):
+        return False, "ros2_cli_not_found"
+
+    payload = json.dumps({"route": route_name, "waypoints": waypoints}, ensure_ascii=True)
+    cmd = [
+        "ros2",
+        "topic",
+        "pub",
+        "--once",
+        ROS2_PATROL_TOPIC,
+        "std_msgs/msg/String",
+        f'{{data: "{payload.replace(chr(34), chr(92) + chr(34))}"}}',
+    ]
+
+    try:
+        proc = subprocess.run(
+            cmd,
+            check=True,
+            capture_output=True,
+            text=True,
+            timeout=15,
+        )
+        stdout = (proc.stdout or "").strip()
+        if stdout:
+            print(f"ROS2 patrol publish output: {stdout}")
+        return True, "published_to_ros2"
+    except Exception as exc:
+        return False, str(exc)
 
 def on_connect(client, userdata, flags, rc):
     print(f"Connected to MQTT Broker with result code {rc}")
     client.subscribe(MQTT_TOPIC_CMD)
+    client.subscribe(MQTT_TOPIC_WAYPOINTS_SET)
 
 def verify_command_auth(payload):
     source_id = payload.get("source_id")
@@ -98,6 +206,36 @@ def on_message(client, userdata, msg):
             print(f"Ignoring unauthorized command: {auth_reason}")
             return
 
+        if msg.topic == MQTT_TOPIC_WAYPOINTS_SET:
+            route_name = str(payload.get("route", "")).strip()
+            waypoints = payload.get("waypoints")
+            if not route_name or not isinstance(waypoints, list) or not waypoints:
+                client.publish(
+                    MQTT_TOPIC_WAYPOINTS_STATE,
+                    json.dumps(
+                        {
+                            "status": "invalid_payload",
+                            "route": route_name or None,
+                            "reason": "route and waypoints list are required",
+                        }
+                    ),
+                )
+                return
+
+            PATROL_ROUTES[route_name] = waypoints
+            save_patrol_routes()
+            client.publish(
+                MQTT_TOPIC_WAYPOINTS_STATE,
+                json.dumps(
+                    {
+                        "status": "updated",
+                        "route": route_name,
+                        "waypoint_count": len(waypoints),
+                    }
+                ),
+            )
+            return
+
         is_healthy, reason = health.check_health()
 
         # Defense Commands
@@ -122,17 +260,36 @@ def on_message(client, userdata, msg):
             send_motor_cmd(left, right)
             
         elif command == 'patrol':
-            print("Patrol command received but feature is not implemented yet.")
-            client.publish(
-                MQTT_TOPIC_STATUS,
-                json.dumps(
+            route_name = str(payload.get("route", "perimeter_day")).strip() or "perimeter_day"
+            waypoints = payload.get("waypoints")
+            if not isinstance(waypoints, list) or not waypoints:
+                waypoints = PATROL_ROUTES.get(route_name)
+
+            if not waypoints:
+                publish_status(
+                    client,
                     {
-                        "state": "warning",
+                        "state": "error",
                         "command": "patrol",
-                        "status": "not_implemented",
-                        "reason": "Patrol sequence pending implementation",
-                    }
-                ),
+                        "status": "route_not_found",
+                        "route": route_name,
+                        "known_routes": sorted(PATROL_ROUTES.keys()),
+                    },
+                )
+                return
+
+            publish_patrol_route(client, route_name, waypoints)
+            ros2_ok, ros2_reason = send_route_to_ros2(route_name, waypoints)
+            publish_status(
+                client,
+                {
+                    "state": "patrol",
+                    "command": "patrol",
+                    "status": "started" if ros2_ok else "started_mqtt_only",
+                    "route": route_name,
+                    "waypoint_count": len(waypoints),
+                    "ros2": {"sent": ros2_ok, "detail": ros2_reason},
+                },
             )
             
     except Exception as e:
@@ -147,6 +304,7 @@ def send_motor_cmd(left, right):
 def main():
     global ser
     print("UGV Brain Starting...")
+    load_patrol_routes()
     
     # 1. Connect to ESP32
     try:
