@@ -27,6 +27,8 @@ Arquivo: `tasks/COMPLIANCE_CHECKLIST_AUDIT_2026-02-22.md`
 
 ### #103 - ANAC/SISANT/DECEA/ANATEL
 - Automatizado: base regulatoria e regras documentadas.
+- Automatizado: guard-rails de altitude/geofence/RTH adicionados no bridge UAV.
+- Evidencias centralizadas em `docs/DRONE_REGULATORY_COMPLIANCE_BR.md`.
 - Manual pendente: peso real do UAV, cadastros oficiais e checagem de espaco aereo local.
 
 ### #104 - Modulo de defesa nao letal
