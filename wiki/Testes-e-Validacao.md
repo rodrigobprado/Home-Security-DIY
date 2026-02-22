@@ -190,6 +190,25 @@ Execute após cada deploy em ambiente real:
 Ver `.github/workflows/validate.yml` para implementação completa.
 Ver `.github/workflows/compliance-gates.yml` para o gate de compliance.
 
+## Status Atual de Cobertura Automatizada
+
+Data de referência: **2026-02-22**
+
+Execução local validada:
+
+```bash
+python3 -m venv .venv
+.venv/bin/pip install -r src/dashboard/backend/requirements.txt pytest pytest-cov
+.venv/bin/pytest -q tests/backend
+```
+
+Resultado mais recente:
+- `79 passed in 0.61s`
+
+Notas:
+- Esta cobertura refere-se à suíte automatizada do diretório `tests/backend`.
+- Itens de validação física e operacional de campo continuam com evidência manual (checklists/runbooks).
+
 ### Cobertura de compliance operacional
 
 O gate de compliance inclui também contratos de documentação operacional:

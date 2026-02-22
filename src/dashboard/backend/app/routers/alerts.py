@@ -1,5 +1,6 @@
 import json
 from datetime import datetime
+from typing import ClassVar
 
 from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel, field_validator
@@ -58,7 +59,7 @@ async def list_device_positions(db: AsyncSession = Depends(get_db)) -> list[dict
 
 
 class MapConfigPayload(BaseModel):
-    MAX_FLOORPLAN_DATA_URL_LENGTH = 2_000_000
+    MAX_FLOORPLAN_DATA_URL_LENGTH: ClassVar[int] = 2_000_000
     floorplan_image_data_url: str | None = None
     geo_bounds: dict[str, float] | None = None
 
