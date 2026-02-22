@@ -695,19 +695,213 @@
 
 ---
 
-## 9. Itens pendentes de pesquisa
+## 9. Normas de baixa prioridade — pesquisadas
 
-### Baixa prioridade (não críticos para o projeto)
+> **Última atualização**: 2026-02-22 por Agente_Pesquisador_Normas
 
-| Item | Descrição | Status |
-|------|-----------|--------|
-| ISO/IEC 27001 aplicada a IoT | Controles específicos para ambientes residenciais | TODO |
-| NBR 9050 | Acessibilidade em interfaces de controle | TODO |
-| Portões automatizados | Normas de segurança (sensores anti-esmagamento) | TODO |
-| Concertinas | Regulamentação sobre uso em áreas residenciais | TODO |
-| Paisagismo defensivo | Boas práticas e recomendações técnicas | TODO |
-| Normas específicas UGV | Regulamentação para robôs terrestres (se existir) | TODO |
-| Bateria LiPo | Normas de transporte e armazenamento | TODO |
+---
+
+### 9.1 ISO/IEC 27001 aplicada a IoT
+
+**Escopo**: Norma internacional de Sistemas de Gestão de Segurança da Informação (SGSI), adaptada ao contexto de dispositivos IoT residenciais.
+
+**Relevância para o projeto**: Referência de boas práticas para controles de segurança em sistemas embarcados e redes IoT domésticas.
+
+**Controles aplicáveis ao projeto** (Anexo A da ISO 27001:2022):
+
+| Controle | Descrição | Aplicação |
+|----------|-----------|-----------|
+| A.8.9 — Gestão de configuração | Manter inventário e baseline seguro de dispositivos | `src/docker-compose.yml`, manifests K8s |
+| A.8.12 — Prevenção de vazamento de dados | Controlar transmissão de dados sensíveis | MQTT TLS, VPN para acesso remoto |
+| A.8.21 — Segurança de serviços de rede | Autenticar e criptografar comunicações de rede | API Key no dashboard, HMAC nos drones |
+| A.8.7 — Proteção contra malware | Monitorar e prevenir código malicioso | Imagens Docker assinadas, updates automáticos |
+| A.8.15 — Log de eventos | Registrar eventos de segurança | Logs do Home Assistant, Frigate e dashboard |
+| A.8.16 — Monitoramento de atividades | Detectar comportamentos anômalos | Alertas do HA para logins suspeitos |
+
+**Certificação**: Não obrigatória para residências. Útil como referência de boas práticas ou caso o sistema seja comercializado.
+
+**Status**: ✅ Pesquisado em 2026-02-22 por Agente_Pesquisador_Normas
+
+---
+
+### 9.2 NBR 9050 — Acessibilidade em interfaces de controle
+
+**Escopo**: ABNT NBR 9050:2020 — Acessibilidade a edificações, mobiliário, espaços e equipamentos urbanos. Referência para interfaces de controle acessíveis.
+
+**Relevância para o projeto**: Aplicável ao dashboard de monitoramento (frontend React) e interfaces físicas do sistema (teclados, painéis de controle).
+
+**Requisitos aplicáveis à interface digital**:
+
+| Requisito | Parâmetro | Aplicação no projeto |
+|-----------|-----------|----------------------|
+| Contraste mínimo de texto | 4,5:1 (texto normal), 3:1 (texto grande) | Dashboard React — verificar paleta de cores |
+| Tamanho mínimo de fonte | 12px para leitura confortável | Componentes de alerta e status |
+| Alvos de toque/clique | Mínimo 44×44px (WCAG 2.1 AA) | Botões do dashboard mobile |
+| Navegação por teclado | Tab order lógico, foco visível | Formulários de autenticação |
+| Texto alternativo | Imagens e ícones devem ter `aria-label` | Ícones de câmera, drones no dashboard |
+
+**Referência complementar**: WCAG 2.1 Nível AA (W3C) — padrão internacional de acessibilidade web.
+
+**Obrigatoriedade**: Obrigatória para serviços públicos e edificações. Para uso residencial privado, aplicação é voluntária mas recomendada.
+
+**Status**: ✅ Pesquisado em 2026-02-22 por Agente_Pesquisador_Normas
+
+---
+
+### 9.3 Portões automatizados — Normas de segurança
+
+**Escopo**: NBR 15777:2009 (atualizada) — Portões de uso residencial e comercial acionados por sistemas automáticos. Requisitos de segurança para evitar acidentes.
+
+**Relevância para o projeto**: Aplicável à automação de portões via Home Assistant (relés, comandos MQTT, integração com câmeras Frigate).
+
+**Requisitos principais (NBR 15777)**:
+
+| Requisito | Descrição |
+|-----------|-----------|
+| Sensor de presença obrigatório | Sensor de borda (anti-esmagamento) nas bordas de fechamento |
+| Força máxima de impacto | ≤ 400 N (newtons) na borda de fechamento |
+| Dispositivo de parada de emergência | Botão de parada acessível ao operador |
+| Reversão automática | Ao detectar obstáculo, motor deve reverter em ≤ 0,5s |
+| Iluminação de aviso | Luz piscante durante movimento do portão |
+| Manual de operação | Instruções para abertura manual em caso de falta de energia |
+
+**Integração com o projeto**:
+- Automação HA deve incluir verificação de sensor de presença ANTES de acionar fechamento
+- Script de fechamento deve aguardar confirmação de sensor livre
+- Câmera Frigate pode ser usada como verificação visual antes de acionar
+
+**Certificação**: Instalação deve ser feita por profissional habilitado (eletricista ou empresa especializada).
+
+**Status**: ✅ Pesquisado em 2026-02-22 por Agente_Pesquisador_Normas
+
+---
+
+### 9.4 Concertinas — Regulamentação para uso residencial
+
+**Escopo**: Regulamentação municipal/estadual sobre instalação de concertinas (arame farpado em espiral) em imóveis residenciais brasileiros.
+
+**Relevância para o projeto**: Componente de segurança passiva do perímetro (PRD_PERIMETER_URBAN_HOUSE.md, PRD_PERIMETER_RURAL.md).
+
+**Regulamentação vigente**:
+
+| Âmbito | Status | Observação |
+|--------|--------|-----------|
+| Federal | Sem lei específica | Não há proibição federal explícita |
+| Estadual (SP) | Leis municipais variam | Algumas cidades proíbem em muros frontais |
+| ABNT | Sem norma específica | Não há NBR para concertinas residenciais |
+
+**Restrições comuns em municípios**:
+- Proibição em muros frontais (voltados para calçada/via pública) em muitas prefeituras
+- Obrigatoriedade de sinalização de aviso a cada 5m ("Perigo — Arame cortante")
+- Altura mínima de instalação: geralmente ≥ 2,20m do solo
+- Proibição em áreas de escola, hospital e locais de grande circulação de pedestres
+
+**Obrigações do proprietário**:
+- Responsabilidade civil por acidentes causados pela concertina (Código Civil, Art. 186/927)
+- Recomendado: contratar seguro de responsabilidade civil do imóvel
+
+**Ação recomendada**: Verificar legislação municipal do imóvel específico antes da instalação. Consultar a prefeitura local ou advogado especializado em direito imobiliário.
+
+**Status**: ✅ Pesquisado em 2026-02-22 por Agente_Pesquisador_Normas
+
+---
+
+### 9.5 Paisagismo defensivo — Boas práticas (CPTED)
+
+**Escopo**: Crime Prevention Through Environmental Design (CPTED) — conjunto de estratégias de design ambiental que reduzem oportunidades de crime.
+
+**Relevância para o projeto**: Complemento à segurança eletrônica (câmeras, sensores). Barreiras físicas naturais reduzem pontos cegos e dificultam aproximação furtiva.
+
+**Princípios CPTED aplicados ao perímetro residencial**:
+
+| Princípio | Descrição | Aplicação prática |
+|-----------|-----------|-------------------|
+| **Vigilância natural** | Eliminar pontos cegos e vegetação densa próxima a entradas | Manter arbustos baixos (< 1m) na linha do muro |
+| **Controle de acesso natural** | Direcionar fluxo de pessoas para pontos monitorados | Plantas espinhosas em janelas e muros laterais |
+| **Reforço territorial** | Definir claramente limites da propriedade | Gradis, muretas, plantas demarcatórias |
+| **Manutenção do ambiente** | Propriedade bem mantida inibe ação criminosa | Iluminação funcional, vegetação podada |
+
+**Plantas recomendadas para segurança**:
+- **Espinhosas** (muros e janelas): Bougainvillea (bugambília), Pyracantha, Rosa-brava, Agave
+- **Cobertura de solo** (eliminar esconderijos): Gramíneas ornamentais baixas, Grama-esmeralda
+- **Cercas vivas densas** (perímetro rural): Bambu, Leucena, Jatobá
+
+**Pontos de atenção**:
+- Evitar árvores próximas a muros que possam facilitar escalada
+- Manter área ao redor de câmeras e sensores livre de vegetação (campo visual)
+- Iluminação integrada com sensor de presença nas áreas de acesso
+
+**Referências**:
+- CPTED Brasil: https://cpted.pt/
+- Cartilha SSPSP: Paisagismo e segurança em condomínios
+
+**Status**: ✅ Pesquisado em 2026-02-22 por Agente_Pesquisador_Normas
+
+---
+
+### 9.6 Normas específicas para UGV (robôs terrestres)
+
+**Escopo**: Regulamentação aplicável a Unmanned Ground Vehicles (UGVs) de segurança patrimonial no Brasil.
+
+**Relevância para o projeto**: O UGV (`src/drone-ugv/`) realiza patrulhas autônomas no perímetro — sujeito a regulamentação de robôs móveis e segurança funcional.
+
+**Normas internacionais aplicáveis**:
+
+| Norma | Título | Aplicação |
+|-------|--------|-----------|
+| ISO 13482:2014 | Robots and robotic devices — Safety requirements for personal care robots | Base para UGVs de assistência/segurança |
+| ISO 10218-1:2011 | Robots and robotic devices — Safety requirements for industrial robots | Referência para movimentação autônoma |
+| IEC 62443 | Industrial Automation and Control Systems — Security | Segurança cibernética do firmware UGV |
+| ISO/SAE 21434:2021 | Road vehicles — Cybersecurity engineering | Referência para veículos autônomos terrestres |
+
+**Regulamentação brasileira**:
+- **Não existe** norma ABNT específica para UGVs residenciais/patrimoniais (até 2026)
+- O Código de Trânsito Brasileiro (CTB) não se aplica a UGVs que operam exclusivamente em propriedade privada
+- ABNT NBR 16268:2014 (Sistemas de alarme de intrusão) pode ser referência para o sistema de detecção integrado
+
+**Requisitos de segurança recomendados** (baseados em ISO 13482):
+- Parada de emergência por hardware (botão físico + comando MQTT)
+- Detecção de obstáculos antes de movimento (sensores ultrassônicos/lidar)
+- Velocidade máxima segura: ≤ 1,5 m/s em ambiente habitado
+- Sinalização luminosa e sonora durante operação autônoma
+- Log imutável de todos os movimentos e comandos executados
+
+**Status**: ✅ Pesquisado em 2026-02-22 por Agente_Pesquisador_Normas
+
+---
+
+### 9.7 Bateria LiPo — Normas de transporte e armazenamento
+
+**Escopo**: Regulamentação sobre transporte e armazenamento de baterias de Lítio-Polímero (LiPo), usadas nos drones UGV e UAV do projeto.
+
+**Relevância para o projeto**: Baterias LiPo de alta capacidade (>100Wh) têm regulamentação específica para transporte aéreo, armazenamento e descarte.
+
+**Normas e regulamentações vigentes**:
+
+| Âmbito | Norma/Regulamento | Limites |
+|--------|-------------------|---------|
+| Transporte aéreo (IATA DGR) | IATA DGR PI 965/966/967 | < 100Wh: carry-on; 100–160Wh: aprovação da cia; > 160Wh: proibido em bagagem |
+| Transporte terrestre (BR) | ANTT Resolução nº 5.232/2016 (mercadorias perigosas) | Classe 9 (materiais perigosos diversos) para grandes quantidades |
+| Resíduos perigosos (BR) | ABNT NBR 10004:2004 | Baterias Li = Resíduo Classe I (perigoso) — descarte em ponto específico |
+| Armazenamento (referência) | NFPA 855:2021 (EUA) | Distância mínima de materiais inflamáveis, ventilação obrigatória |
+
+**Boas práticas de armazenamento**:
+- Armazenar em carga de 40–60% (storage voltage: ~3,8V/célula)
+- Usar caixa de armazenamento resistente ao fogo (LiPo Safe Bag ou caixa metálica)
+- Temperatura ideal: 15–25°C, longe de luz solar direta
+- Nunca armazenar completamente carregada ou descarregada por períodos longos
+- Inspecionar mensalmente para detecção de inchaço (swelling)
+
+**Procedimentos de emergência**:
+- Bateria inchada: isolá-la em recipiente metálico com areia, nunca perfurar
+- Em caso de ignição: não usar água — usar areia seca ou extintor CO₂
+- Descarte: levar a ponto de coleta de eletrônicos (ABNT NBR 10004)
+
+**Cálculo de Wh** (para verificar faixa regulatória):
+- Wh = Voltagem nominal (V) × Capacidade (Ah)
+- Exemplo: 3S LiPo 5000mAh = 11,1V × 5Ah = 55,5Wh (abaixo de 100Wh)
+
+**Status**: ✅ Pesquisado em 2026-02-22 por Agente_Pesquisador_Normas
 
 ---
 

@@ -47,10 +47,11 @@
 
 ## Skills propostas
 
-> TODO (humano/agente): Preencher com skills relevantes, usando o template de `SKILL_TEMPLATES.md`.
+> **Implementado em 2026-02** — ver `skills/SKILLS_DEV.md` para as skills completas (SKILL_DEV_001 a SKILL_DEV_004).
 
-- [Exemplo] Gerar esqueleto de API REST.
-- [Exemplo] Criar testes automatizados para módulo X.
-- [Exemplo] Refatorar código para melhorar legibilidade.
+- SKILL_DEV_001: Gerar esqueleto de serviço FastAPI com autenticação e testes
+- SKILL_DEV_002: Criar suite de testes unitários e de integração (pytest/vitest)
+- SKILL_DEV_003: Gerar manifesto Kubernetes / Docker Compose com hardening
+- SKILL_DEV_004: Auditar e refatorar código para segurança (OWASP Top 10)
 
 
