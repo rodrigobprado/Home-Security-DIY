@@ -54,7 +54,6 @@
 
 | ID | Título | Descrição | Responsável | Prioridade | PRD relacionado |
 |----|--------|-----------|-------------|------------|-----------------|
-| T-032 | Definir arquitetura de hardware UAV | Especificar frame, propulsão, flight controller, sensores e computador embarcado para drone aéreo. | Agente_Arquiteto_Drones | Média | PRD_AUTONOMOUS_DRONES |
 | T-037 | Desenvolver módulo de defesa não letal | Especificar e implementar sistema CO₂ + OC com autenticação, auditoria e protocolos de segurança. | Agente_Arquiteto_Drones | Média | PRD_DRONE_DEFENSE_MODULE |
 | T-038 | Integrar drones com Home Assistant | Implementar integração MQTT para controle, telemetria e disparo por eventos de alarme. | Agente_Arquiteto_Drones | Alta | PRD_AUTONOMOUS_DRONES |
 | T-039 | Desenvolver dashboard de frota | Criar interface de monitoramento e controle para múltiplos drones no Home Assistant. | Agente_Arquiteto_Drones | Média | PRD_DRONE_FLEET_MANAGEMENT |
@@ -156,11 +155,11 @@
 | Ordem | ID | Título | Justificativa |
 |-------|----|--------|---------------|
 | 1 | T-038 | Integração com Home Assistant | Conexão com sistema principal |
-| 2 | T-032 | Arquitetura de hardware UAV | Base para evolução da plataforma aérea |
-| 3 | T-039 | Dashboard de frota | Operação integrada de múltiplos drones |
-| 4 | T-041 | PRD de comunicação de drones | Especificação para rede/failover/streaming |
-| 5 | T-037 | Módulo de defesa não letal | Depende de base de comunicação e segurança operacional |
-| 6 | T-040 | PRD do módulo de defesa | Formalização de requisitos e riscos legais |
+| 2 | T-039 | Dashboard de frota | Operação integrada de múltiplos drones |
+| 3 | T-041 | PRD de comunicação de drones | Especificação para rede/failover/streaming |
+| 4 | T-037 | Módulo de defesa não letal | Depende de base de comunicação e segurança operacional |
+| 5 | T-040 | PRD do módulo de defesa | Formalização de requisitos e riscos legais |
+| 6 | T-044 | Guia de montagem UGV | Habilita replicabilidade do hardware terrestre |
 
 ---
 
