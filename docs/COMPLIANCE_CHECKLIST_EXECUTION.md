@@ -49,7 +49,8 @@ Arquivo: `tasks/COMPLIANCE_CHECKLIST_AUDIT_2026-02-22.md`
 - Manual pendente: isolamento real de VLANs, TLS MQTT em producao e hardening de SSH/TOTP.
 
 ### #107 - Testes de integracao
-- Automatizado: estrategia de testes e checklist documentados.
+- Automatizado: checklist consolidado e script de smoke test adicionados.
+- Evidencias: `docs/INTEGRATION_VALIDATION_CHECKLIST.md` e `scripts/integration_smoke_check.sh`.
 - Manual pendente: execucao em ambiente ativo (HA, Dashboard, Frigate, API, sensores, VPN).
 
 ### #108 - Matter/Thread
