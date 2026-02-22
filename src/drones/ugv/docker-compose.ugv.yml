@@ -5,13 +5,18 @@ services:
   # UGV Brain (ROS 2 Humble)
   # ---------------------------------------------------------------------------
   ugv-brain:
-    image: osrf/ros:humble-desktop-jammy
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: home-security-ugv-brain:latest
     container_name: ugv-brain
     restart: unless-stopped
     command: python3 /app/ugv_control.py
     volumes:
       - ./app:/app
       - ../common:/app/common
+      - ./ros2:/app/ros2
+      - ./scripts:/app/scripts
     devices:
       - /dev/ttyUSB0:/dev/ttyUSB0 # ESP32
       - /dev/video0:/dev/video0 # Camera
@@ -28,6 +33,11 @@ services:
       - COMMAND_ALLOWED_SOURCES_UGV=dashboard,homeassistant
       - COMMAND_MAX_SKEW_SECONDS_UGV=30
       - RTSP_URI=rtsp://mediamtx:8554/cam
+      - ROS2_ENABLED=true
+      - ROS2_PATROL_TOPIC=/ugv/patrol/goal
+      - ROS2_PATROL_ROUTE_FILE=/app/ros2/routes/patrol_routes.json
+    depends_on:
+      - ugv-ros2-nav
 
   # ---------------------------------------------------------------------------
   # RTSP Server (MediaMTX) - Low Latency Streaming
@@ -43,6 +53,41 @@ services:
     environment:
       - MTX_PROTOCOLS=tcp
       - MTX_WEBRTC=no # Disable WebRTC to save resources if not needed
+
+  # ---------------------------------------------------------------------------
+  # ROS2 Nav Stack (Nav2 + SLAM)
+  # ---------------------------------------------------------------------------
+  ugv-ros2-nav:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: home-security-ugv-brain:latest
+    container_name: ugv-ros2-nav
+    restart: unless-stopped
+    command: /app/scripts/start_nav_stack.sh
+    volumes:
+      - ./ros2:/app/ros2
+      - ./scripts:/app/scripts
+    networks:
+      - ugv-net
+    environment:
+      - ROS_DOMAIN_ID=0
+
+  # ---------------------------------------------------------------------------
+  # Simulation Smoke Test (Gazebo/Nav2 package availability)
+  # ---------------------------------------------------------------------------
+  ugv-gazebo-smoke:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: home-security-ugv-brain:latest
+    container_name: ugv-gazebo-smoke
+    profiles: ["test"]
+    command: /app/scripts/run_gazebo_smoke_test.sh
+    volumes:
+      - ./scripts:/app/scripts
+    networks:
+      - ugv-net
 
 networks:
   ugv-net:
