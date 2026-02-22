@@ -55,7 +55,6 @@
 | ID | Título | Descrição | Responsável | Prioridade | PRD relacionado |
 |----|--------|-----------|-------------|------------|-----------------|
 | T-032 | Definir arquitetura de hardware UAV | Especificar frame, propulsão, flight controller, sensores e computador embarcado para drone aéreo. | Agente_Arquiteto_Drones | Média | PRD_AUTONOMOUS_DRONES |
-| T-033 | Desenvolver firmware de controle baixo nível | Criar firmware ESP32/Arduino para controle de motores, leitura de sensores e comunicação serial. | Agente_Arquiteto_Drones | Alta | PRD_AUTONOMOUS_DRONES |
 | T-035 | Implementar pipeline de visão computacional | Desenvolver detecção de pessoas/veículos, tracking e classificação com YOLOv8/TensorFlow Lite. | Agente_Arquiteto_Drones | Alta | PRD_DRONE_AI_VISION |
 | T-036 | Implementar sistema de comunicação redundante | Desenvolver failover Wi-Fi → LoRa/Meshtastic com streaming de vídeo e telemetria. | Agente_Arquiteto_Drones | Alta | PRD_DRONE_COMMUNICATION |
 | T-037 | Desenvolver módulo de defesa não letal | Especificar e implementar sistema CO₂ + OC com autenticação, auditoria e protocolos de segurança. | Agente_Arquiteto_Drones | Média | PRD_DRONE_DEFENSE_MODULE |
@@ -158,12 +157,12 @@
 
 | Ordem | ID | Título | Justificativa |
 |-------|----|--------|---------------|
-| 1 | T-033 | Firmware de controle baixo nível | Pré-requisito para navegação |
-| 2 | T-036 | Sistema de comunicação redundante | Crítico para operação remota |
-| 3 | T-035 | Pipeline de visão computacional | Essencial para detecção e tracking |
-| 4 | T-038 | Integração com Home Assistant | Conexão com sistema principal |
-| 5 | T-032 | Arquitetura de hardware UAV | Base para evolução da plataforma aérea |
-| 6 | T-039 | Dashboard de frota | Operação integrada de múltiplos drones |
+| 1 | T-036 | Sistema de comunicação redundante | Crítico para operação remota |
+| 2 | T-035 | Pipeline de visão computacional | Essencial para detecção e tracking |
+| 3 | T-038 | Integração com Home Assistant | Conexão com sistema principal |
+| 4 | T-032 | Arquitetura de hardware UAV | Base para evolução da plataforma aérea |
+| 5 | T-039 | Dashboard de frota | Operação integrada de múltiplos drones |
+| 6 | T-041 | PRD de comunicação de drones | Especificação para rede/failover/streaming |
 
 ---
 

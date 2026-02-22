@@ -8,8 +8,13 @@
     {
         "id": "T-033",
         "description": "Criar firmware base (ESP32) para controle de motores",
-        "status": "pending",
-        "directory": "src/drones/ugv/firmware"
+        "status": "completed",
+        "files": [
+            "src/drones/ugv/firmware/src/main.cpp",
+            "src/drones/ugv/firmware/lib/motor_control/motor_control.cpp",
+            "src/drones/ugv/firmware/test/test_motor_control/test_main.cpp",
+            "src/drones/ugv/firmware/README.md"
+        ]
     },
     {
         "id": "T-034",
