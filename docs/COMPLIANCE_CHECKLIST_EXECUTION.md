@@ -99,3 +99,6 @@ Saida:
 ### Evidencias no CI
 - Artifact publicado: `compliance-gate-report`
 - Conteudo: relatorios `*.md`, logs de execucao e `compliance-gate-summary.txt`
+
+## Backlog operacional aberto em 2026-02-22
+- #136: evidencias operacionais LGPD em `docs/LGPD_OPERATIONAL_EVIDENCE_RUNBOOK.md`
