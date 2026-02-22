@@ -111,6 +111,7 @@
 |----|--------|----------------|-------------|
 | T-042 | Pesquisar normas ANAC/DECEA para drones | 2026-02-12 | RBAC-E nº 94, SISANT, classificação por peso, espaço aéreo |
 | T-043 | Pesquisar legislação de defesa não letal | 2026-02-12 | Spray de pimenta permitido em propriedade privada, verificar legislação estadual |
+| T-031 | Definir arquitetura de hardware UGV | 2026-02-22 | Documento técnico completo com BOM, custos, diagrama e compatibilidade ROS2/Nav2 |
 
 ### Entregáveis produzidos pelo Agente_Arquiteto_Drones
 
@@ -143,18 +144,17 @@
 ### Sistema de segurança base: ✅ 100% concluído
 Todas as 30 tarefas originais foram concluídas.
 
-### Módulo de drones autônomos: 🚀 Em andamento (13%)
-- 2 de 15 tarefas concluídas (T-042, T-043)
-- 13 tarefas pendentes (T-031 a T-041, T-044, T-045)
+### Módulo de drones autônomos: 🚀 Em andamento (20%)
+- 3 de 15 tarefas concluídas (T-031, T-042, T-043)
+- 12 tarefas pendentes (T-032 a T-041, T-044, T-045)
 
 ### Próximas tarefas prioritárias (drones):
-1. **T-031**: Definir arquitetura de hardware UGV
-2. **T-033**: Desenvolver firmware de controle baixo nível
-3. **T-034**: Implementar stack ROS2 para navegação
-4. **T-036**: Implementar sistema de comunicação redundante
-5. **T-035**: Implementar pipeline de visão computacional
+1. **T-033**: Desenvolver firmware de controle baixo nível
+2. **T-034**: Implementar stack ROS2 para navegação
+3. **T-036**: Implementar sistema de comunicação redundante
+4. **T-035**: Implementar pipeline de visão computacional
+5. **T-038**: Integração com Home Assistant
 
 ---
 
-> Última atualização: 2026-02-12
-
+> Última atualização: 2026-02-22
