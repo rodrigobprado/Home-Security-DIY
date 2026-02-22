@@ -256,6 +256,7 @@ Usada para atualizacoes em tempo real no dashboard. Permite subscribe a mudancas
 **Autenticacao**:
 - `X-API-Key: <DASHBOARD_API_KEY>`
 - ou `Authorization: Bearer <DASHBOARD_API_KEY>`
+- Proteção anti-bruteforce: tentativas inválidas são rate-limited por IP (HTTP e WS).
 
 | Metodo | Endpoint | Descricao |
 |--------|----------|-----------|
