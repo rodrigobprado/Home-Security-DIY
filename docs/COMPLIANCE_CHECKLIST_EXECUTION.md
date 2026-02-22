@@ -44,6 +44,8 @@ Arquivo: `tasks/COMPLIANCE_CHECKLIST_AUDIT_2026-02-22.md`
 
 ### #106 - Rede, VLANs e credenciais
 - Automatizado: autenticacao MQTT, ACL e `permit_join: false`.
+- Automatizado: checklist e auditoria técnica dedicada adicionados.
+- Evidencias: `docs/NETWORK_SECURITY_VLAN_CREDENTIALS_CHECKLIST.md` e `scripts/network_security_audit.sh`.
 - Manual pendente: isolamento real de VLANs, TLS MQTT em producao e hardening de SSH/TOTP.
 
 ### #107 - Testes de integracao
