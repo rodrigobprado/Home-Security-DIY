@@ -381,20 +381,19 @@ def _publish_defense_status(client, command, result, detail=None):
 def _handle_defense_arm(client, payload, is_healthy, reason):
     if not is_healthy:
         _publish_defense_status(client, "defense_arm", "rejected", f"health:{reason}")
-        return True
+        return
     ok, detail = defense.arm(
         payload.get("pin", ""),
         payload.get("totp", ""),
         source_id=str(payload.get("source_id", "unknown")),
     )
     _publish_defense_status(client, "defense_arm", "ok" if ok else "rejected", detail)
-    return True
 
 
 def _handle_defense_fire(client, payload, is_healthy, reason):
     if not is_healthy:
         _publish_defense_status(client, "defense_fire", "rejected", f"health:{reason}")
-        return True
+        return
 
     zone = str(payload.get("zone", "")).strip().lower()
     source_id = str(payload.get("source_id", "unknown"))
@@ -427,7 +426,7 @@ def _handle_defense_fire(client, payload, is_healthy, reason):
             }
         ),
     )
-    return True
+    return
 
 
 def _handle_defense_command(client, payload, command, is_healthy, reason):
@@ -437,7 +436,8 @@ def _handle_defense_command(client, payload, command, is_healthy, reason):
         return True
 
     if command == "defense_arm":
-        return _handle_defense_arm(client, payload, is_healthy, reason)
+        _handle_defense_arm(client, payload, is_healthy, reason)
+        return True
 
     if command == "defense_disarm":
         defense.disarm("request")
@@ -449,7 +449,8 @@ def _handle_defense_command(client, payload, command, is_healthy, reason):
         return True
 
     if command == "defense_fire":
-        return _handle_defense_fire(client, payload, is_healthy, reason)
+        _handle_defense_fire(client, payload, is_healthy, reason)
+        return True
 
     return False
 

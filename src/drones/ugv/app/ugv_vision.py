@@ -403,7 +403,7 @@ def main():
             continue
         last_process_time = now
 
-        tracked = process_frame(client, backend, tracker, frame, current_source)
+        process_frame(client, backend, tracker, frame, current_source)
 
         frame_count += 1
         if max(0.001, now - fps_window_start) >= 5.0:
