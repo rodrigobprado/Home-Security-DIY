@@ -203,7 +203,7 @@ python3 -m venv .venv
 ```
 
 Resultado mais recente:
-- `79 passed in 0.61s`
+- `82 passed in 0.67s`
 
 Notas:
 - Esta cobertura refere-se à suíte automatizada do diretório `tests/backend`.

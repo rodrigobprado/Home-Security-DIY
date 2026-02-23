@@ -25,3 +25,27 @@ Padronizar execucao do smoke test no ambiente ativo com evidencias operacionais.
 ## Frequencia
 - Executar apos cada release.
 - Executar apos mudancas relevantes em HA, Dashboard, Frigate ou rede.
+
+## Ultima execucao registrada (ambiente K3s de validacao)
+
+Data: 2026-02-22
+
+Estado dos workloads (`kubectl -n home-security get pods`):
+- dashboard-api: `1/1 Running`
+- dashboard-frontend: `1/1 Running`
+- homeassistant: `1/1 Running`
+- mosquitto: `1/1 Running`
+- postgres: `1/1 Running`
+- frigate: `1/1 Running`
+- zigbee2mqtt: `1/1 Running`
+
+Validacao HTTP via ingress TLS:
+- `https://homeassistant-home-security.toca.lan` -> `302`
+- `https://dashboard-home-security.toca.lan` -> `200`
+- `https://frigate-home-security.toca.lan` -> `200`
+- `https://zigbee2mqtt-home-security.toca.lan` -> `200`
+
+Observacao operacional:
+- No ambiente de validacao sem hardware fisico (cameras/USB Zigbee),
+  `frigate` e `zigbee2mqtt` podem operar em modo stub para manter
+  disponibilidade de pods/ingress e viabilizar os testes de plataforma.
