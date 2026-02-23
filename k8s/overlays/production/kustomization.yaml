@@ -24,6 +24,14 @@ patches:
   # --- Frigate: storage de produção (HDD dedicado) ---
   - target:
       kind: PersistentVolumeClaim
+      name: frigate-config
+    patch: |
+      - op: replace
+        path: /spec/resources/requests/storage
+        value: 20Gi
+
+  - target:
+      kind: PersistentVolumeClaim
       name: frigate-media
     patch: |
       - op: replace

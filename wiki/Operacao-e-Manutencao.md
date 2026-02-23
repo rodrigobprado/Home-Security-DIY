@@ -104,3 +104,6 @@ Notas para laboratório:
 
 - Sem hardware físico (dongle Zigbee/câmeras), os serviços `zigbee2mqtt` e `frigate` podem operar em modo *stub* para manter o cluster `Ready`.
 - Antes de promover para produção física, reverter para os manifests com integração real de câmera e coordenador Zigbee.
+- Persistência de dados críticos no K3s deve permanecer ativa via PVCs:
+  `postgres-data`, `mosquitto-data`, `homeassistant-config`,
+  `zigbee2mqtt-data`, `frigate-config` e `frigate-media`.

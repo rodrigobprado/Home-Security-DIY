@@ -192,7 +192,7 @@ Ver `.github/workflows/compliance-gates.yml` para o gate de compliance.
 
 ## Status Atual de Cobertura Automatizada
 
-Data de referência: **2026-02-22**
+Data de referência: **2026-02-23**
 
 Execução local validada:
 
@@ -203,11 +203,14 @@ python3 -m venv .venv
 ```
 
 Resultado mais recente:
-- `82 passed in 0.67s`
+- `83 passed in 0.62s`
 
 Notas:
 - Esta cobertura refere-se à suíte automatizada do diretório `tests/backend`.
 - Itens de validação física e operacional de campo continuam com evidência manual (checklists/runbooks).
+- A suíte inclui contrato para persistência de dados críticos em manifests K8s
+  (`tests/backend/test_k8s_security_context_contract.py`), validando montagem
+  de PVCs em Mosquitto, Home Assistant, Zigbee2MQTT e Frigate.
 
 ### Cobertura de compliance operacional
 

@@ -5,6 +5,8 @@ ROOT = Path(__file__).resolve().parents[2]
 DASHBOARD_K8S = ROOT / "k8s" / "base" / "dashboard" / "dashboard.yaml"
 MOSQUITTO_K8S = ROOT / "k8s" / "base" / "mosquitto" / "mosquitto.yaml"
 Z2M_K8S = ROOT / "k8s" / "base" / "zigbee2mqtt" / "zigbee2mqtt.yaml"
+FRIGATE_K8S = ROOT / "k8s" / "base" / "frigate" / "frigate.yaml"
+HOMEASSISTANT_K8S = ROOT / "k8s" / "base" / "homeassistant" / "homeassistant.yaml"
 
 
 def test_dashboard_manifests_include_baseline_container_hardening():
@@ -41,3 +43,24 @@ def test_zigbee2mqtt_manifest_drops_privileged_and_has_baseline_hardening():
     assert "type: RuntimeDefault" in content
     assert "drop:" in content
     assert "- ALL" in content
+
+
+def test_critical_services_mount_persistent_data_volumes():
+    z2m_content = Z2M_K8S.read_text(encoding="utf-8")
+    frigate_content = FRIGATE_K8S.read_text(encoding="utf-8")
+    ha_content = HOMEASSISTANT_K8S.read_text(encoding="utf-8")
+    mosquitto_content = MOSQUITTO_K8S.read_text(encoding="utf-8")
+
+    assert "claimName: zigbee2mqtt-data" in z2m_content
+    assert "mountPath: /app/data" in z2m_content
+
+    assert "claimName: frigate-config" in frigate_content
+    assert "claimName: frigate-media" in frigate_content
+    assert "mountPath: /config" in frigate_content
+    assert "mountPath: /media" in frigate_content
+
+    assert "claimName: homeassistant-config" in ha_content
+    assert "mountPath: /config" in ha_content
+
+    assert "claimName: mosquitto-data" in mosquitto_content
+    assert "mountPath: /mosquitto/data" in mosquitto_content

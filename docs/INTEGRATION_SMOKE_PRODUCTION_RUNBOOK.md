@@ -1,7 +1,7 @@
 # Runbook de Smoke de Integracao em Ambiente Real
 
 Issue: #141  
-Ultima atualizacao: 2026-02-22
+Ultima atualizacao: 2026-02-23
 
 ## Objetivo
 Padronizar execucao do smoke test no ambiente ativo com evidencias operacionais.
@@ -49,3 +49,7 @@ Observacao operacional:
 - No ambiente de validacao sem hardware fisico (cameras/USB Zigbee),
   `frigate` e `zigbee2mqtt` podem operar em modo stub para manter
   disponibilidade de pods/ingress e viabilizar os testes de plataforma.
+- Mesmo em modo stub, os manifests mantem persistencia dos dados criticos
+  de plataforma via PVCs:
+  `mosquitto-data`, `homeassistant-config`, `zigbee2mqtt-data`,
+  `frigate-config`, `frigate-media` e `postgres-data`.
