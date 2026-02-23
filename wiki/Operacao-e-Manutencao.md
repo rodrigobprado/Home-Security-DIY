@@ -90,3 +90,17 @@ docker compose logs -f homeassistant
 # Ver conexão WebSocket ativa
 curl http://localhost:8000/api/services/status
 ```
+
+## Perfil de validação em K3s (toca.lan)
+
+Hosts de acesso via ingress:
+
+- `https://homeassistant-home-security.toca.lan`
+- `https://dashboard-home-security.toca.lan`
+- `https://frigate-home-security.toca.lan`
+- `https://zigbee2mqtt-home-security.toca.lan`
+
+Notas para laboratório:
+
+- Sem hardware físico (dongle Zigbee/câmeras), os serviços `zigbee2mqtt` e `frigate` podem operar em modo *stub* para manter o cluster `Ready`.
+- Antes de promover para produção física, reverter para os manifests com integração real de câmera e coordenador Zigbee.
