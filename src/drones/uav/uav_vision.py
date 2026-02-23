@@ -42,6 +42,51 @@ def create_backend():
     return YoloV8Backend(YOLO_MODEL_PATH, VISION_MIN_CONF)
 
 
+def publish_health(client: mqtt.Client, status: str, source: str | None = None) -> None:
+    payload = {
+        "status": status,
+        "timestamp": datetime.now().isoformat(),
+    }
+    if source is not None:
+        payload["source"] = source
+        payload["backend"] = MODEL_BACKEND
+    client.publish(MQTT_TOPIC_HEALTH, json.dumps(payload))
+
+
+def open_capture(client: mqtt.Client):
+    for source in (RTSP_URL, CAMERA_DEVICE):
+        cap = cv2.VideoCapture(source)
+        if cap.isOpened():
+            publish_health(client, "camera_connected", str(source))
+            return cap, source
+    return None, None
+
+
+def publish_detection(client: mqtt.Client, tracked, block_defense: bool, source) -> None:
+    client.publish(
+        MQTT_TOPIC_DETECTIONS,
+        json.dumps(
+            {
+                "timestamp": datetime.now().isoformat(),
+                "backend": MODEL_BACKEND,
+                "source": str(source),
+                "count": len(tracked),
+                "detections": tracked,
+                "defense_blocked": block_defense,
+            }
+        ),
+    )
+    client.publish(
+        MQTT_TOPIC_SAFETY,
+        json.dumps(
+            {
+                "timestamp": datetime.now().isoformat(),
+                "defense_blocked": block_defense,
+            }
+        ),
+    )
+
+
 def main():
     client = mqtt.Client()
     if MQTT_USER and MQTT_PASSWORD:
@@ -52,30 +97,9 @@ def main():
     backend = create_backend()
     tracker = SortLikeTracker(max_disappeared=12, max_distance=120)
 
-    def open_capture():
-        for source in (RTSP_URL, CAMERA_DEVICE):
-            cap = cv2.VideoCapture(source)
-            if cap.isOpened():
-                client.publish(
-                    MQTT_TOPIC_HEALTH,
-                    json.dumps(
-                        {
-                            "status": "camera_connected",
-                            "source": str(source),
-                            "backend": MODEL_BACKEND,
-                            "timestamp": datetime.now().isoformat(),
-                        }
-                    ),
-                )
-                return cap, source
-        return None, None
-
     cap, source = open_capture()
     if cap is None:
-        client.publish(
-            MQTT_TOPIC_HEALTH,
-            json.dumps({"status": "camera_unavailable", "timestamp": datetime.now().isoformat()}),
-        )
+        publish_health(client, "camera_unavailable")
         return
 
     interval = 1.0 / max(1.0, PROCESS_FPS)
@@ -99,30 +123,7 @@ def main():
         detections = backend.infer(frame)
         tracked = tracker.update(detections)
         block_defense = annotate_safety(tracked, frame.shape)
-
-        client.publish(
-            MQTT_TOPIC_DETECTIONS,
-            json.dumps(
-                {
-                    "timestamp": datetime.now().isoformat(),
-                    "backend": MODEL_BACKEND,
-                    "source": str(source),
-                    "count": len(tracked),
-                    "detections": tracked,
-                    "defense_blocked": block_defense,
-                }
-            ),
-        )
-
-        client.publish(
-            MQTT_TOPIC_SAFETY,
-            json.dumps(
-                {
-                    "timestamp": datetime.now().isoformat(),
-                    "defense_blocked": block_defense,
-                }
-            ),
-        )
+        publish_detection(client, tracked, block_defense, source)
 
 
 if __name__ == "__main__":

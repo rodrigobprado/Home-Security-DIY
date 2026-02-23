@@ -218,7 +218,7 @@ def extract_sonar_key(body: str) -> Optional[str]:
     return match.group(1) if match else None
 
 
-def main() -> int:
+def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Sync SonarQube issues to GitHub issues.")
     parser.add_argument("--sonar-host-url", required=True)
     parser.add_argument("--sonar-project-key", required=True)
@@ -226,51 +226,43 @@ def main() -> int:
     parser.add_argument("--github-repo", required=True, help="owner/repo")
     parser.add_argument("--github-token", required=True)
     parser.add_argument("--dry-run", action="store_true")
-    args = parser.parse_args()
+    return parser.parse_args()
 
-    sonar_issues = fetch_sonar_open_issues(
-        host_url=args.sonar_host_url,
-        project_key=args.sonar_project_key,
-        token=args.sonar_token,
-    )
-    sonar_by_key = {item.key: item for item in sonar_issues}
-    print(f"Fetched {len(sonar_by_key)} open Sonar issues.")
 
-    api_base = os.getenv("GITHUB_API_URL", "https://api.github.com").rstrip("/")
-    gh_headers = github_headers(args.github_token)
-
-    ensure_label(
-        api_base=api_base,
-        repo=args.github_repo,
-        headers=gh_headers,
-        name="sonarqube",
-        color="1d76db",
-        description="Issue synchronized from SonarQube",
-        dry_run=args.dry_run,
-    )
-
-    gh_issues = fetch_github_issues(api_base=api_base, repo=args.github_repo, headers=gh_headers)
-    gh_by_sonar_key: Dict[str, dict] = {}
+def map_github_issues_by_sonar_key(gh_issues: List[dict]) -> Dict[str, dict]:
+    mapped: Dict[str, dict] = {}
     for gh_issue in gh_issues:
         key = extract_sonar_key(gh_issue.get("body", ""))
         if key:
-            gh_by_sonar_key[key] = gh_issue
+            mapped[key] = gh_issue
+    return mapped
 
+
+def sync_open_sonar_issues(
+    *,
+    sonar_by_key: Dict[str, SonarIssue],
+    gh_by_sonar_key: Dict[str, dict],
+    api_base: str,
+    github_repo: str,
+    gh_headers: Dict[str, str],
+    sonar_host_url: str,
+    sonar_project_key: str,
+    dry_run: bool,
+) -> tuple[int, int, int]:
     created = 0
     updated = 0
     reopened = 0
-    closed = 0
 
     for key, sonar_issue in sonar_by_key.items():
         current = gh_by_sonar_key.get(key)
         desired_title = issue_title(sonar_issue)
-        desired_body = issue_body(args.sonar_host_url, args.sonar_project_key, sonar_issue)
+        desired_body = issue_body(sonar_host_url, sonar_project_key, sonar_issue)
 
         if current is None:
-            if args.dry_run:
+            if dry_run:
                 print(f"[dry-run] create issue for Sonar key {key}")
             else:
-                create_url = f"{api_base}/repos/{args.github_repo}/issues"
+                create_url = f"{api_base}/repos/{github_repo}/issues"
                 _http_json(
                     "POST",
                     create_url,
@@ -295,12 +287,26 @@ def main() -> int:
             patch_payload["body"] = desired_body
 
         if patch_payload:
-            if args.dry_run:
+            if dry_run:
                 print(f"[dry-run] update issue #{current['number']} for Sonar key {key}")
             else:
-                update_url = f"{api_base}/repos/{args.github_repo}/issues/{current['number']}"
+                update_url = f"{api_base}/repos/{github_repo}/issues/{current['number']}"
                 _http_json("PATCH", update_url, headers=gh_headers, payload=patch_payload)
             updated += 1
+
+    return created, updated, reopened
+
+
+def close_resolved_sonar_issues(
+    *,
+    sonar_by_key: Dict[str, SonarIssue],
+    gh_by_sonar_key: Dict[str, dict],
+    api_base: str,
+    github_repo: str,
+    gh_headers: Dict[str, str],
+    dry_run: bool,
+) -> int:
+    closed = 0
 
     for key, gh_issue in gh_by_sonar_key.items():
         if key in sonar_by_key:
@@ -309,10 +315,10 @@ def main() -> int:
             continue
 
         number = gh_issue["number"]
-        if args.dry_run:
+        if dry_run:
             print(f"[dry-run] close issue #{number} (Sonar key {key} no longer open)")
         else:
-            comment_url = f"{api_base}/repos/{args.github_repo}/issues/{number}/comments"
+            comment_url = f"{api_base}/repos/{github_repo}/issues/{number}/comments"
             _http_json(
                 "POST",
                 comment_url,
@@ -324,9 +330,58 @@ def main() -> int:
                     )
                 },
             )
-            close_url = f"{api_base}/repos/{args.github_repo}/issues/{number}"
+            close_url = f"{api_base}/repos/{github_repo}/issues/{number}"
             _http_json("PATCH", close_url, headers=gh_headers, payload={"state": "closed"})
         closed += 1
+
+    return closed
+
+
+def main() -> int:
+    args = parse_args()
+
+    sonar_issues = fetch_sonar_open_issues(
+        host_url=args.sonar_host_url,
+        project_key=args.sonar_project_key,
+        token=args.sonar_token,
+    )
+    sonar_by_key = {item.key: item for item in sonar_issues}
+    print(f"Fetched {len(sonar_by_key)} open Sonar issues.")
+
+    api_base = os.getenv("GITHUB_API_URL", "https://api.github.com").rstrip("/")
+    gh_headers = github_headers(args.github_token)
+
+    ensure_label(
+        api_base=api_base,
+        repo=args.github_repo,
+        headers=gh_headers,
+        name="sonarqube",
+        color="1d76db",
+        description="Issue synchronized from SonarQube",
+        dry_run=args.dry_run,
+    )
+
+    gh_issues = fetch_github_issues(api_base=api_base, repo=args.github_repo, headers=gh_headers)
+    gh_by_sonar_key = map_github_issues_by_sonar_key(gh_issues)
+
+    created, updated, reopened = sync_open_sonar_issues(
+        sonar_by_key=sonar_by_key,
+        gh_by_sonar_key=gh_by_sonar_key,
+        api_base=api_base,
+        github_repo=args.github_repo,
+        gh_headers=gh_headers,
+        sonar_host_url=args.sonar_host_url,
+        sonar_project_key=args.sonar_project_key,
+        dry_run=args.dry_run,
+    )
+    closed = close_resolved_sonar_issues(
+        sonar_by_key=sonar_by_key,
+        gh_by_sonar_key=gh_by_sonar_key,
+        api_base=api_base,
+        github_repo=args.github_repo,
+        gh_headers=gh_headers,
+        dry_run=args.dry_run,
+    )
 
     print(
         "Sync completed: "
