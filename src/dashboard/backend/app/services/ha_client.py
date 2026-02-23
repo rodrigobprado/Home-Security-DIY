@@ -145,12 +145,81 @@ async def _fetch_initial_states() -> None:
         logger.warning("Não foi possível carregar estados iniciais: %s", exc)
 
 
+def _build_ws_url() -> str:
+    ws_base = settings.ha_url.replace("http://", "ws://").replace("https://", "wss://")
+    return f"{ws_base}/api/websocket"
+
+
+async def _authenticate(ws: Any) -> bool:
+    auth_required = json.loads(await ws.recv())
+    if auth_required.get("type") != "auth_required":
+        return True
+
+    await ws.send(json.dumps({"type": "auth", "access_token": settings.ha_token}))
+    auth_ok = json.loads(await ws.recv())
+    if auth_ok.get("type") != "auth_ok":
+        logger.error("Falha na autenticação HA: %s", auth_ok)
+        return False
+
+    logger.info("Autenticado no Home Assistant")
+    return True
+
+
+async def _subscribe_state_changed(
+    ws: Any,
+    msg_id: int,
+) -> int:
+    await ws.send(
+        json.dumps(
+            {
+                "id": msg_id,
+                "type": "subscribe_events",
+                "event_type": "state_changed",
+            }
+        )
+    )
+    return msg_id + 1
+
+
+async def _process_event_message(msg: dict[str, Any]) -> None:
+    event = msg.get("event", {})
+    data = event.get("data", {})
+    entity_id = data.get("entity_id", "")
+    new_state_obj = data.get("new_state") or {}
+    old_state_obj = data.get("old_state") or {}
+
+    new_state = new_state_obj.get("state", "")
+    old_state = old_state_obj.get("state", "")
+
+    if new_state_obj:
+        _entity_states[entity_id] = new_state_obj
+
+    await _persist_alert(entity_id, old_state, new_state)
+    await _fan_out(
+        {
+            "type": "state_changed",
+            "entity_id": entity_id,
+            "old_state": old_state,
+            "new_state": new_state,
+            "attributes": new_state_obj.get("attributes", {}),
+            "last_changed": new_state_obj.get("last_changed"),
+        }
+    )
+
+
+async def _consume_events(ws: Any) -> None:
+    async for raw in ws:
+        msg: dict[str, Any] = json.loads(raw)
+        if msg.get("type") != "event":
+            continue
+        await _process_event_message(msg)
+
+
 async def run_forever() -> None:
     """Loop principal de conexão ao HA WebSocket com reconexão automática."""
     await _fetch_initial_states()
 
-    ws_url = settings.ha_url.replace("http://", "ws://").replace("https://", "wss://")
-    ws_url = f"{ws_url}/api/websocket"
+    ws_url = _build_ws_url()
     msg_id = 1
     backoff = 1
 
@@ -160,65 +229,13 @@ async def run_forever() -> None:
             async with websockets.connect(ws_url, ping_interval=30) as ws:
                 backoff = 1  # reset após conexão bem-sucedida
 
-                # 1. Autenticação
-                auth_required = json.loads(await ws.recv())
-                if auth_required.get("type") == "auth_required":
-                    await ws.send(
-                        json.dumps({"type": "auth", "access_token": settings.ha_token})
-                    )
-                    auth_ok = json.loads(await ws.recv())
-                    if auth_ok.get("type") != "auth_ok":
-                        logger.error("Falha na autenticação HA: %s", auth_ok)
-                        await asyncio.sleep(backoff)
-                        backoff = min(backoff * 2, 60)
-                        continue
-                    logger.info("Autenticado no Home Assistant")
+                if not await _authenticate(ws):
+                    await asyncio.sleep(backoff)
+                    backoff = min(backoff * 2, 60)
+                    continue
 
-                # 2. Subscrever state_changed
-                await ws.send(
-                    json.dumps(
-                        {
-                            "id": msg_id,
-                            "type": "subscribe_events",
-                            "event_type": "state_changed",
-                        }
-                    )
-                )
-                msg_id += 1
-
-                # 3. Loop de recebimento
-                async for raw in ws:
-                    msg: dict[str, Any] = json.loads(raw)
-                    if msg.get("type") != "event":
-                        continue
-
-                    event = msg.get("event", {})
-                    data = event.get("data", {})
-                    entity_id = data.get("entity_id", "")
-                    new_state_obj = data.get("new_state") or {}
-                    old_state_obj = data.get("old_state") or {}
-
-                    new_state = new_state_obj.get("state", "")
-                    old_state = old_state_obj.get("state", "")
-
-                    # Atualiza cache
-                    if new_state_obj:
-                        _entity_states[entity_id] = new_state_obj
-
-                    # Persiste alertas relevantes
-                    await _persist_alert(entity_id, old_state, new_state)
-
-                    # Fan-out para clientes do dashboard
-                    await _fan_out(
-                        {
-                            "type": "state_changed",
-                            "entity_id": entity_id,
-                            "old_state": old_state,
-                            "new_state": new_state,
-                            "attributes": new_state_obj.get("attributes", {}),
-                            "last_changed": new_state_obj.get("last_changed"),
-                        }
-                    )
+                msg_id = await _subscribe_state_changed(ws, msg_id)
+                await _consume_events(ws)
 
         except (websockets.exceptions.ConnectionClosed, OSError, asyncio.TimeoutError) as exc:
             logger.warning("Conexão HA perdida: %s. Reconectando em %ds…", exc, backoff)

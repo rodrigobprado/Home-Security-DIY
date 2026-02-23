@@ -188,66 +188,82 @@ def verify_command_auth(payload):
 
     return True, "ok"
 
-def on_message(client, userdata, msg):
-    global uav_state, last_mqtt_rx_ts, last_link_rssi
+def _update_link_metrics(payload):
+    global last_link_rssi
+    try:
+        last_link_rssi = int(payload.get("wifi_rssi"))
+    except (TypeError, ValueError):
+        pass
+
+
+def _handle_lora_command(cmd):
+    if cmd == 'stop':
+        uav_state["mode"] = "HOLD"
+    elif cmd == 'rth':
+        uav_state["mode"] = "RTL"
+    elif cmd == 'alarm':
+        uav_state["mode"] = "AUTO"
+
+
+def _handle_uav_command(cmd):
+    if cmd == 'arm':
+        print("Command: ARM")
+        uav_state["armed"] = True
+        return
+    if cmd == 'disarm':
+        print("Command: DISARM")
+        uav_state["armed"] = False
+        return
+    if cmd == 'takeoff':
+        print("Command: TAKEOFF")
+        uav_state["mode"] = "AUTO"
+        uav_state["alt"] = 10.0
+        return
+    if cmd == 'land':
+        print("Command: LAND")
+        uav_state["mode"] = "LAND"
+        uav_state["alt"] = 0.0
+        return
+    if cmd == 'return_home':
+        print("Command: RETURN_HOME")
+        uav_state["mode"] = "RTL"
+        return
+    if cmd == 'stop':
+        print("Command: STOP/HOLD")
+        uav_state["mode"] = "HOLD"
+        return
+    if cmd == 'inspect_zone':
+        print("Command: INSPECT_ZONE")
+        uav_state["mode"] = "AUTO"
+        uav_state["alt"] = 12.0
+
+
+def on_message(_client, _userdata, msg):
+    global last_mqtt_rx_ts
     try:
         payload = json.loads(msg.payload.decode())
-        cmd = payload.get('cmd')
-        print(f"MQTT CMD: topic={msg.topic} cmd={cmd}")
-        last_mqtt_rx_ts = time.time()
+    except Exception as exc:
+        print(f"Error executing command: {exc}")
+        return
 
-        authorized, auth_reason = verify_command_auth(payload)
-        if not authorized:
-            print(f"Ignoring unauthorized command: {auth_reason}")
-            return
+    cmd = payload.get('cmd')
+    print(f"MQTT CMD: topic={msg.topic} cmd={cmd}")
+    last_mqtt_rx_ts = time.time()
 
-        if msg.topic == MQTT_TOPIC_LINK_METRICS:
-            try:
-                last_link_rssi = int(payload.get("wifi_rssi"))
-            except (TypeError, ValueError):
-                pass
-            return
+    authorized, auth_reason = verify_command_auth(payload)
+    if not authorized:
+        print(f"Ignoring unauthorized command: {auth_reason}")
+        return
 
-        if msg.topic == MQTT_TOPIC_LORA_CMD:
-            # Emergency channel over LoRa
-            if cmd == 'stop':
-                uav_state["mode"] = "HOLD"
-            elif cmd == 'rth':
-                uav_state["mode"] = "RTL"
-            elif cmd == 'alarm':
-                uav_state["mode"] = "AUTO"
-            return
-        
-        if cmd == 'arm':
-            print("Command: ARM")
-            uav_state["armed"] = True
-            
-        elif cmd == 'disarm':
-            print("Command: DISARM")
-            uav_state["armed"] = False
-            
-        elif cmd == 'takeoff':
-            print("Command: TAKEOFF")
-            uav_state["mode"] = "AUTO"
-            uav_state["alt"] = 10.0
-            
-        elif cmd == 'land':
-            print("Command: LAND")
-            uav_state["mode"] = "LAND"
-            uav_state["alt"] = 0.0
-        elif cmd == 'return_home':
-            print("Command: RETURN_HOME")
-            uav_state["mode"] = "RTL"
-        elif cmd == 'stop':
-            print("Command: STOP/HOLD")
-            uav_state["mode"] = "HOLD"
-        elif cmd == 'inspect_zone':
-            print("Command: INSPECT_ZONE")
-            uav_state["mode"] = "AUTO"
-            uav_state["alt"] = 12.0
-            
-    except Exception as e:
-        print(f"Error executing command: {e}")
+    if msg.topic == MQTT_TOPIC_LINK_METRICS:
+        _update_link_metrics(payload)
+        return
+
+    if msg.topic == MQTT_TOPIC_LORA_CMD:
+        _handle_lora_command(cmd)
+        return
+
+    _handle_uav_command(cmd)
 
 def main():
     print(f"Starting UAV MAVLink Bridge (Simulated Connection: {MAVLINK_CONNECTION})...")
