@@ -321,265 +321,246 @@ def verify_command_auth(payload):
 
     return True, "ok"
 
-def on_message(client, userdata, msg):
-    global last_mqtt_rx_ts, last_link_rssi, defense_blocked, defense_block_reasons
+def _handle_link_metrics_payload(payload):
+    global last_link_rssi
+    rssi = payload.get("wifi_rssi")
+    try:
+        last_link_rssi = int(rssi)
+    except (TypeError, ValueError):
+        pass
+
+
+def _handle_vision_safety_payload(payload):
+    global defense_blocked, defense_block_reasons
+    defense_blocked = bool(payload.get("defense_blocked", False))
+    raw_reasons = payload.get("reasons")
+    defense_block_reasons = raw_reasons if isinstance(raw_reasons, list) else []
+
+
+def _handle_waypoint_update(client, payload):
+    route_name = str(payload.get("route", "")).strip()
+    waypoints = payload.get("waypoints")
+    if not route_name or not isinstance(waypoints, list) or not waypoints:
+        client.publish(
+            MQTT_TOPIC_WAYPOINTS_STATE,
+            json.dumps(
+                {
+                    "status": "invalid_payload",
+                    "route": route_name or None,
+                    "reason": "route and waypoints list are required",
+                }
+            ),
+        )
+        return
+
+    PATROL_ROUTES[route_name] = waypoints
+    save_patrol_routes()
+    client.publish(
+        MQTT_TOPIC_WAYPOINTS_STATE,
+        json.dumps(
+            {
+                "status": "updated",
+                "route": route_name,
+                "waypoint_count": len(waypoints),
+            }
+        ),
+    )
+
+
+def _publish_defense_status(client, command, result, detail=None):
+    payload = {
+        **defense.get_status(),
+        "command": command,
+        "result": result,
+    }
+    if detail is not None:
+        payload["detail"] = detail
+    client.publish(MQTT_TOPIC_DEFENSE_STATUS, json.dumps(payload))
+
+
+def _handle_defense_command(client, payload, command, is_healthy, reason):
+    if command == "defense_mode":
+        ok, detail = defense.set_mode(payload.get("mode", ""))
+        _publish_defense_status(client, "defense_mode", "ok" if ok else "rejected", detail)
+        return True
+
+    if command == "defense_arm":
+        if not is_healthy:
+            _publish_defense_status(client, "defense_arm", "rejected", f"health:{reason}")
+            return True
+        ok, detail = defense.arm(
+            payload.get("pin", ""),
+            payload.get("totp", ""),
+            source_id=str(payload.get("source_id", "unknown")),
+        )
+        _publish_defense_status(client, "defense_arm", "ok" if ok else "rejected", detail)
+        return True
+
+    if command == "defense_disarm":
+        defense.disarm("request")
+        _publish_defense_status(client, "defense_disarm", "ok")
+        return True
+
+    if command in {"defense_auto_fire", "defense_set_automatic"}:
+        _publish_defense_status(client, command, "rejected", "automatic_mode_forbidden")
+        return True
+
+    if command == "defense_fire":
+        if not is_healthy:
+            _publish_defense_status(client, "defense_fire", "rejected", f"health:{reason}")
+            return True
+
+        zone = str(payload.get("zone", "")).strip().lower()
+        source_id = str(payload.get("source_id", "unknown"))
+        ok, detail = defense.request_fire(
+            zone=zone,
+            defense_blocked=defense_blocked,
+            block_reasons=defense_block_reasons,
+            source_id=source_id,
+        )
+        defense_payload = defense.get_status()
+        defense_payload.update(
+            {
+                "command": "defense_fire",
+                "result": "ok" if ok else "pending_or_rejected",
+                "detail": detail,
+                "vision_blocked": defense_blocked,
+                "vision_reasons": defense_block_reasons,
+            }
+        )
+        client.publish(MQTT_TOPIC_DEFENSE_STATUS, json.dumps(defense_payload))
+        client.publish(
+            MQTT_TOPIC_DEFENSE_AUDIT,
+            json.dumps(
+                {
+                    "ts": int(time.time()),
+                    "event": "defense_fire_attempt",
+                    "result": detail,
+                    "zone": zone or None,
+                    "source_id": source_id,
+                }
+            ),
+        )
+        return True
+
+    return False
+
+
+def _handle_navigation_command(client, payload, command):
+    if command == "move":
+        left = int(payload.get("linear", 0) * 100)
+        right = int(payload.get("angular", 0) * 100)
+        send_motor_cmd(left, right)
+    elif command == "stop":
+        send_motor_cmd(0, 0)
+        publish_status(
+            client,
+            {
+                "state": "idle",
+                "command": "stop",
+                "status": "executed",
+            },
+        )
+    elif command == "return_home":
+        route_name = "garage_to_gate"
+        waypoints = PATROL_ROUTES.get(route_name, [])
+        if not waypoints:
+            publish_status(
+                client,
+                {
+                    "state": "error",
+                    "command": "return_home",
+                    "status": "route_not_found",
+                },
+            )
+            return
+        publish_patrol_route(client, route_name, waypoints)
+        publish_status(
+            client,
+            {
+                "state": "patrol",
+                "command": "return_home",
+                "status": "started_mqtt_only",
+                "route": route_name,
+            },
+        )
+    elif command == 'patrol':
+        route_name = str(payload.get("route", "perimeter_day")).strip() or "perimeter_day"
+        waypoints = payload.get("waypoints")
+        if not isinstance(waypoints, list) or not waypoints:
+            waypoints = PATROL_ROUTES.get(route_name)
+
+        if not waypoints:
+            publish_status(
+                client,
+                {
+                    "state": "error",
+                    "command": "patrol",
+                    "status": "route_not_found",
+                    "route": route_name,
+                    "known_routes": sorted(PATROL_ROUTES.keys()),
+                },
+            )
+            return
+
+        publish_patrol_route(client, route_name, waypoints)
+        ros2_ok, ros2_reason = send_route_to_ros2(route_name, waypoints)
+        publish_status(
+            client,
+            {
+                "state": "patrol",
+                "command": "patrol",
+                "status": "started" if ros2_ok else "started_mqtt_only",
+                "route": route_name,
+                "waypoint_count": len(waypoints),
+                "ros2": {"sent": ros2_ok, "detail": ros2_reason},
+            },
+        )
+
+
+def on_message(client, _userdata, msg):
+    global last_mqtt_rx_ts
     try:
         health.update_heartbeat()
         payload = json.loads(msg.payload.decode())
-        command = payload.get("cmd")
-        print(f"MQTT CMD: topic={msg.topic} cmd={command}")
-        last_mqtt_rx_ts = time.time()
+    except Exception as exc:
+        print(f"Error parsing command: {exc}")
+        return
 
-        if msg.topic == MQTT_TOPIC_LINK_METRICS:
-            rssi = payload.get("wifi_rssi")
-            try:
-                last_link_rssi = int(rssi)
-            except (TypeError, ValueError):
-                pass
-            return
+    command = payload.get("cmd")
+    print(f"MQTT CMD: topic={msg.topic} cmd={command}")
+    last_mqtt_rx_ts = time.time()
 
-        if msg.topic == MQTT_TOPIC_VISION_SAFETY:
-            defense_blocked = bool(payload.get("defense_blocked", False))
-            raw_reasons = payload.get("reasons")
-            defense_block_reasons = raw_reasons if isinstance(raw_reasons, list) else []
-            return
+    if msg.topic == MQTT_TOPIC_LINK_METRICS:
+        _handle_link_metrics_payload(payload)
+        return
 
-        authorized, auth_reason = verify_command_auth(payload)
-        if not authorized:
-            print(f"Ignoring unauthorized command: {auth_reason}")
-            return
+    if msg.topic == MQTT_TOPIC_VISION_SAFETY:
+        _handle_vision_safety_payload(payload)
+        return
 
-        if msg.topic == MQTT_TOPIC_WAYPOINTS_SET:
-            route_name = str(payload.get("route", "")).strip()
-            waypoints = payload.get("waypoints")
-            if not route_name or not isinstance(waypoints, list) or not waypoints:
-                client.publish(
-                    MQTT_TOPIC_WAYPOINTS_STATE,
-                    json.dumps(
-                        {
-                            "status": "invalid_payload",
-                            "route": route_name or None,
-                            "reason": "route and waypoints list are required",
-                        }
-                    ),
-                )
-                return
+    authorized, auth_reason = verify_command_auth(payload)
+    if not authorized:
+        print(f"Ignoring unauthorized command: {auth_reason}")
+        return
 
-            PATROL_ROUTES[route_name] = waypoints
-            save_patrol_routes()
-            client.publish(
-                MQTT_TOPIC_WAYPOINTS_STATE,
-                json.dumps(
-                    {
-                        "status": "updated",
-                        "route": route_name,
-                        "waypoint_count": len(waypoints),
-                    }
-                ),
-            )
-            return
+    if msg.topic == MQTT_TOPIC_WAYPOINTS_SET:
+        _handle_waypoint_update(client, payload)
+        return
 
-        if msg.topic == MQTT_TOPIC_LORA_CMD:
-            handle_lora_command(client, payload)
-            return
+    if msg.topic == MQTT_TOPIC_LORA_CMD:
+        handle_lora_command(client, payload)
+        return
 
-        is_healthy, reason = health.check_health()
+    is_healthy, reason = health.check_health()
+    if _handle_defense_command(client, payload, command, is_healthy, reason):
+        return
 
-        # Defense commands
-        if command == "defense_mode":
-            ok, detail = defense.set_mode(payload.get("mode", ""))
-            client.publish(
-                MQTT_TOPIC_DEFENSE_STATUS,
-                json.dumps(
-                    {
-                        **defense.get_status(),
-                        "command": "defense_mode",
-                        "result": "ok" if ok else "rejected",
-                        "detail": detail,
-                    }
-                ),
-            )
-            return
+    if not is_healthy:
+        print(f"Ignoring command due to health failure: {reason}")
+        return
 
-        if command == "defense_arm":
-            if not is_healthy:
-                client.publish(
-                    MQTT_TOPIC_DEFENSE_STATUS,
-                    json.dumps(
-                        {
-                            **defense.get_status(),
-                            "command": "defense_arm",
-                            "result": "rejected",
-                            "detail": f"health:{reason}",
-                        }
-                    ),
-                )
-                return
-            ok, detail = defense.arm(
-                payload.get("pin", ""),
-                payload.get("totp", ""),
-                source_id=str(payload.get("source_id", "unknown")),
-            )
-            client.publish(
-                MQTT_TOPIC_DEFENSE_STATUS,
-                json.dumps(
-                    {
-                        **defense.get_status(),
-                        "command": "defense_arm",
-                        "result": "ok" if ok else "rejected",
-                        "detail": detail,
-                    }
-                ),
-            )
-            return
-        if command == "defense_disarm":
-            defense.disarm("request")
-            client.publish(
-                MQTT_TOPIC_DEFENSE_STATUS,
-                json.dumps(
-                    {
-                        **defense.get_status(),
-                        "command": "defense_disarm",
-                        "result": "ok",
-                    }
-                ),
-            )
-            return
-        if command in {"defense_auto_fire", "defense_set_automatic"}:
-            client.publish(
-                MQTT_TOPIC_DEFENSE_STATUS,
-                json.dumps(
-                    {
-                        **defense.get_status(),
-                        "command": command,
-                        "result": "rejected",
-                        "detail": "automatic_mode_forbidden",
-                    }
-                ),
-            )
-            return
-        if command == "defense_fire":
-            if not is_healthy:
-                client.publish(
-                    MQTT_TOPIC_DEFENSE_STATUS,
-                    json.dumps(
-                        {
-                            **defense.get_status(),
-                            "command": "defense_fire",
-                            "result": "rejected",
-                            "detail": f"health:{reason}",
-                        }
-                    ),
-                )
-                return
-            ok, detail = defense.request_fire(
-                zone=str(payload.get("zone", "")).strip().lower(),
-                defense_blocked=defense_blocked,
-                block_reasons=defense_block_reasons,
-                source_id=str(payload.get("source_id", "unknown")),
-            )
-            defense_payload = defense.get_status()
-            defense_payload.update(
-                {
-                    "command": "defense_fire",
-                    "result": "ok" if ok else "pending_or_rejected",
-                    "detail": detail,
-                    "vision_blocked": defense_blocked,
-                    "vision_reasons": defense_block_reasons,
-                }
-            )
-            client.publish(MQTT_TOPIC_DEFENSE_STATUS, json.dumps(defense_payload))
-            client.publish(
-                MQTT_TOPIC_DEFENSE_AUDIT,
-                json.dumps(
-                    {
-                        "ts": int(time.time()),
-                        "event": "defense_fire_attempt",
-                        "result": detail,
-                        "zone": str(payload.get("zone", "")).strip().lower() or None,
-                        "source_id": str(payload.get("source_id", "unknown")),
-                    }
-                ),
-            )
-            return
-
-        # Nav Commands (Only if Healthy)
-        if not is_healthy:
-            print(f"Ignoring command due to health failure: {reason}")
-            return
-
-        if command == "move":
-            left = int(payload.get("linear", 0) * 100)
-            right = int(payload.get("angular", 0) * 100)
-            send_motor_cmd(left, right)
-        elif command == "stop":
-            send_motor_cmd(0, 0)
-            publish_status(
-                client,
-                {
-                    "state": "idle",
-                    "command": "stop",
-                    "status": "executed",
-                },
-            )
-        elif command == "return_home":
-            route_name = "garage_to_gate"
-            waypoints = PATROL_ROUTES.get(route_name, [])
-            if not waypoints:
-                publish_status(
-                    client,
-                    {
-                        "state": "error",
-                        "command": "return_home",
-                        "status": "route_not_found",
-                    },
-                )
-                return
-            publish_patrol_route(client, route_name, waypoints)
-            publish_status(
-                client,
-                {
-                    "state": "patrol",
-                    "command": "return_home",
-                    "status": "started_mqtt_only",
-                    "route": route_name,
-                },
-            )
-        elif command == 'patrol':
-            route_name = str(payload.get("route", "perimeter_day")).strip() or "perimeter_day"
-            waypoints = payload.get("waypoints")
-            if not isinstance(waypoints, list) or not waypoints:
-                waypoints = PATROL_ROUTES.get(route_name)
-
-            if not waypoints:
-                publish_status(
-                    client,
-                    {
-                        "state": "error",
-                        "command": "patrol",
-                        "status": "route_not_found",
-                        "route": route_name,
-                        "known_routes": sorted(PATROL_ROUTES.keys()),
-                    },
-                )
-                return
-
-            publish_patrol_route(client, route_name, waypoints)
-            ros2_ok, ros2_reason = send_route_to_ros2(route_name, waypoints)
-            publish_status(
-                client,
-                {
-                    "state": "patrol",
-                    "command": "patrol",
-                    "status": "started" if ros2_ok else "started_mqtt_only",
-                    "route": route_name,
-                    "waypoint_count": len(waypoints),
-                    "ros2": {"sent": ros2_ok, "detail": ros2_reason},
-                },
-            )
-
-    except Exception as e:
-        print(f"Error parsing command: {e}")
+    _handle_navigation_command(client, payload, command)
 
 def send_motor_cmd(left, right):
     if ser and ser.is_open:
@@ -587,111 +568,120 @@ def send_motor_cmd(left, right):
         ser.write(cmd.encode())
         print(f"Sent to ESP32: {cmd.strip()}")
 
-def main():
-    global ser, last_mqtt_rx_ts
-    print("UGV Brain Starting...")
-    load_patrol_routes()
-    
-    # 1. Connect to ESP32
+
+def _connect_serial():
+    global ser
     try:
         ser = serial.Serial(SERIAL_PORT, BAUD_RATE, timeout=0.1)
         print(f"Connected to ESP32 on {SERIAL_PORT}")
-    except Exception as e:
-        print(f"Error connecting to ESP32: {e}")
-    
-    # 2. Connect to MQTT
+    except Exception as exc:
+        print(f"Error connecting to ESP32: {exc}")
+
+
+def _connect_mqtt():
+    global last_mqtt_rx_ts
     client = mqtt.Client()
     if MQTT_USER and MQTT_PASSWORD:
         client.username_pw_set(MQTT_USER, MQTT_PASSWORD)
-    
+
     client.on_connect = on_connect
     client.on_disconnect = on_disconnect
     client.on_message = on_message
-    
+
     try:
         client.connect(MQTT_BROKER, MQTT_PORT, 60)
         health.update_heartbeat()
         client.loop_start()
         last_mqtt_rx_ts = time.time()
-    except Exception as e:
-        print(f"Error connecting to MQTT: {e}")
+        return client
+    except Exception as exc:
+        print(f"Error connecting to MQTT: {exc}")
+        return None
+
+
+def _read_serial_ticks(ticks_l, ticks_r):
+    if not (ser and ser.is_open and ser.in_waiting > 0):
+        return ticks_l, ticks_r
+    try:
+        line = ser.readline().decode("utf-8").strip()
+        health.update_heartbeat()
+        if line.startswith("O "):
+            parts = line.split()
+            if len(parts) == 3:
+                ticks_l = int(parts[1])
+                ticks_r = int(parts[2])
+        elif line.startswith("B "):
+            parts = line.split()
+            if len(parts) == 2:
+                try:
+                    battery_level = int(parts[1])
+                    health.update_battery(max(0, min(100, battery_level)))
+                except ValueError:
+                    print(f"Invalid battery payload: {line}")
+        elif line.startswith("LoRa Recv: "):
+            print(f"[LoRa] {line.strip()}")
+    except Exception as exc:
+        print(f"Serial Read Error: {exc}")
+    return ticks_l, ticks_r
+
+
+def _publish_telemetry(client, is_healthy, reason, ticks_l, ticks_r):
+    stale = (time.time() - last_mqtt_rx_ts) > FAILOVER_TIMEOUT_SECONDS
+    if stale or last_link_rssi < WIFI_RSSI_THRESHOLD:
+        set_link_mode(client, "lora", "wifi_timeout_or_low_rssi")
+    else:
+        set_link_mode(client, "wifi", "wifi_healthy")
+
+    status = {
+        "state": "idle" if is_healthy else "error",
+        "health_reason": reason,
+        "battery": health.battery_level,
+        "odometry": {"left": ticks_l, "right": ticks_r},
+        "comm": {
+            "mode": CURRENT_LINK_MODE,
+            "reason": LAST_LINK_REASON,
+            "wifi_rssi": last_link_rssi,
+            "failover_timeout_s": FAILOVER_TIMEOUT_SECONDS,
+        },
+    }
+    client.publish(MQTT_TOPIC_STATUS, json.dumps(status))
+
+    defense_status = defense.get_status()
+    defense_status.update(
+        {
+            "actuator_spec": DEFENSE_ACTUATOR_SPEC,
+            "vision_blocked": defense_blocked,
+            "vision_reasons": defense_block_reasons,
+        }
+    )
+    client.publish(MQTT_TOPIC_DEFENSE_STATUS, json.dumps(defense_status))
+
+
+def main():
+    print("UGV Brain Starting...")
+    load_patrol_routes()
+    _connect_serial()
+
+    client = _connect_mqtt()
+    if client is None:
         return
 
-    # 3. Main Loop
-    last_pub_time = 0
+    last_pub_time = 0.0
     ticks_l = 0
     ticks_r = 0
-    
-    while True:
-        # Check Health
-        is_healthy, reason = health.check_health()
-        if not is_healthy:
-            # Emergency Stop
-            if ser and ser.is_open:
-                 # Only send stop if we haven't sent it recently/repeatedly to avoid flooding
-                 pass # simplified
-            # print(f"CRITICAL HEALTH: {reason}")
-        
-        # Read ESP32
-        if ser and ser.is_open and ser.in_waiting > 0:
-            try:
-                line = ser.readline().decode('utf-8').strip()
-                health.update_heartbeat() # Serial activity counts as heartbeat too? No, comms check.
-                
-                if line.startswith("O "):
-                    parts = line.split()
-                    if len(parts) == 3:
-                        ticks_l = int(parts[1])
-                        ticks_r = int(parts[2])
-                elif line.startswith("B "):
-                    parts = line.split()
-                    if len(parts) == 2:
-                        try:
-                            battery_level = int(parts[1])
-                            health.update_battery(max(0, min(100, battery_level)))
-                        except ValueError:
-                            print(f"Invalid battery payload: {line}")
-                elif line.startswith("LoRa Recv: "):
-                    print(f"[LoRa] {line.strip()}")
-            except Exception as e:
-                print(f"Serial Read Error: {e}")
 
-        # Publish Telemetry (1Hz)
+    while True:
+        is_healthy, reason = health.check_health()
+        if not is_healthy and ser and ser.is_open:
+            # Hook para estop por hardware em versões futuras.
+            pass
+
+        ticks_l, ticks_r = _read_serial_ticks(ticks_l, ticks_r)
+
         if time.time() - last_pub_time > 1.0:
-            stale = (time.time() - last_mqtt_rx_ts) > FAILOVER_TIMEOUT_SECONDS
-            if stale or last_link_rssi < WIFI_RSSI_THRESHOLD:
-                set_link_mode(client, "lora", "wifi_timeout_or_low_rssi")
-            else:
-                set_link_mode(client, "wifi", "wifi_healthy")
-            
-            # UGV Status
-            status = {
-                "state": "idle" if is_healthy else "error",
-                "health_reason": reason,
-                "battery": health.battery_level,
-                "odometry": {"left": ticks_l, "right": ticks_r},
-                "comm": {
-                    "mode": CURRENT_LINK_MODE,
-                    "reason": LAST_LINK_REASON,
-                    "wifi_rssi": last_link_rssi,
-                    "failover_timeout_s": FAILOVER_TIMEOUT_SECONDS,
-                },
-            }
-            client.publish(MQTT_TOPIC_STATUS, json.dumps(status))
-            
-            # Defense Status
-            defense_status = defense.get_status()
-            defense_status.update(
-                {
-                    "actuator_spec": DEFENSE_ACTUATOR_SPEC,
-                    "vision_blocked": defense_blocked,
-                    "vision_reasons": defense_block_reasons,
-                }
-            )
-            client.publish(MQTT_TOPIC_DEFENSE_STATUS, json.dumps(defense_status))
-            
+            _publish_telemetry(client, is_healthy, reason, ticks_l, ticks_r)
             last_pub_time = time.time()
-        
+
         time.sleep(0.01)
 
 if __name__ == "__main__":

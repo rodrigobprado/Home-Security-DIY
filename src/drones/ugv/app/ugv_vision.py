@@ -59,36 +59,34 @@ class SortLikeTracker:
         del self.objects[object_id]
         del self.disappeared[object_id]
 
-    def update(self, detections):
-        if len(detections) == 0:
-            for object_id in list(self.disappeared.keys()):
-                self.disappeared[object_id] += 1
-                if self.disappeared[object_id] > self.max_disappeared:
-                    self._deregister(object_id)
-            return []
+    def _mark_missing(self):
+        for object_id in list(self.disappeared.keys()):
+            self.disappeared[object_id] += 1
+            if self.disappeared[object_id] > self.max_disappeared:
+                self._deregister(object_id)
 
-        if len(self.objects) == 0:
-            for det in detections:
-                self._register(det)
-            return self._format_tracked()
+    def _initialize_objects(self, detections):
+        for det in detections:
+            self._register(det)
 
-        object_ids = list(self.objects.keys())
-        object_centroids = [self._centroid(self.objects[oid]["bbox"]) for oid in object_ids]
-        input_centroids = [self._centroid(det["bbox"]) for det in detections]
+    def _find_best_match(self, oc, input_centroids, used_cols):
+        best_col = None
+        best_dist = None
+        for col, ic in enumerate(input_centroids):
+            if col in used_cols:
+                continue
+            dist = math.hypot(oc[0] - ic[0], oc[1] - ic[1])
+            if best_dist is None or dist < best_dist:
+                best_dist = dist
+                best_col = col
+        return best_col, best_dist
 
+    def _apply_matches(self, object_ids, object_centroids, input_centroids, detections):
         used_rows = set()
         used_cols = set()
 
         for row, oc in enumerate(object_centroids):
-            best_col = None
-            best_dist = None
-            for col, ic in enumerate(input_centroids):
-                if col in used_cols:
-                    continue
-                dist = math.hypot(oc[0] - ic[0], oc[1] - ic[1])
-                if best_dist is None or dist < best_dist:
-                    best_dist = dist
-                    best_col = col
+            best_col, best_dist = self._find_best_match(oc, input_centroids, used_cols)
             if best_col is None or best_dist is None or best_dist > self.max_distance:
                 continue
             oid = object_ids[row]
@@ -96,7 +94,9 @@ class SortLikeTracker:
             self.disappeared[oid] = 0
             used_rows.add(row)
             used_cols.add(best_col)
+        return used_rows, used_cols
 
+    def _mark_unmatched_existing(self, object_ids, used_rows):
         for row, oid in enumerate(object_ids):
             if row in used_rows:
                 continue
@@ -104,10 +104,30 @@ class SortLikeTracker:
             if self.disappeared[oid] > self.max_disappeared:
                 self._deregister(oid)
 
+    def _register_new_detections(self, detections, used_cols):
         for col, det in enumerate(detections):
             if col in used_cols:
                 continue
             self._register(det)
+
+    def update(self, detections):
+        if len(detections) == 0:
+            self._mark_missing()
+            return []
+
+        if len(self.objects) == 0:
+            self._initialize_objects(detections)
+            return self._format_tracked()
+
+        object_ids = list(self.objects.keys())
+        object_centroids = [self._centroid(self.objects[oid]["bbox"]) for oid in object_ids]
+        input_centroids = [self._centroid(det["bbox"]) for det in detections]
+
+        used_rows, used_cols = self._apply_matches(
+            object_ids, object_centroids, input_centroids, detections
+        )
+        self._mark_unmatched_existing(object_ids, used_rows)
+        self._register_new_detections(detections, used_cols)
 
         return self._format_tracked()
 
@@ -249,6 +269,71 @@ def annotate_safety(detections, frame_shape):
     return block_defense
 
 
+def publish_health(client, status, **extra):
+    payload = {"status": status, "timestamp": datetime.now().isoformat()}
+    payload.update(extra)
+    client.publish(MQTT_TOPIC_VISION_HEALTH, json.dumps(payload))
+
+
+def open_capture(client):
+    for source in (RTSP_URL, CAMERA_DEVICE):
+        cap = cv2.VideoCapture(source)
+        if cap.isOpened():
+            publish_health(client, "camera_connected", source=str(source))
+            return cap, source
+    return None, None
+
+
+def load_backend(client):
+    try:
+        backend = create_backend()
+        publish_health(client, "model_loaded", backend=MODEL_BACKEND)
+        return backend
+    except Exception as exc:
+        print(f"Model initialization failed: {exc}")
+        publish_health(client, "model_error", error=str(exc))
+        return None
+
+
+def publish_detection_messages(client, tracked, block_defense, source):
+    payload = {
+        "timestamp": datetime.now().isoformat(),
+        "backend": MODEL_BACKEND,
+        "source": str(source),
+        "count": len(tracked),
+        "detections": tracked,
+        "defense_blocked": block_defense,
+    }
+    client.publish(MQTT_TOPIC_DETECTIONS, json.dumps(payload))
+    client.publish(
+        MQTT_TOPIC_VISION_SAFETY,
+        json.dumps(
+            {
+                "timestamp": payload["timestamp"],
+                "defense_blocked": block_defense,
+                "reasons": [d["safety_block_reason"] for d in tracked if d["safety_block_reason"]],
+            }
+        ),
+    )
+
+
+def publish_metrics(client, frame_count, fps_window_start):
+    elapsed = max(0.001, time.time() - fps_window_start)
+    fps = frame_count / elapsed
+    client.publish(
+        MQTT_TOPIC_VISION_METRICS,
+        json.dumps(
+            {
+                "timestamp": datetime.now().isoformat(),
+                "fps": round(fps, 2),
+                "target_fps": PROCESS_FPS,
+                "meets_target": fps >= 5.0,
+                "backend": MODEL_BACKEND,
+            }
+        ),
+    )
+
+
 def main():
     print("UGV Vision Pipeline Starting...")
 
@@ -263,55 +348,13 @@ def main():
         print(f"Error connecting to MQTT: {exc}")
         return
 
-    try:
-        backend = create_backend()
-        client.publish(
-            MQTT_TOPIC_VISION_HEALTH,
-            json.dumps(
-                {
-                    "status": "model_loaded",
-                    "backend": MODEL_BACKEND,
-                    "timestamp": datetime.now().isoformat(),
-                }
-            ),
-        )
-    except Exception as exc:
-        print(f"Model initialization failed: {exc}")
-        client.publish(
-            MQTT_TOPIC_VISION_HEALTH,
-            json.dumps(
-                {
-                    "status": "model_error",
-                    "error": str(exc),
-                    "timestamp": datetime.now().isoformat(),
-                }
-            ),
-        )
+    backend = load_backend(client)
+    if backend is None:
         return
 
-    def open_capture():
-        for source in (RTSP_URL, CAMERA_DEVICE):
-            cap = cv2.VideoCapture(source)
-            if cap.isOpened():
-                client.publish(
-                    MQTT_TOPIC_VISION_HEALTH,
-                    json.dumps(
-                        {
-                            "status": "camera_connected",
-                            "source": str(source),
-                            "timestamp": datetime.now().isoformat(),
-                        }
-                    ),
-                )
-                return cap, source
-        return None, None
-
-    cap, current_source = open_capture()
+    cap, current_source = open_capture(client)
     if cap is None:
-        client.publish(
-            MQTT_TOPIC_VISION_HEALTH,
-            json.dumps({"status": "camera_unavailable", "timestamp": datetime.now().isoformat()}),
-        )
+        publish_health(client, "camera_unavailable")
         return
 
     tracker = SortLikeTracker(max_disappeared=15, max_distance=100)
@@ -330,29 +373,12 @@ def main():
             if retries >= max_retries_before_reopen:
                 cap.release()
                 time.sleep(2)
-                cap, current_source = open_capture()
+                cap, current_source = open_capture(client)
                 if cap is None:
-                    client.publish(
-                        MQTT_TOPIC_VISION_HEALTH,
-                        json.dumps(
-                            {
-                                "status": "camera_unavailable",
-                                "timestamp": datetime.now().isoformat(),
-                            }
-                        ),
-                    )
+                    publish_health(client, "camera_unavailable")
                     time.sleep(10)
                 else:
-                    client.publish(
-                        MQTT_TOPIC_VISION_HEALTH,
-                        json.dumps(
-                            {
-                                "status": "camera_recovered",
-                                "source": str(current_source),
-                                "timestamp": datetime.now().isoformat(),
-                            }
-                        ),
-                    )
+                    publish_health(client, "camera_recovered", source=str(current_source))
                 retries = 0
             time.sleep(0.2)
             continue
@@ -367,44 +393,11 @@ def main():
         detections = backend.infer(frame)
         tracked = tracker.update(detections)
         block_defense = annotate_safety(tracked, frame.shape)
-
-        payload = {
-            "timestamp": datetime.now().isoformat(),
-            "backend": MODEL_BACKEND,
-            "source": str(current_source),
-            "count": len(tracked),
-            "detections": tracked,
-            "defense_blocked": block_defense,
-        }
-        client.publish(MQTT_TOPIC_DETECTIONS, json.dumps(payload))
-
-        client.publish(
-            MQTT_TOPIC_VISION_SAFETY,
-            json.dumps(
-                {
-                    "timestamp": payload["timestamp"],
-                    "defense_blocked": block_defense,
-                    "reasons": [d["safety_block_reason"] for d in tracked if d["safety_block_reason"]],
-                }
-            ),
-        )
+        publish_detection_messages(client, tracked, block_defense, current_source)
 
         frame_count += 1
-        elapsed = max(0.001, now - fps_window_start)
-        if elapsed >= 5.0:
-            fps = frame_count / elapsed
-            client.publish(
-                MQTT_TOPIC_VISION_METRICS,
-                json.dumps(
-                    {
-                        "timestamp": datetime.now().isoformat(),
-                        "fps": round(fps, 2),
-                        "target_fps": PROCESS_FPS,
-                        "meets_target": fps >= 5.0,
-                        "backend": MODEL_BACKEND,
-                    }
-                ),
-            )
+        if max(0.001, now - fps_window_start) >= 5.0:
+            publish_metrics(client, frame_count, fps_window_start)
             frame_count = 0
             fps_window_start = now
 
