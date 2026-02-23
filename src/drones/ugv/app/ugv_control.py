@@ -426,9 +426,6 @@ def _handle_defense_fire(client, payload, is_healthy, reason):
             }
         ),
     )
-    return
-
-
 def _handle_defense_command(client, payload, command, is_healthy, reason):
     if command == "defense_mode":
         ok, detail = defense.set_mode(payload.get("mode", ""))
