@@ -108,10 +108,9 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
+      - name: Check Python runtime
+        run: |
+          python3 --version
 
       - name: Sync open Sonar issues to GitHub issues
         env:
