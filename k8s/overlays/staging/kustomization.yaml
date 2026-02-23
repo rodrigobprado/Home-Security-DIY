@@ -85,6 +85,14 @@ patches:
 
   - target:
       kind: PersistentVolumeClaim
+      name: frigate-config
+    patch: |
+      - op: replace
+        path: /spec/resources/requests/storage
+        value: 2Gi
+
+  - target:
+      kind: PersistentVolumeClaim
       name: frigate-media
     patch: |
       - op: replace

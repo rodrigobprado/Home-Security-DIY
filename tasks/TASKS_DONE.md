@@ -136,6 +136,24 @@
 
 ---
 
+## Agente_DevOps_K3s (concluído em 2026-02-23)
+
+| ID | Título | Data conclusão | Observações |
+|----|--------|----------------|-------------|
+| T-046 | Garantir persistência de dados críticos nos manifests K3s | 2026-02-23 | Deployments de `zigbee2mqtt` e `frigate` atualizados para montagem de PVCs; novo PVC `frigate-config` adicionado; overlays `staging/production` atualizados |
+
+### Entregáveis produzidos pelo Agente_DevOps_K3s
+
+| Arquivo | Descrição |
+|---------|-----------|
+| `k8s/base/zigbee2mqtt/zigbee2mqtt.yaml` | Montagem do PVC `zigbee2mqtt-data` em `/app/data` |
+| `k8s/base/frigate/frigate.yaml` | Novo PVC `frigate-config` e montagem de `frigate-config` + `frigate-media` |
+| `k8s/overlays/production/kustomization.yaml` | Dimensionamento de `frigate-config` para produção |
+| `k8s/overlays/staging/kustomization.yaml` | Dimensionamento de `frigate-config` para homologação |
+| `tests/backend/test_k8s_security_context_contract.py` | Contrato automatizado de persistência para serviços críticos |
+
+---
+
 ## Resumo de progresso
 
 | Categoria | Total | Concluídas | Percentual |

@@ -215,6 +215,24 @@ stringData:
   FRIGATE_CAM_GARAGEM_SUB_URL: "rtsp://CHANGE_ME_user:CHANGE_ME_password@CHANGE_ME_IP_4:554/h264Preview_01_sub"
 
 ---
+# --- PersistentVolumeClaim (config + events DB) ---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: frigate-config
+  namespace: home-security
+  labels:
+    app.kubernetes.io/name: frigate
+    app.kubernetes.io/part-of: home-security
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+  storageClassName: local-path
+
+---
 # --- PersistentVolumeClaim (media/recordings) ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -273,6 +291,14 @@ spec:
             - name: web
               containerPort: 5000
               protocol: TCP
+          volumeMounts:
+            - name: config-persistent
+              mountPath: /config
+            - name: media
+              mountPath: /media
+            - name: config-file
+              mountPath: /config/config.yml
+              subPath: config.yml
           resources:
             requests:
               cpu: 20m
@@ -299,6 +325,16 @@ spec:
               port: web
             initialDelaySeconds: 5
             periodSeconds: 10
+      volumes:
+        - name: config-persistent
+          persistentVolumeClaim:
+            claimName: frigate-config
+        - name: media
+          persistentVolumeClaim:
+            claimName: frigate-media
+        - name: config-file
+          configMap:
+            name: frigate-config
 
 ---
 # --- Service ---
