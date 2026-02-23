@@ -23,7 +23,7 @@ from dataclasses import dataclass
 from typing import Dict, List, Optional
 
 
-SONAR_KEY_PATTERN = re.compile(r"Sonar Issue Key:\s*([A-Za-z0-9:_\-]+)")
+SONAR_KEY_PATTERN = re.compile(r"Sonar Issue Key:\s*`?([A-Za-z0-9:_\-]+)`?")
 
 
 @dataclass
@@ -229,13 +229,27 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def map_github_issues_by_sonar_key(gh_issues: List[dict]) -> Dict[str, dict]:
-    mapped: Dict[str, dict] = {}
+def map_github_issues_by_sonar_key(gh_issues: List[dict]) -> Dict[str, List[dict]]:
+    mapped: Dict[str, List[dict]] = {}
     for gh_issue in gh_issues:
         key = extract_sonar_key(gh_issue.get("body", ""))
         if key:
-            mapped[key] = gh_issue
+            mapped.setdefault(key, []).append(gh_issue)
     return mapped
+
+
+def pick_primary_and_duplicates(
+    gh_by_sonar_key: Dict[str, List[dict]],
+) -> tuple[Dict[str, dict], List[dict]]:
+    primary: Dict[str, dict] = {}
+    duplicates: List[dict] = []
+
+    for key, issues in gh_by_sonar_key.items():
+        ordered = sorted(issues, key=lambda item: int(item.get("number", 0)), reverse=True)
+        primary[key] = ordered[0]
+        duplicates.extend(ordered[1:])
+
+    return primary, duplicates
 
 
 def sync_open_sonar_issues(
@@ -389,6 +403,40 @@ def close_resolved_sonar_issues(
     return closed
 
 
+def close_duplicate_sonar_issues(
+    *,
+    duplicate_issues: List[dict],
+    api_base: str,
+    github_repo: str,
+    gh_headers: Dict[str, str],
+    dry_run: bool,
+) -> int:
+    closed = 0
+    for gh_issue in duplicate_issues:
+        if gh_issue.get("state") != "open":
+            continue
+        number = gh_issue["number"]
+        if dry_run:
+            print(f"[dry-run] close duplicate issue #{number}")
+        else:
+            comment_url = f"{api_base}/repos/{github_repo}/issues/{number}/comments"
+            _http_json(
+                "POST",
+                comment_url,
+                headers=gh_headers,
+                payload={
+                    "body": (
+                        "Fechando automaticamente: issue duplicada detectada para a mesma "
+                        "chave do SonarQube."
+                    )
+                },
+            )
+            close_url = f"{api_base}/repos/{github_repo}/issues/{number}"
+            _http_json("PATCH", close_url, headers=gh_headers, payload={"state": "closed"})
+        closed += 1
+    return closed
+
+
 def main() -> int:
     args = parse_args()
 
@@ -414,7 +462,8 @@ def main() -> int:
     )
 
     gh_issues = fetch_github_issues(api_base=api_base, repo=args.github_repo, headers=gh_headers)
-    gh_by_sonar_key = map_github_issues_by_sonar_key(gh_issues)
+    gh_by_sonar_key_multi = map_github_issues_by_sonar_key(gh_issues)
+    gh_by_sonar_key, duplicate_issues = pick_primary_and_duplicates(gh_by_sonar_key_multi)
 
     created, updated, reopened = sync_open_sonar_issues(
         sonar_by_key=sonar_by_key,
@@ -434,6 +483,14 @@ def main() -> int:
         gh_headers=gh_headers,
         dry_run=args.dry_run,
     )
+    closed_duplicates = close_duplicate_sonar_issues(
+        duplicate_issues=duplicate_issues,
+        api_base=api_base,
+        github_repo=args.github_repo,
+        gh_headers=gh_headers,
+        dry_run=args.dry_run,
+    )
+    closed += closed_duplicates
 
     print(
         "Sync completed: "
