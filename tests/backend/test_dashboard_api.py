@@ -6,6 +6,9 @@ from app.db.session import get_db
 from app.routers import alerts, cameras, sensors, services, ws
 from app.security import require_api_key
 
+TEST_BASE_URL = "http://testserver"
+ALARMO_ENTITY_ID = "alarm_control_panel.alarmo"
+
 
 class _FakeScalars:
     def __init__(self, rows):
@@ -29,7 +32,7 @@ class _FakeAlert:
 
         self.id = 1
         self.timestamp = datetime.now(timezone.utc)
-        self.entity_id = "alarm_control_panel.alarmo"
+        self.entity_id = ALARMO_ENTITY_ID
         self.event_type = "state_changed"
         self.old_state = "disarmed"
         self.new_state = "armed_home"
@@ -67,7 +70,7 @@ def _build_test_app():
 async def test_http_routes_require_api_key():
     app = _build_test_app()
     transport = httpx.ASGITransport(app=app)
-    async with httpx.AsyncClient(transport=transport, base_url="http://testserver") as client:
+    async with httpx.AsyncClient(transport=transport, base_url=TEST_BASE_URL) as client:
         assert (await client.get("/api/sensors")).status_code == 403
         assert (await client.get("/api/cameras/events")).status_code == 403
         assert (await client.get("/api/alerts")).status_code == 403
@@ -82,7 +85,7 @@ async def test_sensors_route_with_api_key(monkeypatch):
 
     app = _build_test_app()
     transport = httpx.ASGITransport(app=app)
-    async with httpx.AsyncClient(transport=transport, base_url="http://testserver") as client:
+    async with httpx.AsyncClient(transport=transport, base_url=TEST_BASE_URL) as client:
         resp = await client.get("/api/sensors", headers={"X-API-Key": "test-api-key"})
     assert resp.status_code == 200
     assert "states" in resp.json()
@@ -103,7 +106,7 @@ async def test_cameras_routes_with_api_key(monkeypatch):
 
     app = _build_test_app()
     transport = httpx.ASGITransport(app=app)
-    async with httpx.AsyncClient(transport=transport, base_url="http://testserver") as client:
+    async with httpx.AsyncClient(transport=transport, base_url=TEST_BASE_URL) as client:
         snap = await client.get("/api/cameras/cam_entrada/snapshot", headers={"X-API-Key": "test-api-key"})
         evts = await client.get("/api/cameras/events", headers={"X-API-Key": "test-api-key"})
 
@@ -117,13 +120,13 @@ async def test_cameras_routes_with_api_key(monkeypatch):
 async def test_alerts_route_with_api_key():
     app = _build_test_app()
     transport = httpx.ASGITransport(app=app)
-    async with httpx.AsyncClient(transport=transport, base_url="http://testserver") as client:
+    async with httpx.AsyncClient(transport=transport, base_url=TEST_BASE_URL) as client:
         resp = await client.get("/api/alerts", headers={"X-API-Key": "test-api-key"})
 
     assert resp.status_code == 200
     payload = resp.json()
     assert isinstance(payload, list)
-    assert payload[0]["entity_id"] == "alarm_control_panel.alarmo"
+    assert payload[0]["entity_id"] == ALARMO_ENTITY_ID
 
 
 @pytest.mark.anyio
@@ -134,11 +137,11 @@ async def test_services_route_with_api_key(monkeypatch):
         return "online"
 
     monkeypatch.setattr(services_router, "_check_http", _ok)
-    monkeypatch.setattr(services_router.ha_client, "get_all_states", lambda: {"alarm_control_panel.alarmo": {"state": "disarmed"}})
+    monkeypatch.setattr(services_router.ha_client, "get_all_states", lambda: {ALARMO_ENTITY_ID: {"state": "disarmed"}})
 
     app = _build_test_app()
     transport = httpx.ASGITransport(app=app)
-    async with httpx.AsyncClient(transport=transport, base_url="http://testserver") as client:
+    async with httpx.AsyncClient(transport=transport, base_url=TEST_BASE_URL) as client:
         resp = await client.get("/api/services/status", headers={"X-API-Key": "test-api-key"})
         metrics = await client.get("/api/services/ws-metrics", headers={"X-API-Key": "test-api-key"})
 

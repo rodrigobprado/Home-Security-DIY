@@ -23,12 +23,12 @@ received_status = False
 received_detection = False
 current_ugv_state = None
 
-def on_connect(client, userdata, flags, rc):
+def on_connect(client, _userdata, _flags, rc):
     print(f"Connected to Broker (RC: {rc})")
     client.subscribe(TOPIC_STATUS)
     client.subscribe(TOPIC_DETECTIONS)
 
-def on_message(client, userdata, msg):
+def on_message(_client, _userdata, msg):
     global received_status, received_detection, current_ugv_state
     
     try:

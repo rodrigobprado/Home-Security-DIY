@@ -15,6 +15,7 @@ MODULE_PATH = (
     / "common"
     / "defense_controller.py"
 )
+AUDIT_LOG_NAME = "audit.log"
 
 
 def _load_controller_class():
@@ -37,12 +38,12 @@ def _totp(secret, timestamp=None):
 
 
 def test_arm_requires_pin_and_totp(tmp_path):
-    DefenseController = _load_controller_class()
+    defense_controller_cls = _load_controller_class()
     secret = "JBSWY3DPEHPK3PXP"
-    ctrl = DefenseController(
+    ctrl = defense_controller_cls(
         pin_code="123456",
         totp_secret=secret,
-        audit_log_path=str(tmp_path / "audit.log"),
+        audit_log_path=str(tmp_path / AUDIT_LOG_NAME),
     )
     ok, detail = ctrl.set_mode("semi_auto")
     assert ok and detail == "mode_updated"
@@ -58,11 +59,11 @@ def test_arm_requires_pin_and_totp(tmp_path):
 
 
 def test_automatic_mode_is_forbidden(tmp_path):
-    DefenseController = _load_controller_class()
-    ctrl = DefenseController(
+    defense_controller_cls = _load_controller_class()
+    ctrl = defense_controller_cls(
         pin_code="123456",
         totp_secret="JBSWY3DPEHPK3PXP",
-        audit_log_path=str(tmp_path / "audit.log"),
+        audit_log_path=str(tmp_path / AUDIT_LOG_NAME),
     )
     ok, detail = ctrl.set_mode("automatic")
     assert not ok
@@ -70,16 +71,16 @@ def test_automatic_mode_is_forbidden(tmp_path):
 
 
 def test_fire_flow_enforces_warning_zone_and_daily_limit(tmp_path):
-    DefenseController = _load_controller_class()
+    defense_controller_cls = _load_controller_class()
     secret = "JBSWY3DPEHPK3PXP"
-    ctrl = DefenseController(
+    ctrl = defense_controller_cls(
         pin_code="123456",
         totp_secret=secret,
         warning_seconds=5,
         cooldown_seconds=1,
         max_triggers_per_day=1,
         exclusion_zones=["sidewalk"],
-        audit_log_path=str(tmp_path / "audit.log"),
+        audit_log_path=str(tmp_path / AUDIT_LOG_NAME),
     )
     ctrl.set_mode("semi_auto")
     ok, detail = ctrl.arm("123456", _totp(secret), source_id="test")
@@ -111,10 +112,10 @@ def test_fire_flow_enforces_warning_zone_and_daily_limit(tmp_path):
 
 
 def test_audit_log_keeps_hash_chain(tmp_path):
-    DefenseController = _load_controller_class()
+    defense_controller_cls = _load_controller_class()
     secret = "JBSWY3DPEHPK3PXP"
-    log_file = tmp_path / "audit.log"
-    ctrl = DefenseController(
+    log_file = tmp_path / AUDIT_LOG_NAME
+    ctrl = defense_controller_cls(
         pin_code="123456",
         totp_secret=secret,
         audit_log_path=str(log_file),

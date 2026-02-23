@@ -19,11 +19,21 @@ except ImportError as e:
     print(f"Error importing common modules: {e}")
     # Mock for testing if modules missing
     class HealthMonitor:
-        def __init__(self, **kwargs): pass
+        def __init__(self, **kwargs):
+            # Intentional no-op: allows local simulation when common module is absent.
+            _ = kwargs
+
         def check_health(self): return True, "OK"
-        def update_heartbeat(self): pass
+
+        def update_heartbeat(self):
+            # Intentional no-op for fallback mock implementation.
+            return None
+
     class DefenseController:
-        def __init__(self, **kwargs): pass
+        def __init__(self, **kwargs):
+            # Intentional no-op: allows local simulation when common module is absent.
+            _ = kwargs
+
         def get_status(self): return {"state": "mock"}
 
 # Configuration from Environment Variables

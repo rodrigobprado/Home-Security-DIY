@@ -7,16 +7,21 @@ MOSQUITTO_K8S = ROOT / "k8s" / "base" / "mosquitto" / "mosquitto.yaml"
 Z2M_K8S = ROOT / "k8s" / "base" / "zigbee2mqtt" / "zigbee2mqtt.yaml"
 FRIGATE_K8S = ROOT / "k8s" / "base" / "frigate" / "frigate.yaml"
 HOMEASSISTANT_K8S = ROOT / "k8s" / "base" / "homeassistant" / "homeassistant.yaml"
+RUN_AS_NON_ROOT = "runAsNonRoot: true"
+ALLOW_PRIV_ESC_FALSE = "allowPrivilegeEscalation: false"
+READ_ONLY_FS_TRUE = "readOnlyRootFilesystem: true"
+SECCOMP_PROFILE = "seccompProfile:"
+RUNTIME_DEFAULT = "type: RuntimeDefault"
 
 
 def test_dashboard_manifests_include_baseline_container_hardening():
     content = DASHBOARD_K8S.read_text(encoding="utf-8")
 
-    assert "runAsNonRoot: true" in content
-    assert "allowPrivilegeEscalation: false" in content
-    assert "readOnlyRootFilesystem: true" in content
-    assert "seccompProfile:" in content
-    assert "type: RuntimeDefault" in content
+    assert RUN_AS_NON_ROOT in content
+    assert ALLOW_PRIV_ESC_FALSE in content
+    assert READ_ONLY_FS_TRUE in content
+    assert SECCOMP_PROFILE in content
+    assert RUNTIME_DEFAULT in content
     assert "drop:" in content
     assert "- ALL" in content
 
@@ -25,22 +30,22 @@ def test_mosquitto_manifest_includes_baseline_container_hardening():
     content = MOSQUITTO_K8S.read_text(encoding="utf-8")
 
     assert "runAsUser: 1883" in content
-    assert "runAsNonRoot: true" in content
-    assert "allowPrivilegeEscalation: false" in content
-    assert "readOnlyRootFilesystem: true" in content
-    assert "seccompProfile:" in content
-    assert "type: RuntimeDefault" in content
+    assert RUN_AS_NON_ROOT in content
+    assert ALLOW_PRIV_ESC_FALSE in content
+    assert READ_ONLY_FS_TRUE in content
+    assert SECCOMP_PROFILE in content
+    assert RUNTIME_DEFAULT in content
 
 
 def test_zigbee2mqtt_manifest_drops_privileged_and_has_baseline_hardening():
     content = Z2M_K8S.read_text(encoding="utf-8")
 
     assert "privileged: true" not in content
-    assert "runAsNonRoot: true" in content
-    assert "allowPrivilegeEscalation: false" in content
-    assert "readOnlyRootFilesystem: true" in content
-    assert "seccompProfile:" in content
-    assert "type: RuntimeDefault" in content
+    assert RUN_AS_NON_ROOT in content
+    assert ALLOW_PRIV_ESC_FALSE in content
+    assert READ_ONLY_FS_TRUE in content
+    assert SECCOMP_PROFILE in content
+    assert RUNTIME_DEFAULT in content
     assert "drop:" in content
     assert "- ALL" in content
 
