@@ -1,10 +1,15 @@
 import { useEffect, useRef } from 'react'
 import useStore from '../store/useStore'
 
-const WS_URL =
-  typeof window !== 'undefined'
-    ? `${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}/ws`
-    : 'ws://localhost:8000/ws'
+function buildWsUrl() {
+  if (typeof window === 'undefined') {
+    return 'ws://localhost:8000/ws'
+  }
+  const wsScheme = window.location.protocol === 'https:' ? 'wss' : 'ws'
+  return `${wsScheme}://${window.location.host}/ws`
+}
+
+const WS_URL = buildWsUrl()
 
 export function useWebSocket() {
   const wsRef = useRef(null)

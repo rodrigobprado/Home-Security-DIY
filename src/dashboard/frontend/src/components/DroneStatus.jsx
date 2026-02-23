@@ -2,7 +2,12 @@ import useStore from '../store/useStore'
 
 function BatteryBar({ percent }) {
   const pct = parseFloat(percent) || 0
-  const color = pct > 50 ? 'bg-success' : pct > 20 ? 'bg-warning' : 'bg-critical'
+  let color = 'bg-critical'
+  if (pct > 50) {
+    color = 'bg-success'
+  } else if (pct > 20) {
+    color = 'bg-warning'
+  }
   return (
     <div className="flex items-center gap-2">
       <div className="flex-1 bg-border rounded-full h-1.5 overflow-hidden">

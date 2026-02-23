@@ -14,7 +14,10 @@ try:
 except ImportError:
     # Mock defense for now if not found
     class DefenseController:
-        def __init__(self, **kwargs): pass
+        def __init__(self, **kwargs):
+            # Intentional no-op: allows local simulation when common module is absent.
+            _ = kwargs
+
         def get_status(self): return {"state": "mock"}
 
 # Configuration

@@ -11,6 +11,8 @@ from app.db.models import Alert, DashboardConfig, DevicePosition
 from app.db.session import get_db
 
 router = APIRouter(prefix="/api", tags=["alerts"])
+MAP_FLOORPLAN_IMAGE_KEY = "map.floorplan_image_data_url"
+MAP_GEO_BOUNDS_KEY = "map.geo_bounds_json"
 
 
 @router.get("/alerts")
@@ -79,10 +81,10 @@ class MapConfigPayload(BaseModel):
 
 @router.get("/map/config")
 async def get_map_config(db: AsyncSession = Depends(get_db)) -> dict:
-    keys = ["map.floorplan_image_data_url", "map.geo_bounds_json"]
+    keys = [MAP_FLOORPLAN_IMAGE_KEY, MAP_GEO_BOUNDS_KEY]
     result = await db.execute(select(DashboardConfig).where(DashboardConfig.key.in_(keys)))
     rows = {row.key: row.value for row in result.scalars().all()}
-    geo_bounds_raw = rows.get("map.geo_bounds_json")
+    geo_bounds_raw = rows.get(MAP_GEO_BOUNDS_KEY)
     geo_bounds = (
         json.loads(geo_bounds_raw)
         if geo_bounds_raw
@@ -94,7 +96,7 @@ async def get_map_config(db: AsyncSession = Depends(get_db)) -> dict:
         }
     )
     return {
-        "floorplan_image_data_url": rows.get("map.floorplan_image_data_url"),
+        "floorplan_image_data_url": rows.get(MAP_FLOORPLAN_IMAGE_KEY),
         "geo_bounds": geo_bounds,
     }
 
@@ -104,14 +106,14 @@ async def upsert_map_config(payload: MapConfigPayload, db: AsyncSession = Depend
     if payload.floorplan_image_data_url is not None:
         await db.merge(
             DashboardConfig(
-                key="map.floorplan_image_data_url",
+                key=MAP_FLOORPLAN_IMAGE_KEY,
                 value=payload.floorplan_image_data_url,
             )
         )
     if payload.geo_bounds is not None:
         await db.merge(
             DashboardConfig(
-                key="map.geo_bounds_json",
+                key=MAP_GEO_BOUNDS_KEY,
                 value=json.dumps(payload.geo_bounds, separators=(",", ":"), ensure_ascii=True),
             )
         )
