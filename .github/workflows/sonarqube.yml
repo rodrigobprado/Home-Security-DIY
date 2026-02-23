@@ -65,13 +65,14 @@ jobs:
           fi
 
           if [ -n "$CA_FILE" ]; then
+            rm -f /tmp/sonar-truststore.p12
             keytool -importcert \
               -noprompt \
               -alias sonar-local-ca \
               -file "$CA_FILE" \
               -keystore /tmp/sonar-truststore.p12 \
               -storetype PKCS12 \
-              -storepass changeit >/dev/null
+              -storepass changeit
             {
               echo "sonar_scanner_opts=-Djavax.net.ssl.trustStore=/tmp/sonar-truststore.p12 -Djavax.net.ssl.trustStorePassword=changeit -Djavax.net.ssl.trustStoreType=PKCS12"
             } >> "$GITHUB_OUTPUT"
