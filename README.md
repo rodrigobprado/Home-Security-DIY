@@ -145,6 +145,31 @@ Você pode agendar esse comando via `cron` no servidor para manutenção contín
 
 ---
 
+## Qualidade de Código (SonarQube local)
+
+Se seu SonarQube local usa certificado `mkcert` (ex.: `https://sonar.toca.lan`), rode:
+
+```bash
+SONAR_TOKEN=<seu_token> scripts/sonar_scan_local.sh
+```
+
+O script cria uma truststore Java com a CA local do `mkcert` e executa o `sonar-scanner` com TLS válido.
+
+### CI (GitHub Actions)
+
+O workflow `.github/workflows/sonarqube.yml` faz:
+- análise SonarQube em `push`, `pull_request`, `schedule` e `workflow_dispatch`;
+- sincronização de issues abertas do SonarQube para GitHub Issues no `main`.
+
+Secrets necessários no repositório:
+- `SONAR_TOKEN`: token do SonarQube com permissão de análise e leitura de issues;
+- `SONAR_HOST_URL` (opcional): por padrão usa `https://sonar.toca.lan`;
+- `SONAR_CA_CERT_B64` (opcional): certificado CA em base64 para TLS customizado.
+
+Observação: o job está configurado para runner `self-hosted` (`linux`) para conseguir acessar `sonar.toca.lan` na rede local.
+
+---
+
 ## Contribuição
 
 Contribuições são bem-vindas! Leia o [CONTRIBUTING.md](CONTRIBUTING.md) para detalhes sobre código de conduta, fluxo de issues/PRs e validações recomendadas antes do merge.

@@ -9,3 +9,7 @@ src/.env
 src/mosquitto/certs/*.key
 src/mosquitto/certs/ca.crt
 src/mosquitto/certs/server.crt
+
+# Sonar scanner local artifacts
+.scannerwork/
+.sonar-local/

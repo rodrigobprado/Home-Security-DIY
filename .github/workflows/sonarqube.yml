@@ -1,0 +1,125 @@
+name: SonarQube
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "src/**"
+      - "scripts/**"
+      - "tests/**"
+      - "k8s/**"
+      - ".github/workflows/sonarqube.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "src/**"
+      - "scripts/**"
+      - "tests/**"
+      - "k8s/**"
+      - ".github/workflows/sonarqube.yml"
+  schedule:
+    - cron: "20 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sonar-scan:
+    name: Sonar Scan
+    runs-on: [self-hosted, linux]
+    env:
+      SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL || 'https://sonar.toca.lan' }}
+      SONAR_PROJECT_KEY: Home-Security-DIY
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Ensure SONAR_TOKEN is configured
+        run: |
+          if [ -z "${{ secrets.SONAR_TOKEN }}" ]; then
+            echo "SONAR_TOKEN secret is not configured."
+            exit 1
+          fi
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Build truststore for Sonar TLS (optional)
+        id: truststore
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          CA_FILE=""
+          if [ -n "${{ secrets.SONAR_CA_CERT_B64 }}" ]; then
+            echo "${{ secrets.SONAR_CA_CERT_B64 }}" | base64 -d > /tmp/sonar-ca.pem
+            CA_FILE="/tmp/sonar-ca.pem"
+          elif [ -f "$HOME/.local/share/mkcert/rootCA.pem" ]; then
+            CA_FILE="$HOME/.local/share/mkcert/rootCA.pem"
+          fi
+
+          if [ -n "$CA_FILE" ]; then
+            keytool -importcert \
+              -noprompt \
+              -alias sonar-local-ca \
+              -file "$CA_FILE" \
+              -keystore /tmp/sonar-truststore.p12 \
+              -storetype PKCS12 \
+              -storepass changeit >/dev/null
+            {
+              echo "sonar_scanner_opts=-Djavax.net.ssl.trustStore=/tmp/sonar-truststore.p12 -Djavax.net.ssl.trustStorePassword=changeit -Djavax.net.ssl.trustStoreType=PKCS12"
+            } >> "$GITHUB_OUTPUT"
+          else
+            echo "No local CA configured; proceeding with system truststore."
+            echo "sonar_scanner_opts=" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: SonarQube Scan
+        uses: SonarSource/sonarqube-scan-action@v5
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_SCANNER_OPTS: ${{ steps.truststore.outputs.sonar_scanner_opts }}
+        with:
+          projectBaseDir: .
+          args: >
+            -Dsonar.projectKey=Home-Security-DIY
+            -Dsonar.sources=.
+            -Dsonar.host.url=${{ env.SONAR_HOST_URL }}
+
+  sync-sonar-issues:
+    name: Sync Sonar Issues to GitHub
+    runs-on: [self-hosted, linux]
+    needs: sonar-scan
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    permissions:
+      contents: read
+      issues: write
+    env:
+      SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL || 'https://sonar.toca.lan' }}
+      SONAR_PROJECT_KEY: Home-Security-DIY
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Sync open Sonar issues to GitHub issues
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          GITHUB_TOKEN_SYNC: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python3 scripts/sync_sonar_issues_to_github.py \
+            --sonar-host-url "${SONAR_HOST_URL}" \
+            --sonar-project-key "${SONAR_PROJECT_KEY}" \
+            --sonar-token "${SONAR_TOKEN}" \
+            --github-repo "${GITHUB_REPOSITORY}" \
+            --github-token "${GITHUB_TOKEN_SYNC}"
