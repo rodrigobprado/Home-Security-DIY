@@ -97,7 +97,7 @@ def main():
     backend = create_backend()
     tracker = SortLikeTracker(max_disappeared=12, max_distance=120)
 
-    cap, source = open_capture()
+    cap, source = open_capture(client)
     if cap is None:
         publish_health(client, "camera_unavailable")
         return
@@ -110,7 +110,7 @@ def main():
         if not ret:
             cap.release()
             time.sleep(1.0)
-            cap, source = open_capture()
+            cap, source = open_capture(client)
             if cap is None:
                 time.sleep(5.0)
             continue

@@ -215,6 +215,21 @@ async def _consume_events(ws: Any) -> None:
         await _process_event_message(msg)
 
 
+async def _connect_and_consume(ws_url: str, msg_id: int) -> tuple[bool, int]:
+    logger.info("Conectando ao HA WebSocket: %s", ws_url)
+    async with websockets.connect(ws_url, ping_interval=30) as ws:
+        if not await _authenticate(ws):
+            return False, msg_id
+        next_msg_id = await _subscribe_state_changed(ws, msg_id)
+        await _consume_events(ws)
+        return True, next_msg_id
+
+
+async def _sleep_with_backoff(backoff: int) -> int:
+    await asyncio.sleep(backoff)
+    return min(backoff * 2, 60)
+
+
 async def run_forever() -> None:
     """Loop principal de conexão ao HA WebSocket com reconexão automática."""
     await _fetch_initial_states()
@@ -225,23 +240,15 @@ async def run_forever() -> None:
 
     while True:
         try:
-            logger.info("Conectando ao HA WebSocket: %s", ws_url)
-            async with websockets.connect(ws_url, ping_interval=30) as ws:
-                backoff = 1  # reset após conexão bem-sucedida
-
-                if not await _authenticate(ws):
-                    await asyncio.sleep(backoff)
-                    backoff = min(backoff * 2, 60)
-                    continue
-
-                msg_id = await _subscribe_state_changed(ws, msg_id)
-                await _consume_events(ws)
+            connected, msg_id = await _connect_and_consume(ws_url, msg_id)
+            if connected:
+                backoff = 1
+            else:
+                backoff = await _sleep_with_backoff(backoff)
 
         except (websockets.exceptions.ConnectionClosed, OSError, asyncio.TimeoutError) as exc:
             logger.warning("Conexão HA perdida: %s. Reconectando em %ds…", exc, backoff)
-            await asyncio.sleep(backoff)
-            backoff = min(backoff * 2, 60)
+            backoff = await _sleep_with_backoff(backoff)
         except Exception as exc:
             logger.error("Erro inesperado no cliente HA: %s", exc, exc_info=True)
-            await asyncio.sleep(backoff)
-            backoff = min(backoff * 2, 60)
+            backoff = await _sleep_with_backoff(backoff)

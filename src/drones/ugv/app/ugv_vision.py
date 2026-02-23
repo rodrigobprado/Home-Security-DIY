@@ -334,6 +334,26 @@ def publish_metrics(client, frame_count, fps_window_start):
     )
 
 
+def recover_capture(client, cap):
+    cap.release()
+    time.sleep(2)
+    cap, current_source = open_capture(client)
+    if cap is None:
+        publish_health(client, "camera_unavailable")
+        time.sleep(10)
+    else:
+        publish_health(client, "camera_recovered", source=str(current_source))
+    return cap, current_source
+
+
+def process_frame(client, backend, tracker, frame, current_source):
+    detections = backend.infer(frame)
+    tracked = tracker.update(detections)
+    block_defense = annotate_safety(tracked, frame.shape)
+    publish_detection_messages(client, tracked, block_defense, current_source)
+    return tracked
+
+
 def main():
     print("UGV Vision Pipeline Starting...")
 
@@ -371,14 +391,7 @@ def main():
         if not ret:
             retries += 1
             if retries >= max_retries_before_reopen:
-                cap.release()
-                time.sleep(2)
-                cap, current_source = open_capture(client)
-                if cap is None:
-                    publish_health(client, "camera_unavailable")
-                    time.sleep(10)
-                else:
-                    publish_health(client, "camera_recovered", source=str(current_source))
+                cap, current_source = recover_capture(client, cap)
                 retries = 0
             time.sleep(0.2)
             continue
@@ -390,10 +403,7 @@ def main():
             continue
         last_process_time = now
 
-        detections = backend.infer(frame)
-        tracked = tracker.update(detections)
-        block_defense = annotate_safety(tracked, frame.shape)
-        publish_detection_messages(client, tracked, block_defense, current_source)
+        tracked = process_frame(client, backend, tracker, frame, current_source)
 
         frame_count += 1
         if max(0.001, now - fps_window_start) >= 5.0:

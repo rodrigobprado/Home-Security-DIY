@@ -259,42 +259,94 @@ def sync_open_sonar_issues(
         desired_body = issue_body(sonar_host_url, sonar_project_key, sonar_issue)
 
         if current is None:
-            if dry_run:
-                print(f"[dry-run] create issue for Sonar key {key}")
-            else:
-                create_url = f"{api_base}/repos/{github_repo}/issues"
-                _http_json(
-                    "POST",
-                    create_url,
-                    headers=gh_headers,
-                    payload={
-                        "title": desired_title,
-                        "body": desired_body,
-                        "labels": ["sonarqube"],
-                    },
-                )
+            _create_sonar_issue(
+                key=key,
+                desired_title=desired_title,
+                desired_body=desired_body,
+                api_base=api_base,
+                github_repo=github_repo,
+                gh_headers=gh_headers,
+                dry_run=dry_run,
+            )
             created += 1
             continue
 
-        patch_payload: Dict[str, str] = {}
-        if current.get("state") == "closed":
-            patch_payload["state"] = "open"
+        did_update, reopened_now = _update_sonar_issue(
+            key=key,
+            current=current,
+            desired_title=desired_title,
+            desired_body=desired_body,
+            api_base=api_base,
+            github_repo=github_repo,
+            gh_headers=gh_headers,
+            dry_run=dry_run,
+        )
+        if reopened_now:
             reopened += 1
-
-        if current.get("title") != desired_title:
-            patch_payload["title"] = desired_title
-        if current.get("body") != desired_body:
-            patch_payload["body"] = desired_body
-
-        if patch_payload:
-            if dry_run:
-                print(f"[dry-run] update issue #{current['number']} for Sonar key {key}")
-            else:
-                update_url = f"{api_base}/repos/{github_repo}/issues/{current['number']}"
-                _http_json("PATCH", update_url, headers=gh_headers, payload=patch_payload)
+        if did_update:
             updated += 1
 
     return created, updated, reopened
+
+
+def _create_sonar_issue(
+    *,
+    key: str,
+    desired_title: str,
+    desired_body: str,
+    api_base: str,
+    github_repo: str,
+    gh_headers: Dict[str, str],
+    dry_run: bool,
+) -> None:
+    if dry_run:
+        print(f"[dry-run] create issue for Sonar key {key}")
+        return
+    create_url = f"{api_base}/repos/{github_repo}/issues"
+    _http_json(
+        "POST",
+        create_url,
+        headers=gh_headers,
+        payload={
+            "title": desired_title,
+            "body": desired_body,
+            "labels": ["sonarqube"],
+        },
+    )
+
+
+def _update_sonar_issue(
+    *,
+    key: str,
+    current: dict,
+    desired_title: str,
+    desired_body: str,
+    api_base: str,
+    github_repo: str,
+    gh_headers: Dict[str, str],
+    dry_run: bool,
+) -> tuple[bool, bool]:
+    patch_payload: Dict[str, str] = {}
+    reopened_now = False
+
+    if current.get("state") == "closed":
+        patch_payload["state"] = "open"
+        reopened_now = True
+    if current.get("title") != desired_title:
+        patch_payload["title"] = desired_title
+    if current.get("body") != desired_body:
+        patch_payload["body"] = desired_body
+
+    if not patch_payload:
+        return False, reopened_now
+
+    if dry_run:
+        print(f"[dry-run] update issue #{current['number']} for Sonar key {key}")
+        return True, reopened_now
+
+    update_url = f"{api_base}/repos/{github_repo}/issues/{current['number']}"
+    _http_json("PATCH", update_url, headers=gh_headers, payload=patch_payload)
+    return True, reopened_now
 
 
 def close_resolved_sonar_issues(

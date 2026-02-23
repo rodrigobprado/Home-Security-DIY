@@ -378,6 +378,58 @@ def _publish_defense_status(client, command, result, detail=None):
     client.publish(MQTT_TOPIC_DEFENSE_STATUS, json.dumps(payload))
 
 
+def _handle_defense_arm(client, payload, is_healthy, reason):
+    if not is_healthy:
+        _publish_defense_status(client, "defense_arm", "rejected", f"health:{reason}")
+        return True
+    ok, detail = defense.arm(
+        payload.get("pin", ""),
+        payload.get("totp", ""),
+        source_id=str(payload.get("source_id", "unknown")),
+    )
+    _publish_defense_status(client, "defense_arm", "ok" if ok else "rejected", detail)
+    return True
+
+
+def _handle_defense_fire(client, payload, is_healthy, reason):
+    if not is_healthy:
+        _publish_defense_status(client, "defense_fire", "rejected", f"health:{reason}")
+        return True
+
+    zone = str(payload.get("zone", "")).strip().lower()
+    source_id = str(payload.get("source_id", "unknown"))
+    ok, detail = defense.request_fire(
+        zone=zone,
+        defense_blocked=defense_blocked,
+        block_reasons=defense_block_reasons,
+        source_id=source_id,
+    )
+    defense_payload = defense.get_status()
+    defense_payload.update(
+        {
+            "command": "defense_fire",
+            "result": "ok" if ok else "pending_or_rejected",
+            "detail": detail,
+            "vision_blocked": defense_blocked,
+            "vision_reasons": defense_block_reasons,
+        }
+    )
+    client.publish(MQTT_TOPIC_DEFENSE_STATUS, json.dumps(defense_payload))
+    client.publish(
+        MQTT_TOPIC_DEFENSE_AUDIT,
+        json.dumps(
+            {
+                "ts": int(time.time()),
+                "event": "defense_fire_attempt",
+                "result": detail,
+                "zone": zone or None,
+                "source_id": source_id,
+            }
+        ),
+    )
+    return True
+
+
 def _handle_defense_command(client, payload, command, is_healthy, reason):
     if command == "defense_mode":
         ok, detail = defense.set_mode(payload.get("mode", ""))
@@ -385,16 +437,7 @@ def _handle_defense_command(client, payload, command, is_healthy, reason):
         return True
 
     if command == "defense_arm":
-        if not is_healthy:
-            _publish_defense_status(client, "defense_arm", "rejected", f"health:{reason}")
-            return True
-        ok, detail = defense.arm(
-            payload.get("pin", ""),
-            payload.get("totp", ""),
-            source_id=str(payload.get("source_id", "unknown")),
-        )
-        _publish_defense_status(client, "defense_arm", "ok" if ok else "rejected", detail)
-        return True
+        return _handle_defense_arm(client, payload, is_healthy, reason)
 
     if command == "defense_disarm":
         defense.disarm("request")
@@ -406,42 +449,7 @@ def _handle_defense_command(client, payload, command, is_healthy, reason):
         return True
 
     if command == "defense_fire":
-        if not is_healthy:
-            _publish_defense_status(client, "defense_fire", "rejected", f"health:{reason}")
-            return True
-
-        zone = str(payload.get("zone", "")).strip().lower()
-        source_id = str(payload.get("source_id", "unknown"))
-        ok, detail = defense.request_fire(
-            zone=zone,
-            defense_blocked=defense_blocked,
-            block_reasons=defense_block_reasons,
-            source_id=source_id,
-        )
-        defense_payload = defense.get_status()
-        defense_payload.update(
-            {
-                "command": "defense_fire",
-                "result": "ok" if ok else "pending_or_rejected",
-                "detail": detail,
-                "vision_blocked": defense_blocked,
-                "vision_reasons": defense_block_reasons,
-            }
-        )
-        client.publish(MQTT_TOPIC_DEFENSE_STATUS, json.dumps(defense_payload))
-        client.publish(
-            MQTT_TOPIC_DEFENSE_AUDIT,
-            json.dumps(
-                {
-                    "ts": int(time.time()),
-                    "event": "defense_fire_attempt",
-                    "result": detail,
-                    "zone": zone or None,
-                    "source_id": source_id,
-                }
-            ),
-        )
-        return True
+        return _handle_defense_fire(client, payload, is_healthy, reason)
 
     return False
 
