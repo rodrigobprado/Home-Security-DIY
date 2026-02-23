@@ -118,6 +118,13 @@ O projeto inclui uma camada reativa avançada com **frota modular de drones aut�
 - 🛠️ [Guia de Montagem UGV](docs/GUIA_MONTAGEM_UGV.md)
 - 🛡️ [Módulo de Defesa e Segurança](prd/PRD_DRONE_DEFENSE_MODULE.md)
 
+Ativação local dos serviços de drones no Docker Compose:
+
+```bash
+cd src
+docker compose --profile drones up -d ugv uav
+```
+
 ---
 
 ## Status do projeto

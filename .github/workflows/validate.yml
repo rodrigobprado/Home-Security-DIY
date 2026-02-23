@@ -42,6 +42,13 @@ jobs:
       - name: Validate compose config
         run: docker compose -f src/docker-compose.yml config --quiet
 
+      - name: Validate drone profile services
+        run: |
+          docker compose -f src/docker-compose.yml --profile drones config --quiet
+          services="$(docker compose -f src/docker-compose.yml --profile drones config --services)"
+          echo "$services" | grep -qx "ugv"
+          echo "$services" | grep -qx "uav"
+
   validate-k8s:
     name: Validate Kubernetes Manifests
     runs-on: ubuntu-latest
