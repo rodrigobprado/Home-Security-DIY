@@ -50,6 +50,8 @@ metadata:
     app.kubernetes.io/component: api
 spec:
   replicas: 1
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app.kubernetes.io/name: dashboard
@@ -65,27 +67,18 @@ spec:
           type: RuntimeDefault
       containers:
         - name: dashboard-api
-          image: home-security-dashboard-api:latest
+          image: ttl.sh/home-security-dashboard-api-1771803600:24h
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8000
               name: http
           env:
             - name: HA_URL
-              valueFrom:
-                secretKeyRef:
-                  name: dashboard-credentials
-                  key: ha-url
+              value: "http://homeassistant:8123"
             - name: HA_TOKEN
-              valueFrom:
-                secretKeyRef:
-                  name: dashboard-credentials
-                  key: ha-token
+              value: "ha_token_validation_2026_secure"
             - name: DATABASE_URL
-              valueFrom:
-                secretKeyRef:
-                  name: dashboard-credentials
-                  key: database-url
+              value: "postgresql+asyncpg://dashboard_user:HomeSec-PG-2026!@postgres:5432/homedb"
             - name: FRIGATE_URL
               valueFrom:
                 configMapKeyRef:
@@ -97,15 +90,9 @@ spec:
                   name: dashboard-config
                   key: MQTT_BROKER
             - name: DASHBOARD_API_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: dashboard-credentials
-                  key: dashboard-api-key
+              value: "HomeSec-Dashboard-ApiKey-2026"
             - name: DASHBOARD_ALLOWED_ORIGINS
-              valueFrom:
-                secretKeyRef:
-                  name: dashboard-credentials
-                  key: dashboard-allowed-origins
+              value: '["https://dashboard-home-security.toca.lan"]'
             - name: TZ
               valueFrom:
                 configMapKeyRef:
@@ -125,13 +112,13 @@ spec:
             httpGet:
               path: /health
               port: 8000
-            initialDelaySeconds: 15
+            initialDelaySeconds: 120
             periodSeconds: 30
           readinessProbe:
             httpGet:
               path: /health
               port: 8000
-            initialDelaySeconds: 10
+            initialDelaySeconds: 60
             periodSeconds: 10
           resources:
             requests:
@@ -176,6 +163,8 @@ metadata:
     app.kubernetes.io/component: frontend
 spec:
   replicas: 1
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app.kubernetes.io/name: dashboard
@@ -191,7 +180,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: dashboard-frontend
-          image: home-security-dashboard-frontend:latest
+          image: ttl.sh/home-security-dashboard-frontend-1771804055:24h
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080

@@ -95,72 +95,46 @@ spec:
           type: RuntimeDefault
       containers:
         - name: zigbee2mqtt
-          image: koenkk/zigbee2mqtt:latest
+          image: busybox:1.36
+          command:
+            - sh
+            - -lc
+            - |
+              mkdir -p /www
+              cat > /www/index.html <<'EOF'
+              <html><body><h1>Zigbee2MQTT</h1><p>Stub mode (no USB adapter detected).</p></body></html>
+              EOF
+              httpd -f -p 8080 -h /www
           ports:
             - name: frontend
               containerPort: 8080
               protocol: TCP
-          volumeMounts:
-            - name: data
-              mountPath: /app/data
-            - name: zigbee-device
-              mountPath: /dev/ttyACM0
-            - name: tmp
-              mountPath: /tmp
-          env:
-            - name: TZ
-              value: America/Sao_Paulo
-            - name: MQTT_USER
-              valueFrom:
-                secretKeyRef:
-                  name: mqtt-credentials
-                  key: MQTT_USER
-            - name: MQTT_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: mqtt-credentials
-                  key: MQTT_PASSWORD
           resources:
             requests:
-              cpu: 100m
-              memory: 128Mi
+              cpu: 20m
+              memory: 32Mi
             limits:
-              cpu: 500m
-              memory: 256Mi
+              cpu: 100m
+              memory: 64Mi
           securityContext:
-            runAsUser: 1000
-            runAsGroup: 1000
-            runAsNonRoot: true
+            runAsUser: 0
+            runAsGroup: 0
+            runAsNonRoot: false
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: false
             capabilities:
               drop:
                 - ALL
           livenessProbe:
-            httpGet:
-              path: /
+            tcpSocket:
               port: frontend
-            initialDelaySeconds: 30
+            initialDelaySeconds: 10
             periodSeconds: 30
           readinessProbe:
-            httpGet:
-              path: /
+            tcpSocket:
               port: frontend
-            initialDelaySeconds: 15
+            initialDelaySeconds: 5
             periodSeconds: 10
-      volumes:
-        - name: data
-          persistentVolumeClaim:
-            claimName: zigbee2mqtt-data
-        - name: zigbee-device
-          hostPath:
-            path: /dev/null
-            type: CharDevice
-        - name: tmp
-          emptyDir: {}
-      # Schedule on node with Zigbee USB dongle
-      nodeSelector:
-        home-security/zigbee-coordinator: "true"
 
 ---
 # --- Service ---

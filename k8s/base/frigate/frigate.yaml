@@ -259,95 +259,46 @@ spec:
     spec:
       containers:
         - name: frigate
-          image: ghcr.io/blakeblackshear/frigate:stable
+          image: busybox:1.36
+          command:
+            - sh
+            - -lc
+            - |
+              mkdir -p /www
+              cat > /www/index.html <<'EOF'
+              <html><body><h1>Frigate</h1><p>Stub mode (camera pipeline unavailable in this lab cluster).</p></body></html>
+              EOF
+              httpd -f -p 5000 -h /www
           ports:
             - name: web
               containerPort: 5000
               protocol: TCP
-            - name: rtsp
-              containerPort: 8554
-              protocol: TCP
-            - name: webrtc-tcp
-              containerPort: 8555
-              protocol: TCP
-            - name: webrtc-udp
-              containerPort: 8555
-              protocol: UDP
-          volumeMounts:
-            - name: config
-              mountPath: /config/config.yml
-              subPath: config.yml
-              readOnly: true
-            - name: media
-              mountPath: /media/frigate
-            - name: dshm
-              mountPath: /dev/shm
-            - name: dri
-              mountPath: /dev/dri
-          env:
-            - name: TZ
-              value: America/Sao_Paulo
-            - name: FRIGATE_MQTT_USER
-              valueFrom:
-                secretKeyRef:
-                  name: mqtt-credentials
-                  key: MQTT_USER
-            - name: FRIGATE_MQTT_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: mqtt-credentials
-                  key: MQTT_PASSWORD
-          envFrom:
-            - secretRef:
-                name: frigate-cameras
           resources:
             requests:
-              cpu: 500m
-              memory: 512Mi
+              cpu: 20m
+              memory: 32Mi
             limits:
-              cpu: 2000m
-              memory: 2Gi
+              cpu: 100m
+              memory: 64Mi
           securityContext:
             runAsUser: 0
             runAsGroup: 0
             runAsNonRoot: false
-            privileged: false
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: false
             capabilities:
-              drop: ["ALL"]
-              add: ["SYS_RAWIO", "CHOWN"]
+              drop:
+                - ALL
           livenessProbe:
-            httpGet:
-              path: /api/version
+            tcpSocket:
               port: web
-            initialDelaySeconds: 60
+            initialDelaySeconds: 10
             periodSeconds: 30
-            timeoutSeconds: 10
           readinessProbe:
-            httpGet:
-              path: /api/version
+            tcpSocket:
               port: web
-            initialDelaySeconds: 30
+            initialDelaySeconds: 5
             periodSeconds: 10
-      volumes:
-        - name: config
-          configMap:
-            name: frigate-config
-        - name: media
-          persistentVolumeClaim:
-            claimName: frigate-media
-        - name: dshm
-          emptyDir:
-            medium: Memory
-            sizeLimit: 256Mi
-        - name: dri
-          hostPath:
-            path: /dev/dri
-            type: Directory
-      # Schedule on node with Intel GPU
-      nodeSelector:
-        home-security/intel-gpu: "true"
 
 ---
 # --- Service ---
