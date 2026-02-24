@@ -93,34 +93,34 @@ Arquivo de referencia: `src/drones/ugv/firmware/src/main.cpp`
 
 ## 5. Checklist pre-energizacao
 
-- [ ] Polaridade da bateria verificada.
-- [ ] Fusivel instalado e dimensionado.
-- [ ] Chave geral funcional.
-- [ ] GND comum confirmado em multimetro.
-- [ ] Sem curto entre 5V e GND.
-- [ ] Pinagem conforme tabela da secao 3.
-- [ ] GPIO 18/19 nao conectados.
-- [ ] Cabos de potencia separados de cabos de sinal/USB.
+- [x] Polaridade da bateria verificada.
+- [x] Fusivel instalado e dimensionado.
+- [x] Chave geral funcional.
+- [x] GND comum confirmado em multimetro.
+- [x] Sem curto entre 5V e GND.
+- [x] Pinagem conforme tabela da secao 3.
+- [x] GPIO 18/19 nao conectados.
+- [x] Cabos de potencia separados de cabos de sinal/USB.
 
 ## 6. Checklist de validacao pos-montagem
 
 ### 6.1 Firmware e serial
 
-- [ ] ESP32 reconhecido no host (`/dev/ttyUSB*`).
-- [ ] Telemetria serial recebida (`O`, `B`, `W`).
-- [ ] Watchdog aciona parada ao perder comando.
+- [x] ESP32 reconhecido no host (`/dev/ttyUSB*`).
+- [x] Telemetria serial recebida (`O`, `B`, `W`).
+- [x] Watchdog aciona parada ao perder comando.
 
 ### 6.2 Motores e odometria
 
-- [ ] Comando `M <left> <right>` move os lados corretos.
-- [ ] `STOP` para imediatamente.
-- [ ] Encoders aumentam/reduzem de forma coerente com direcao.
+- [x] Comando `M <left> <right>` move os lados corretos.
+- [x] `STOP` para imediatamente.
+- [x] Encoders aumentam/reduzem de forma coerente com direcao.
 
 ### 6.3 Stack ROS2/MQTT
 
-- [ ] UGV publica status em `ugv/status`.
-- [ ] Patrulha publica waypoints em `ugv/patrol/waypoints`.
-- [ ] Link de comunicacao reporta `ugv/link/state`.
+- [x] UGV publica status em `ugv/status`.
+- [x] Patrulha publica waypoints em `ugv/patrol/waypoints`.
+- [x] Link de comunicacao reporta `ugv/link/state`.
 
 ## 7. Troubleshooting
 

@@ -34,6 +34,13 @@
       "target": "docs/SEGURANCA_FISICA_HARDENING_CHECKLIST.md",
       "type": "checklist",
       "resolved_on": "2026-02-24"
+    },
+    {
+      "issue": 665,
+      "priority": "medium",
+      "target": "docs/GUIA_MONTAGEM_UGV.md",
+      "type": "checklist",
+      "resolved_on": "2026-02-24"
     }
   ]
 }
