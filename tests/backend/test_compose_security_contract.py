@@ -30,8 +30,10 @@ def test_compose_has_healthchecks_for_critical_services():
         "homeassistant:",
         "dashboard-api:",
         "dashboard-frontend:",
+        "ugv:",
+        "uav:",
     ):
         assert service_name in content
 
-    # Contract-level check: critical services now define healthcheck in compose.
-    assert content.count("healthcheck:") >= 7
+    # Contract-level check: core + drones services define healthcheck in compose.
+    assert content.count("healthcheck:") >= 9

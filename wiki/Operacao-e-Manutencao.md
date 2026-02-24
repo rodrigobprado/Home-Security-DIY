@@ -27,6 +27,7 @@ O dashboard atualiza em tempo real via WebSocket (fan-out do Home Assistant).
 - [ ] Revisar alertas recentes no widget **AlertFeed**
 - [ ] Confirmar câmeras com snapshot atualizado no widget **CameraGrid**
 - [ ] Checar estado do alarme (Alarmo) no widget **AlarmStatus**
+- [ ] Confirmar healthchecks Docker ativos para serviços críticos e drones (`postgres`, `mosquitto`, `zigbee2mqtt`, `frigate`, `homeassistant`, `dashboard-api`, `dashboard-frontend`, `ugv`, `uav`)
 
 ## Backup e recuperação
 
