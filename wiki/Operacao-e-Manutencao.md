@@ -128,6 +128,9 @@ docker compose logs -f homeassistant
 curl http://localhost:8000/api/services/status
 ```
 
+Nota de segurança:
+- No ambiente Docker Compose, a Dashboard API deve permanecer vinculada a `127.0.0.1:8000`.
+
 ## Perfil de validação em K3s (toca.lan)
 
 Hosts de acesso via ingress:
