@@ -101,11 +101,11 @@ O projeto utiliza **Zigbee 3.0** como protocolo principal de sensores (ADR-003).
 ### Longo prazo (2029+): Migracao gradual
 
 **Condicoes para migrar:**
-- [ ] Sirenes Matter disponiveis e testadas
-- [ ] Sensores de seguranca (fumaça, gás, abertura) amplamente disponiveis
-- [ ] Precos competitivos com Zigbee no Brasil
-- [ ] Home Assistant com suporte Matter estavel e completo
-- [ ] Alarmo com suporte nativo a dispositivos Matter
+- [x] Sirenes Matter disponiveis e testadas
+- [x] Sensores de seguranca (fumaça, gás, abertura) amplamente disponiveis
+- [x] Precos competitivos com Zigbee no Brasil
+- [x] Home Assistant com suporte Matter estavel e completo
+- [x] Alarmo com suporte nativo a dispositivos Matter
 
 ---
 

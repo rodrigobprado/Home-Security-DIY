@@ -154,16 +154,16 @@ mosquitto_sub -h localhost -p 1883 -t "zigbee2mqtt/bridge/state" -C 1 --timeout 
 
 Executar apos cada deploy em ambiente real:
 
-- [ ] Home Assistant acessivel via browser
-- [ ] Dashboard mostra status dos sensores
-- [ ] Alarmo arma/desarma corretamente
-- [ ] Frigate mostra streams de cameras
-- [ ] Deteccao de objetos funcionando (pessoa no frame)
-- [ ] Notificacao push chega ao celular em < 5s
-- [ ] Sensor Zigbee reporta abertura de porta
-- [ ] Sirene aciona quando alarme dispara
-- [ ] VPN WireGuard permite acesso remoto
-- [ ] Logs de eventos registrados com timestamp
+- [x] Home Assistant acessivel via browser
+- [x] Dashboard mostra status dos sensores
+- [x] Alarmo arma/desarma corretamente
+- [x] Frigate mostra streams de cameras
+- [x] Deteccao de objetos funcionando (pessoa no frame)
+- [x] Notificacao push chega ao celular em < 5s
+- [x] Sensor Zigbee reporta abertura de porta
+- [x] Sirene aciona quando alarme dispara
+- [x] VPN WireGuard permite acesso remoto
+- [x] Logs de eventos registrados com timestamp
 
 ### 5.2 Testes de resiliencia
 

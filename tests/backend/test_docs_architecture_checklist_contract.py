@@ -46,6 +46,15 @@ def test_arquitetura_seguranca_fisica_items_450_and_related_are_marked_complete(
     content = ARCH_FISICA.read_text(encoding="utf-8")
 
     expected_items = [
+        "- [x] Perímetro fechado e em bom estado",
+        "- [x] Cerca elétrica instalada e sinalizada (se aplicável)",
+        "- [x] Portões com fechadura de segurança",
+        "- [x] Iluminação externa funcionando",
+        "- [x] Portas reforçadas com fechadura multiponto",
+        "- [x] Janelas térreo com grades ou vidro reforçado",
+        "- [x] Batentes fixados com parafusos longos",
+        "- [x] Paisagismo não cria esconderijos",
+        "- [x] Objetos de valor não visíveis de fora",
         "- [x] Plano de resposta documentado e conhecido por moradores",
         "- [x] Contatos de emergência cadastrados no sistema",
         "- [x] Números de emergência salvos (190, vizinhos)",
