@@ -47,6 +47,9 @@ function AssetForm({ initial, onSave, onCancel, adminKey }) {
   const [saving, setSaving] = useState(false)
 
   const isEdit = Boolean(initial?.id)
+  let submitLabel = 'Cadastrar'
+  if (saving) submitLabel = 'Salvando...'
+  else if (isEdit) submitLabel = 'Atualizar'
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -212,7 +215,7 @@ function AssetForm({ initial, onSave, onCancel, adminKey }) {
           disabled={saving}
           className="px-4 py-1.5 text-sm bg-accent text-white rounded hover:bg-accent/80 transition-colors disabled:opacity-50"
         >
-          {saving ? 'Salvando...' : isEdit ? 'Atualizar' : 'Cadastrar'}
+          {submitLabel}
         </button>
       </div>
     </form>
@@ -368,6 +371,54 @@ export default function AssetsAdmin() {
     setSearchParams(next, { replace: true })
   }
 
+  function renderTableContent() {
+    if (assetsLoading) {
+      return <p className="text-muted text-sm text-center py-6">Carregando ativos...</p>
+    }
+
+    if (assetsError) {
+      return <p className="text-critical text-sm text-center py-6">Erro: {assetsError}</p>
+    }
+
+    if (filtered.length === 0) {
+      const emptyMessage = assets.length === 0
+        ? 'Nenhum ativo cadastrado. Clique em "+ Novo Ativo" para começar.'
+        : 'Nenhum ativo encontrado com os filtros aplicados.'
+      return <p className="text-muted text-sm text-center py-6">{emptyMessage}</p>
+    }
+
+    return (
+      <div className="overflow-x-auto">
+        <table className="w-full text-left">
+          <thead>
+            <tr className="border-b border-border">
+              <th className="px-3 py-2 text-xs font-semibold text-muted uppercase">Nome / Entity ID</th>
+              <th className="px-3 py-2 text-xs font-semibold text-muted uppercase">Tipo</th>
+              <th className="px-3 py-2 text-xs font-semibold text-muted uppercase">Status</th>
+              <th className="px-3 py-2 text-xs font-semibold text-muted uppercase">Local</th>
+              <th className="px-3 py-2 text-xs font-semibold text-muted uppercase">Visível</th>
+              <th className="px-3 py-2 text-xs font-semibold text-muted uppercase">Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filtered.map((asset) => (
+              <AssetRow
+                key={asset.id}
+                asset={asset}
+                onEdit={(a) => { setEditTarget(a); setShowForm(true) }}
+                onDelete={handleDelete}
+                onRestore={handleRestore}
+              />
+            ))}
+          </tbody>
+        </table>
+        <p className="text-xs text-muted px-3 py-2 border-t border-border">
+          {filtered.length} de {assets.length} ativos
+        </p>
+      </div>
+    )
+  }
+
   return (
     <div className="flex flex-col gap-4 p-4 overflow-y-auto h-full">
       {/* Cabeçalho */}
@@ -469,46 +520,7 @@ export default function AssetsAdmin() {
 
       {/* Tabela */}
       <div className="card overflow-hidden">
-        {assetsLoading ? (
-          <p className="text-muted text-sm text-center py-6">Carregando ativos...</p>
-        ) : assetsError ? (
-          <p className="text-critical text-sm text-center py-6">Erro: {assetsError}</p>
-        ) : filtered.length === 0 ? (
-          <p className="text-muted text-sm text-center py-6">
-            {assets.length === 0
-              ? 'Nenhum ativo cadastrado. Clique em "+ Novo Ativo" para começar.'
-              : 'Nenhum ativo encontrado com os filtros aplicados.'}
-          </p>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left">
-              <thead>
-                <tr className="border-b border-border">
-                  <th className="px-3 py-2 text-xs font-semibold text-muted uppercase">Nome / Entity ID</th>
-                  <th className="px-3 py-2 text-xs font-semibold text-muted uppercase">Tipo</th>
-                  <th className="px-3 py-2 text-xs font-semibold text-muted uppercase">Status</th>
-                  <th className="px-3 py-2 text-xs font-semibold text-muted uppercase">Local</th>
-                  <th className="px-3 py-2 text-xs font-semibold text-muted uppercase">Visível</th>
-                  <th className="px-3 py-2 text-xs font-semibold text-muted uppercase">Ações</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.map((asset) => (
-                  <AssetRow
-                    key={asset.id}
-                    asset={asset}
-                    onEdit={(a) => { setEditTarget(a); setShowForm(true) }}
-                    onDelete={handleDelete}
-                    onRestore={handleRestore}
-                  />
-                ))}
-              </tbody>
-            </table>
-            <p className="text-xs text-muted px-3 py-2 border-t border-border">
-              {filtered.length} de {assets.length} ativos
-            </p>
-          </div>
-        )}
+        {renderTableContent()}
       </div>
     </div>
   )

@@ -15,6 +15,7 @@ from app.db.session import get_db
 from app.security import require_admin_key
 
 router = APIRouter(prefix="/api/assets", tags=["assets"])
+ASSET_NOT_FOUND_DETAIL = "Asset not found."
 
 # ---------------------------------------------------------------------------
 # Schemas Pydantic
@@ -173,7 +174,7 @@ async def get_asset(asset_id: uuid.UUID, db: AsyncSession = Depends(get_db)) -> 
     result = await db.execute(select(Asset).where(Asset.id == asset_id))
     asset = result.scalar_one_or_none()
     if not asset:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Asset not found.")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=ASSET_NOT_FOUND_DETAIL)
     return _asset_to_dict(asset)
 
 
@@ -251,7 +252,7 @@ async def update_asset(
     result = await db.execute(select(Asset).where(Asset.id == asset_id))
     asset = result.scalar_one_or_none()
     if not asset:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Asset not found.")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=ASSET_NOT_FOUND_DETAIL)
 
     before = _asset_to_dict(asset)
     actor = _get_actor(request)
@@ -300,7 +301,7 @@ async def delete_asset(
     result = await db.execute(select(Asset).where(Asset.id == asset_id))
     asset = result.scalar_one_or_none()
     if not asset:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Asset not found.")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=ASSET_NOT_FOUND_DETAIL)
 
     before = _asset_to_dict(asset)
     actor = _get_actor(request)
@@ -338,7 +339,7 @@ async def restore_asset(
     result = await db.execute(select(Asset).where(Asset.id == asset_id))
     asset = result.scalar_one_or_none()
     if not asset:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Asset not found.")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=ASSET_NOT_FOUND_DETAIL)
 
     before = _asset_to_dict(asset)
     actor = _get_actor(request)

@@ -17,6 +17,7 @@ from app.security import require_api_key
 OPERATOR_KEY = "test-api-key"
 ADMIN_KEY = "test-admin-key"
 TEST_BASE_URL = "http://testserver"
+ASSETS_ENDPOINT = "/api/assets"
 
 
 # ---------------------------------------------------------------------------
@@ -89,13 +90,16 @@ class _FakeSession:
         self.added.append(obj)
 
     async def flush(self):
-        pass
+        # No-op intencional para o test double de sessão.
+        return None
 
     async def commit(self):
-        pass
+        # No-op intencional para o test double de sessão.
+        return None
 
     async def refresh(self, obj):
-        pass
+        # No-op intencional para o test double de sessão.
+        return None
 
 
 def _build_test_app(db_rows=None, conflict=False):
@@ -122,7 +126,7 @@ async def test_list_assets_requires_operator_key():
     app = _build_test_app()
     transport = httpx.ASGITransport(app=app)
     async with httpx.AsyncClient(transport=transport, base_url=TEST_BASE_URL) as client:
-        resp = await client.get("/api/assets")
+        resp = await client.get(ASSETS_ENDPOINT)
     assert resp.status_code == 403
 
 
@@ -132,7 +136,7 @@ async def test_list_assets_with_operator_key():
     app = _build_test_app(db_rows=[_make_asset()])
     transport = httpx.ASGITransport(app=app)
     async with httpx.AsyncClient(transport=transport, base_url=TEST_BASE_URL) as client:
-        resp = await client.get("/api/assets", headers={"X-API-Key": OPERATOR_KEY})
+        resp = await client.get(ASSETS_ENDPOINT, headers={"X-API-Key": OPERATOR_KEY})
     assert resp.status_code == 200
     data = resp.json()
     assert "items" in data
@@ -148,7 +152,7 @@ async def test_create_asset_requires_admin_key():
     async with httpx.AsyncClient(transport=transport, base_url=TEST_BASE_URL) as client:
         # Sem admin key — deve falhar (apenas operator key)
         resp = await client.post(
-            "/api/assets",
+            ASSETS_ENDPOINT,
             headers={"X-API-Key": OPERATOR_KEY},
             json={
                 "asset_type": "sensor",
@@ -166,7 +170,7 @@ async def test_create_asset_with_wrong_admin_key():
     transport = httpx.ASGITransport(app=app)
     async with httpx.AsyncClient(transport=transport, base_url=TEST_BASE_URL) as client:
         resp = await client.post(
-            "/api/assets",
+            ASSETS_ENDPOINT,
             headers={"X-API-Key": OPERATOR_KEY, "X-Admin-Key": "wrong-key"},
             json={
                 "asset_type": "sensor",
@@ -185,7 +189,7 @@ async def test_delete_asset_requires_admin_key():
     transport = httpx.ASGITransport(app=app)
     async with httpx.AsyncClient(transport=transport, base_url=TEST_BASE_URL) as client:
         resp = await client.delete(
-            f"/api/assets/{asset_id}",
+            f"{ASSETS_ENDPOINT}/{asset_id}",
             headers={"X-API-Key": OPERATOR_KEY},
         )
     assert resp.status_code in (403, 503)
@@ -202,7 +206,7 @@ async def test_list_assets_empty():
     app = _build_test_app(db_rows=[])
     transport = httpx.ASGITransport(app=app)
     async with httpx.AsyncClient(transport=transport, base_url=TEST_BASE_URL) as client:
-        resp = await client.get("/api/assets", headers={"X-API-Key": OPERATOR_KEY})
+        resp = await client.get(ASSETS_ENDPOINT, headers={"X-API-Key": OPERATOR_KEY})
     assert resp.status_code == 200
     assert resp.json()["items"] == []
 
@@ -214,7 +218,7 @@ async def test_list_assets_pagination_params():
     transport = httpx.ASGITransport(app=app)
     async with httpx.AsyncClient(transport=transport, base_url=TEST_BASE_URL) as client:
         resp = await client.get(
-            "/api/assets?limit=2&offset=1",
+            f"{ASSETS_ENDPOINT}?limit=2&offset=1",
             headers={"X-API-Key": OPERATOR_KEY},
         )
     assert resp.status_code == 200
@@ -230,7 +234,7 @@ async def test_get_asset_not_found():
     transport = httpx.ASGITransport(app=app)
     async with httpx.AsyncClient(transport=transport, base_url=TEST_BASE_URL) as client:
         resp = await client.get(
-            f"/api/assets/{uuid.uuid4()}",
+            f"{ASSETS_ENDPOINT}/{uuid.uuid4()}",
             headers={"X-API-Key": OPERATOR_KEY},
         )
     assert resp.status_code == 404
@@ -244,7 +248,7 @@ async def test_get_asset_found():
     transport = httpx.ASGITransport(app=app)
     async with httpx.AsyncClient(transport=transport, base_url=TEST_BASE_URL) as client:
         resp = await client.get(
-            f"/api/assets/{asset.id}",
+            f"{ASSETS_ENDPOINT}/{asset.id}",
             headers={"X-API-Key": OPERATOR_KEY},
         )
     assert resp.status_code == 200
@@ -260,7 +264,7 @@ async def test_create_asset_invalid_payload():
     transport = httpx.ASGITransport(app=app)
     async with httpx.AsyncClient(transport=transport, base_url=TEST_BASE_URL) as client:
         resp = await client.post(
-            "/api/assets",
+            ASSETS_ENDPOINT,
             headers={"X-API-Key": OPERATOR_KEY, "X-Admin-Key": ADMIN_KEY},
             json={"asset_type": "invalid_type", "name": "X", "entity_id": "test.x"},
         )
@@ -274,7 +278,7 @@ async def test_create_asset_entity_id_with_space():
     transport = httpx.ASGITransport(app=app)
     async with httpx.AsyncClient(transport=transport, base_url=TEST_BASE_URL) as client:
         resp = await client.post(
-            "/api/assets",
+            ASSETS_ENDPOINT,
             headers={"X-API-Key": OPERATOR_KEY, "X-Admin-Key": ADMIN_KEY},
             json={"asset_type": "sensor", "name": "X", "entity_id": "binary sensor.teste"},
         )
@@ -288,7 +292,7 @@ async def test_create_asset_invalid_config_json():
     transport = httpx.ASGITransport(app=app)
     async with httpx.AsyncClient(transport=transport, base_url=TEST_BASE_URL) as client:
         resp = await client.post(
-            "/api/assets",
+            ASSETS_ENDPOINT,
             headers={"X-API-Key": OPERATOR_KEY, "X-Admin-Key": ADMIN_KEY},
             json={
                 "asset_type": "sensor",
@@ -313,7 +317,7 @@ async def test_asset_response_has_no_sensitive_fields():
     transport = httpx.ASGITransport(app=app)
     async with httpx.AsyncClient(transport=transport, base_url=TEST_BASE_URL) as client:
         resp = await client.get(
-            f"/api/assets/{asset.id}",
+            f"{ASSETS_ENDPOINT}/{asset.id}",
             headers={"X-API-Key": OPERATOR_KEY},
         )
     assert resp.status_code == 200
