@@ -169,6 +169,17 @@
         "planejad",
         "pendências de documentação resolvidas"
       ]
+    },
+    {
+      "issue": 683,
+      "priority": "medium",
+      "target": "docs/ARQUITETURA_HARDWARE_UGV.md",
+      "type": "textual",
+      "resolved_on": "2026-02-24",
+      "forbidden_patterns": [
+        "prevista no projeto",
+        "previstos para integracao"
+      ]
     }
   ]
 }
