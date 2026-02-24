@@ -52,6 +52,37 @@ Opcionalmente, inclua um resumo customizado:
 
 O script cria o PR com checklist de validação/operação e adiciona `Closes #...` para cada issue.
 
+## Critérios de aceite para Pull Request
+
+Antes de solicitar merge, confirme:
+
+- O PR referencia a issue (`Closes #<id>` ou equivalente).
+- Testes automatizados relevantes foram executados e estão passando.
+- Mudanças de comportamento incluem testes novos/atualizados.
+- Documentação impactada foi atualizada (`docs/`, wiki, runbooks, ADR quando aplicável).
+- Mudanças de segurança foram avaliadas (segredos, autenticação, exposição de portas e permissões).
+- Existe plano de rollback para mudanças com impacto operacional.
+
+Checklist sugerido para descrição do PR:
+
+```md
+## Resumo
+- ...
+
+## Testes
+- [ ] Backend: `.venv/bin/pytest tests/backend -q`
+- [ ] Frontend: `npm test -- --run`
+- [ ] Outros: ...
+
+## Operação
+- [ ] Sem impacto de downtime
+- [ ] Rollback documentado
+
+## Segurança
+- [ ] Sem segredos em código/log
+- [ ] Permissões mínimas preservadas
+```
+
 ## Padrões de Projeto
 
 ### Estrutura de Diretórios
@@ -80,6 +111,13 @@ Para onboarding completo de novos contribuidores, consulte também [docs/ONBOARD
 python3 -m venv .venv
 .venv/bin/pip install -r src/dashboard/backend/requirements.txt pytest pytest-cov
 .venv/bin/pytest -q tests/backend
+```
+
+### Rodando testes do Dashboard Frontend
+
+```bash
+cd src/dashboard/frontend
+npm test -- --run
 ```
 
 ### Cobertura mínima (CI)

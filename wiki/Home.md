@@ -24,6 +24,7 @@ O projeto combina automação, vídeo inteligente, sensores e drones para segura
 4. [Drones Autônomos](Drones-Autonomos)
 5. [Segurança e Compliance](Seguranca-e-Compliance)
 6. [FAQ](FAQ)
+7. [Contribuição](https://github.com/rodrigobprado/Home-Security-DIY/blob/main/CONTRIBUTING.md)
 
 ## Escopo do projeto
 
@@ -62,6 +63,7 @@ O projeto combina automação, vídeo inteligente, sensores e drones para segura
 
 - `README.md` — visão geral e quickstart
 - `CHANGELOG.md` — histórico versionado de mudanças por release
+- `CONTRIBUTING.md` — fluxo de contribuição e critérios de PR
 - `docs/` — arquitetura, hardening, threat model, ADRs
 - `docs/*RUNBOOK*.md` — guias operacionais de manutenção e recuperação
 - `prd/` — Product Requirements Documents
