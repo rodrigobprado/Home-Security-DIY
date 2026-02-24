@@ -69,6 +69,13 @@
       "target": "wiki/Testes-e-Validacao.md",
       "type": "checklist",
       "resolved_on": "2026-02-24"
+    },
+    {
+      "issue": 670,
+      "priority": "high",
+      "target": "docs/TESTING_STRATEGY.md",
+      "type": "checklist",
+      "resolved_on": "2026-02-24"
     }
   ]
 }
