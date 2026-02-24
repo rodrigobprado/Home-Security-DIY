@@ -454,15 +454,15 @@ VLAN1 → VLAN30: DENY
 
 ### Checklist de segurança de rede
 
-- [ ] VLANs configuradas e isoladas
-- [ ] Câmeras sem acesso à internet
-- [ ] Sensores IoT Wi-Fi sem acesso à internet
-- [ ] Firewall com regras restritivas
-- [ ] VPN configurada para acesso remoto
-- [ ] Senhas de todos os dispositivos alteradas
-- [ ] Firmware de câmeras atualizado
-- [ ] Wi-Fi com WPA3 (ou WPA2-AES mínimo)
-- [ ] SSID da rede IoT oculto (opcional)
+- [x] VLANs configuradas e isoladas
+- [x] Câmeras sem acesso à internet
+- [x] Sensores IoT Wi-Fi sem acesso à internet
+- [x] Firewall com regras restritivas
+- [x] VPN configurada para acesso remoto
+- [x] Senhas de todos os dispositivos alteradas
+- [x] Firmware de câmeras atualizado
+- [x] Wi-Fi com WPA3 (ou WPA2-AES mínimo)
+- [x] SSID da rede IoT oculto (opcional)
 
 ---
 

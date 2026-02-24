@@ -221,12 +221,12 @@ ls -la /dev/serial/by-id/
 
 ## Próximos passos
 
-- [ ] Configurar VLANs para isolar câmeras e IoT ([docs/ARQUITETURA_TECNICA.md](../../docs/ARQUITETURA_TECNICA.md))
-- [ ] Configurar VPN WireGuard para acesso remoto
-- [ ] Configurar notificações Telegram
-- [ ] Ajustar zonas de detecção do Frigate
-- [ ] Instalar e configurar nobreak com monitoramento
-- [ ] Criar backup automático das configurações
+- [x] Configurar VLANs para isolar câmeras e IoT ([docs/ARQUITETURA_TECNICA.md](../../docs/ARQUITETURA_TECNICA.md))
+- [x] Configurar VPN WireGuard para acesso remoto
+- [x] Configurar notificações Telegram
+- [x] Ajustar zonas de detecção do Frigate
+- [x] Instalar e configurar nobreak com monitoramento
+- [x] Criar backup automático das configurações
 
 ---
 

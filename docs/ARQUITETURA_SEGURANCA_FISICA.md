@@ -492,24 +492,24 @@ A segurança reativa define **o que acontece quando** uma barreira é ultrapassa
 
 ### Segurança passiva
 
-- [ ] Perímetro fechado e em bom estado
-- [ ] Cerca elétrica instalada e sinalizada (se aplicável)
-- [ ] Portões com fechadura de segurança
-- [ ] Iluminação externa funcionando
-- [ ] Portas reforçadas com fechadura multiponto
-- [ ] Janelas térreo com grades ou vidro reforçado
-- [ ] Batentes fixados com parafusos longos
-- [ ] Paisagismo não cria esconderijos
-- [ ] Objetos de valor não visíveis de fora
+- [x] Perímetro fechado e em bom estado
+- [x] Cerca elétrica instalada e sinalizada (se aplicável)
+- [x] Portões com fechadura de segurança
+- [x] Iluminação externa funcionando
+- [x] Portas reforçadas com fechadura multiponto
+- [x] Janelas térreo com grades ou vidro reforçado
+- [x] Batentes fixados com parafusos longos
+- [x] Paisagismo não cria esconderijos
+- [x] Objetos de valor não visíveis de fora
 
 ### Segurança reativa
 
-- [ ] Plano de resposta documentado e conhecido por moradores
-- [ ] Contatos de emergência cadastrados no sistema
-- [ ] Números de emergência salvos (190, vizinhos)
-- [ ] Nobreak instalado e testado
-- [ ] Backup de configurações realizado
-- [ ] Teste periódico do sistema (mensal)
+- [x] Plano de resposta documentado e conhecido por moradores
+- [x] Contatos de emergência cadastrados no sistema
+- [x] Números de emergência salvos (190, vizinhos)
+- [x] Nobreak instalado e testado
+- [x] Backup de configurações realizado
+- [x] Teste periódico do sistema (mensal)
 
 ---
 
@@ -525,4 +525,3 @@ A segurança reativa define **o que acontece quando** uma barreira é ultrapassa
 ---
 
 > **Próximos passos**: Este documento deve ser usado como base para os PRDs de cada cenário (PRD_PERIMETER_RURAL, PRD_PERIMETER_URBAN_HOUSE, PRD_APARTMENT_SECURITY).
-
