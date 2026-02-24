@@ -1,0 +1,11 @@
+{
+  "issues": [
+    {
+      "issue": 660,
+      "priority": "critical",
+      "target": "rules/RULES_COMPLIANCE_AND_STANDARDS.md",
+      "type": "checklist",
+      "resolved_on": "2026-02-24"
+    }
+  ]
+}
