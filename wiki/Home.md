@@ -58,6 +58,7 @@ O projeto combina automação, vídeo inteligente, sensores e drones para segura
 - ADRs 005-010 formalizados em `docs/adr/`.
 - Changelog versionado na raiz do projeto (`CHANGELOG.md`).
 - Estratégia de secrets no Kubernetes com External Secrets em produção (`k8s/overlays/production/external-secrets.yaml`).
+- Dependências dos drones totalmente pinadas (`==`), incluindo dependências opcionais comentadas para ativação futura.
 
 ## Documentação no repositório
 

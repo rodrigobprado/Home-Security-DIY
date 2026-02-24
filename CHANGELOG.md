@@ -9,6 +9,7 @@ e [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
 ### Changed
 - Padronização do changelog com versão publicada e regras de atualização.
+- Dependência opcional `pymavlink` dos drones documentada com versão fixa (`==`) para manter reprodutibilidade quando habilitada.
 
 ## [0.1.0] - 2026-02-24
 
