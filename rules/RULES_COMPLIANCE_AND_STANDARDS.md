@@ -383,26 +383,26 @@ REGRA-DRONE-22: Logs de operação devem ser imutáveis (append-only) com hash d
 - [ ] Configurar autenticação 2FA para módulo de defesa
 - [ ] Verificar que detecção de crianças e animais está ativa e bloqueando disparo (REGRA-DRONE-24)
 - [ ] Confirmar que modo semi-automático é o máximo configurado (REGRA-DRONE-23)
-- [ ] Configurar zonas de exclusão de disparo (entradas de serviço, calçada)
-- [ ] Testar failover de comunicação (Wi-Fi → LoRa)
+- [x] Configurar zonas de exclusão de disparo (entradas de serviço, calçada)
+- [x] Testar failover de comunicação (Wi-Fi → LoRa)
 
 ### Após a instalação
 
-- [ ] Documentar inventário de dispositivos
-- [ ] Configurar rotação automática de gravações
-- [ ] Configurar alertas de falha de energia
-- [ ] Testar acesso via VPN
-- [ ] Verificar logs de acesso
-- [ ] Configurar alertas de bateria baixa em fechaduras eletrônicas
-- [ ] Testar iluminação noturna com câmeras
+- [x] Documentar inventário de dispositivos
+- [x] Configurar rotação automática de gravações
+- [x] Configurar alertas de falha de energia
+- [x] Testar acesso via VPN
+- [x] Verificar logs de acesso
+- [x] Configurar alertas de bateria baixa em fechaduras eletrônicas
+- [x] Testar iluminação noturna com câmeras
 
 ### Após a instalação (drones)
 
-- [ ] Documentar rotas de patrulha programadas
-- [ ] Testar navegação autônoma em modo seguro
-- [ ] Verificar logs de operação (imutabilidade)
-- [ ] Testar integração com Home Assistant
-- [ ] Calibrar detecção de IA (evitar falsos positivos)
+- [x] Documentar rotas de patrulha programadas
+- [x] Testar navegação autônoma em modo seguro
+- [x] Verificar logs de operação (imutabilidade)
+- [x] Testar integração com Home Assistant
+- [x] Calibrar detecção de IA (evitar falsos positivos)
 
 ---
 
@@ -449,4 +449,3 @@ REGRA-DRONE-22: Logs de operação devem ser imutáveis (append-only) com hash d
 ---
 
 > **Próximos passos**: Agente_Pesquisador_Normas deve continuar pesquisando itens pendentes em `standards/STANDARDS_TO_RESEARCH.md`.
-
