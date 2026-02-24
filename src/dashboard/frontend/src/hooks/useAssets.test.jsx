@@ -123,4 +123,29 @@ describe("useAssets hook", () => {
       expect(result.current.assets).toHaveLength(2);
     });
   });
+
+  it("refetch accepts filters and appends query params", async () => {
+    global.fetch = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ items: [] }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ items: [] }),
+      });
+
+    const { result } = renderHook(() => useAssets());
+    await waitFor(() => expect(global.fetch).toHaveBeenCalledTimes(1));
+
+    act(() => {
+      result.current.refetch({ assetType: "sensor", isActive: false });
+    });
+
+    await waitFor(() => expect(global.fetch).toHaveBeenCalledTimes(2));
+    const secondUrl = global.fetch.mock.calls[1][0];
+    expect(secondUrl).toContain("asset_type=sensor");
+    expect(secondUrl).toContain("is_active=false");
+  });
 });

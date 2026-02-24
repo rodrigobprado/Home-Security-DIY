@@ -50,4 +50,33 @@ describe("SensorGrid", () => {
     expect(screen.getByText("Porta Frente")).toBeInTheDocument();
     expect(screen.getByText("aberto / detectado")).toBeInTheDocument();
   });
+
+  it("renders loading state when fetching and no sensors", () => {
+    mockUseAssets.mockReturnValueOnce({
+      sensorAssets: [],
+      assetsLoading: true,
+    });
+    render(<SensorGrid />);
+    expect(screen.getByText("Carregando...")).toBeInTheDocument();
+  });
+
+  it("maps icons for different sensor naming patterns", () => {
+    mockUseAssets.mockReturnValueOnce({
+      sensorAssets: [
+        { entity_id: "binary_sensor.janela", name: "Janela", is_active: true },
+        { entity_id: "binary_sensor.motion_hall", name: "Motion Hall", is_active: true },
+        { entity_id: "binary_sensor.smoke", name: "Smoke", is_active: true },
+        { entity_id: "binary_sensor.zigbee_status", name: "Zigbee Status", is_active: true },
+        { entity_id: "binary_sensor.generic", name: "Generic", is_active: true },
+      ],
+      assetsLoading: false,
+    });
+    render(<SensorGrid />);
+
+    expect(screen.getByText("🪟")).toBeInTheDocument();
+    expect(screen.getAllByText("👁").length).toBeGreaterThan(0);
+    expect(screen.getByText("🔥")).toBeInTheDocument();
+    expect(screen.getByText("📡")).toBeInTheDocument();
+    expect(screen.getByText("🔵")).toBeInTheDocument();
+  });
 });

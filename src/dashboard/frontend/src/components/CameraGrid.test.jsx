@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import { vi } from "vitest";
 import CameraGrid from "./CameraGrid";
 import { useAssets } from "../hooks/useAssets";
@@ -17,6 +17,10 @@ vi.mock("../hooks/useAssets", () => ({
 }));
 
 describe("CameraGrid", () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   it("renders static fallback cameras when no dynamic assets", () => {
     render(<CameraGrid />);
     // Com cameraAssets vazio, deve usar STATIC_CAMERAS (fallback)
@@ -42,5 +46,31 @@ describe("CameraGrid", () => {
     render(<CameraGrid />);
     expect(screen.getByText("Frente")).toBeInTheDocument();
     expect(screen.getByText("Quintal")).toBeInTheDocument();
+  });
+
+  it("shows offline fallback when snapshot fails and recovers on load", () => {
+    render(<CameraGrid />);
+    const firstImage = screen.getAllByRole("img")[0];
+
+    fireEvent.error(firstImage);
+    expect(screen.getByText("offline")).toBeInTheDocument();
+
+    fireEvent.load(firstImage);
+    expect(screen.queryByText("offline")).not.toBeInTheDocument();
+  });
+
+  it("refreshes snapshot URL on interval tick", () => {
+    vi.useFakeTimers();
+    render(<CameraGrid />);
+    const firstImage = screen.getAllByRole("img")[0];
+    const initialSrc = firstImage.getAttribute("src");
+
+    act(() => {
+      vi.advanceTimersByTime(2100);
+    });
+    const updatedSrc = screen.getAllByRole("img")[0].getAttribute("src");
+
+    expect(updatedSrc).not.toEqual(initialSrc);
+    expect(updatedSrc).toContain("/api/cameras/");
   });
 });

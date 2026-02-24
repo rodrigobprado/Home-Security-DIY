@@ -29,4 +29,18 @@ describe("ServiceStatus", () => {
     await waitFor(() => expect(global.fetch).toHaveBeenCalledWith("/api/services/status"));
     expect(screen.getByText("Verificando...")).toBeInTheDocument();
   });
+
+  it("renders unknown service key and unknown status fallback", async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      json: async () => ({
+        services: {
+          custom_service: "mystery",
+        },
+      }),
+    });
+
+    render(<ServiceStatus />);
+    await waitFor(() => expect(screen.getByText("custom_service")).toBeInTheDocument());
+    expect(screen.getByText("mystery")).toBeInTheDocument();
+  });
 });

@@ -155,6 +155,28 @@ async def test_create_asset_conflict_raises_409():
 
 
 @pytest.mark.anyio
+async def test_create_asset_success_creates_asset_and_audit():
+    db = _DbQueue([_Result(one_or_none=None)])
+    payload = AssetCreate(
+        asset_type="camera",
+        name="Cam Entrada",
+        entity_id="camera.entrada",
+        status="active",
+        location="entrada",
+        description="camera frontal",
+        config_json='{"fps":15}',
+    )
+    result = await create_asset(payload=payload, request=_request(actor="admin"), db=db)
+
+    assert result["entity_id"] == "camera.entrada"
+    assert result["name"] == "Cam Entrada"
+    assert db.flushed == 1
+    assert db.commits == 1
+    assert db.refreshed == 1
+    assert len(db.added) >= 2
+
+
+@pytest.mark.anyio
 async def test_update_asset_not_found_raises_404():
     db = _DbQueue([_Result(one_or_none=None)])
     with pytest.raises(HTTPException) as exc:
@@ -205,3 +227,33 @@ async def test_restore_asset_not_found_raises_404():
     with pytest.raises(HTTPException) as exc:
         await restore_asset(asset_id=uuid.uuid4(), request=_request(), db=db)
     assert exc.value.status_code == 404
+
+
+@pytest.mark.anyio
+async def test_delete_asset_success_soft_deactivates_and_returns_status():
+    asset = _asset()
+    db = _DbQueue([_Result(one_or_none=asset)])
+
+    result = await delete_asset(asset_id=asset.id, request=_request(actor="admin"), db=db)
+
+    assert result["status"] == "deactivated"
+    assert result["id"] == str(asset.id)
+    assert asset.is_active is False
+    assert asset.status == "inactive"
+    assert db.commits == 1
+
+
+@pytest.mark.anyio
+async def test_restore_asset_success_reactivates_and_returns_asset():
+    asset = _asset()
+    asset.status = "inactive"
+    asset.is_active = False
+    db = _DbQueue([_Result(one_or_none=asset)])
+
+    result = await restore_asset(asset_id=asset.id, request=_request(actor="admin"), db=db)
+
+    assert result["id"] == str(asset.id)
+    assert result["status"] == "active"
+    assert result["is_active"] is True
+    assert db.commits == 1
+    assert db.refreshed == 1
