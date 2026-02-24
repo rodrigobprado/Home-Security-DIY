@@ -104,6 +104,10 @@ Resumo operacional:
 - Alerta preventivo quando o consumo do error budget atingir 50% no mês.
 - Revisão formal das metas a cada semestre ou após recorrência de P1.
 
+MQTT TLS (produção):
+- Com `APP_ENV=production`, o Mosquitto usa `mosquitto.prod.conf` (TLS-only em `8883`).
+- Gerar certificados com `./scripts/generate-mqtt-certs.sh` antes da promoção.
+
 ## Hardening e resiliência
 
 - Consulte `docs/HARDENING_ANTI_TAMPER.md` para configurações de segurança

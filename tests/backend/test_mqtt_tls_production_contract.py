@@ -5,6 +5,7 @@ ROOT = Path(__file__).resolve().parents[2]
 PROD_CONF = ROOT / "src" / "mosquitto" / "config" / "mosquitto.prod.conf"
 AUDIT_SCRIPT = ROOT / "scripts" / "network_security_audit.sh"
 CHECKLIST = ROOT / "docs" / "NETWORK_SECURITY_VLAN_CREDENTIALS_CHECKLIST.md"
+COMPOSE = ROOT / "src" / "docker-compose.yml"
 
 
 def test_mosquitto_production_profile_is_tls_only():
@@ -29,3 +30,12 @@ def test_network_checklist_mentions_tls_only_profile():
     content = CHECKLIST.read_text(encoding="utf-8")
 
     assert "Perfil de produção TLS-only versionado" in content
+
+
+def test_compose_selects_tls_only_mosquitto_profile_in_production():
+    content = COMPOSE.read_text(encoding="utf-8")
+
+    assert "mosquitto.prod.conf" in content
+    assert "APP_ENV:-development" in content
+    assert "production" in content
+    assert '"127.0.0.1:8883:8883"' in content
