@@ -48,10 +48,10 @@
 ## Skills propostas
 
 > **Implementado em 2026-02** — ver `skills/SKILLS_DEV.md` para as skills completas (SKILL_DEV_001 a SKILL_DEV_004).
+> ✅ Pendência resolvida: template substituído por inventário real de skills de desenvolvimento.
 
 - SKILL_DEV_001: Gerar esqueleto de serviço FastAPI com autenticação e testes
 - SKILL_DEV_002: Criar suite de testes unitários e de integração (pytest/vitest)
 - SKILL_DEV_003: Gerar manifesto Kubernetes / Docker Compose com hardening
 - SKILL_DEV_004: Auditar e refatorar código para segurança (OWASP Top 10)
-
 

@@ -4,6 +4,8 @@
 
 ## Skills implementadas
 
+✅ Pendência resolvida: catálogo inicial de skills de documentação consolidado.
+
 ### SKILL_DOC_001 — Elaborar PRD de subsistema
 - **ID**: SKILL_DOC_001
 - **Tipo**: Documentação
@@ -33,4 +35,3 @@
 - **Descrição**: Varrer o repositório por TODOs/FIXMEs e criar issues GitHub consolidadas.
 - **Entradas**: Repositório git
 - **Saídas**: Issues GitHub criadas, tasks locais atualizadas
-

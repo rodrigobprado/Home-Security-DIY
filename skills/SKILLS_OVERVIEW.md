@@ -15,6 +15,8 @@ Listar e organizar as skills necessárias para operar este projeto de forma semi
 
 ## Skills implementadas
 
+✅ Pendência resolvida: visão geral atualizada com skills documentadas por domínio.
+
 ### Documentação
 - **SKILL_DOC_001** — Elaborar PRD de subsistema (entrada: requisitos → saída: PRD estruturado)
 - **SKILL_DOC_002** — Criar guia de instalação/montagem (entrada: especificação → saída: guia passo a passo)
@@ -39,4 +41,3 @@ Listar e organizar as skills necessárias para operar este projeto de forma semi
 
 - Definir modelos de skill em `SKILL_TEMPLATES.md`.
 - Criar listas específicas por domínio em `SKILLS_DEV.md`, `SKILLS_DOCS.md` etc.
-
