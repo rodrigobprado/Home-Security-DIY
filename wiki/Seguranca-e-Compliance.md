@@ -36,6 +36,9 @@ Além da camada técnica já implementada, o projeto possui runbooks operacionai
 
 Templates de execução/evidência: `tasks/templates/`.
 
+Checklist de conformidade (`rules/RULES_COMPLIANCE_AND_STANDARDS.md`):
+- itens de pós-instalação e pós-instalação (drones) marcados como concluídos com evidências operacionais e testes de contrato.
+
 ---
 
 ## Modelo de Ameaças (STRIDE)
