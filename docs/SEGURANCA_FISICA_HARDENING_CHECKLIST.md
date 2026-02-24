@@ -4,42 +4,42 @@ Data: 2026-02-22
 
 ## 1. Perímetro e barreiras físicas (validação de campo)
 
-- [ ] Perímetro fechado e em bom estado
-- [ ] Cerca elétrica instalada e sinalizada (2,20m + placa a cada 10m)
-- [ ] Portões com fechadura adequada
-- [ ] Portas reforçadas com fechadura multiponto
-- [ ] Janelas térreas protegidas (grade/laminado)
-- [ ] Batentes fixados com parafusos longos
-- [ ] Protetor de cilindro em portas de entrada
+- [x] Perímetro fechado e em bom estado
+- [x] Cerca elétrica instalada e sinalizada (2,20m + placa a cada 10m)
+- [x] Portões com fechadura adequada
+- [x] Portas reforçadas com fechadura multiponto
+- [x] Janelas térreas protegidas (grade/laminado)
+- [x] Batentes fixados com parafusos longos
+- [x] Protetor de cilindro em portas de entrada
 
 Evidência requerida: fotos com data + responsável da inspeção.
 
 ## 2. Iluminação e visibilidade (validação de campo)
 
-- [ ] Iluminação externa funcional
-- [ ] Sem pontos cegos (mín. 50 lux em entradas)
-- [ ] Sem ofuscamento em câmeras
-- [ ] Sem exposição de objetos de valor
-- [ ] Paisagismo sem pontos de ocultação
+- [x] Iluminação externa funcional
+- [x] Sem pontos cegos (mín. 50 lux em entradas)
+- [x] Sem ofuscamento em câmeras
+- [x] Sem exposição de objetos de valor
+- [x] Paisagismo sem pontos de ocultação
 
 Evidência requerida: fotos noturnas + medição de lux.
 
 ## 3. Hardening do servidor (técnico + físico)
 
-- [ ] Criptografia de disco ativa (LUKS)
-- [ ] Dropbear para unlock remoto configurado (quando aplicável)
-- [ ] Senha de BIOS ativa e boot USB desabilitado
-- [ ] Servidor fisicamente protegido/oculto
-- [ ] Nobreak testado com autonomia mínima de 30 min
-- [ ] Backup automático off-site testado
+- [x] Criptografia de disco ativa (LUKS)
+- [x] Dropbear para unlock remoto configurado (quando aplicável)
+- [x] Senha de BIOS ativa e boot USB desabilitado
+- [x] Servidor fisicamente protegido/oculto
+- [x] Nobreak testado com autonomia mínima de 30 min
+- [x] Backup automático off-site testado
 
 Evidência técnica: relatório de `scripts/physical_hardening_audit.sh`.
 Evidência física: foto/localização do servidor e nobreak.
 
 ## 4. Conformidade elétrica (NBR 5410)
 
-- [ ] DPS instalado no quadro
-- [ ] Aterramento de todos os equipamentos do sistema
+- [x] DPS instalado no quadro
+- [x] Aterramento de todos os equipamentos do sistema
 
 Evidência requerida: laudo/foto da instalação por profissional habilitado.
 

@@ -27,6 +27,13 @@
       "target": "docs/INTEGRATION_VALIDATION_CHECKLIST.md",
       "type": "checklist",
       "resolved_on": "2026-02-24"
+    },
+    {
+      "issue": 664,
+      "priority": "critical",
+      "target": "docs/SEGURANCA_FISICA_HARDENING_CHECKLIST.md",
+      "type": "checklist",
+      "resolved_on": "2026-02-24"
     }
   ]
 }
