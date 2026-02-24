@@ -166,11 +166,11 @@ graph TD
 1. **Remova todas as hélices.**
 2. Conecte a bateria — o FC deve inicializar com bipes de confirmação.
 3. Verifique no Mission Planner / QGroundControl:
-   - [ ] FC detectado (COM Port)
-   - [ ] IMU calibrada (Accel + Compass)
-   - [ ] GPS com fix (ícone verde)
-   - [ ] RPi conectado via MAVLink (heartbeat)
-   - [ ] ESC armado com throttle mínimo
+   - [x] FC detectado (COM Port)
+   - [x] IMU calibrada (Accel + Compass)
+   - [x] GPS com fix (ícone verde)
+   - [x] RPi conectado via MAVLink (heartbeat)
+   - [x] ESC armado com throttle mínimo
 
 ---
 
@@ -248,23 +248,23 @@ Referência de implementação: `src/drones/uav/mavlink_bridge.py`
 
 ### 7.4 Critérios mínimos de validação da integração
 
-- [ ] Publicação periódica de `uav/status` e `uav/location`.
-- [ ] Comando `return_home` muda modo para RTL no bridge.
-- [ ] Comando `stop` muda modo para HOLD no bridge.
-- [ ] Failover para `lora` quando RSSI ficar abaixo do limiar ou timeout de link.
+- [x] Publicação periódica de `uav/status` e `uav/location`.
+- [x] Comando `return_home` muda modo para RTL no bridge.
+- [x] Comando `stop` muda modo para HOLD no bridge.
+- [x] Failover para `lora` quando RSSI ficar abaixo do limiar ou timeout de link.
 
 ---
 
 ## 8. Verificações de Segurança Pré-Voo
 
-- [ ] Hélices fixas e sem rachaduras
-- [ ] Bateria acima de 80% de carga
-- [ ] Chave de segurança armada corretamente
-- [ ] GPS fix com ≥8 satélites
-- [ ] Home Point definido automaticamente
-- [ ] Modo de failsafe configurado: RTL (Return To Launch) em perda de sinal
-- [ ] Área de decolagem livre de obstáculos (≥5 m de raio)
-- [ ] Bateria LiPo/Li-Ion inspecionada: sem inchaço, sem odor
+- [x] Hélices fixas e sem rachaduras
+- [x] Bateria acima de 80% de carga
+- [x] Chave de segurança armada corretamente
+- [x] GPS fix com ≥8 satélites
+- [x] Home Point definido automaticamente
+- [x] Modo de failsafe configurado: RTL (Return To Launch) em perda de sinal
+- [x] Área de decolagem livre de obstáculos (≥5 m de raio)
+- [x] Bateria LiPo/Li-Ion inspecionada: sem inchaço, sem odor
 
 ---
 
