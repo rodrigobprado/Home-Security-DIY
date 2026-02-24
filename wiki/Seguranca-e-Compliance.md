@@ -38,6 +38,7 @@ Templates de execução/evidência: `tasks/templates/`.
 
 Checklist de conformidade (`rules/RULES_COMPLIANCE_AND_STANDARDS.md`):
 - itens de pós-instalação e pós-instalação (drones) marcados como concluídos com evidências operacionais e testes de contrato.
+- mapeamento de normas ISO 27001/NBR 9050 consolidado em `standards/STANDARDS_TO_RESEARCH.md` com checklist de aplicação.
 
 ---
 

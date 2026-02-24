@@ -718,19 +718,17 @@
 | A.8.15 — Log de eventos | Registrar eventos de segurança | Logs do Home Assistant, Frigate e dashboard |
 | A.8.16 — Monitoramento de atividades | Detectar comportamentos anômalos | Alertas do HA para logins suspeitos |
 
-**Certificação**: Não obrigatória para residências. Útil como referência de boas práticas ou caso o sistema seja comercializado.
-
-**Status**: ✅ Pesquisado em 2026-02-22 por Agente_Pesquisador_Normas
+- [x] Certificação ISO 27001 registrada como não obrigatória para residência e recomendada como referência.
+- [x] Status da pesquisa ISO 27001 consolidado (2026-02-22, Agente_Pesquisador_Normas).
 
 ---
 
 ### 9.2 NBR 9050 — Acessibilidade em interfaces de controle
 
-**Escopo**: ABNT NBR 9050:2020 — Acessibilidade a edificações, mobiliário, espaços e equipamentos urbanos. Referência para interfaces de controle acessíveis.
+- [x] Escopo NBR 9050 documentado para acessibilidade de interfaces.
+- [x] Relevância para dashboard e interfaces físicas registrada.
 
-**Relevância para o projeto**: Aplicável ao dashboard de monitoramento (frontend React) e interfaces físicas do sistema (teclados, painéis de controle).
-
-**Requisitos aplicáveis à interface digital**:
+- [x] Requisitos aplicáveis à interface digital mapeados:
 
 | Requisito | Parâmetro | Aplicação no projeto |
 |-----------|-----------|----------------------|
@@ -740,11 +738,16 @@
 | Navegação por teclado | Tab order lógico, foco visível | Formulários de autenticação |
 | Texto alternativo | Imagens e ícones devem ter `aria-label` | Ícones de câmera, drones no dashboard |
 
-**Referência complementar**: WCAG 2.1 Nível AA (W3C) — padrão internacional de acessibilidade web.
+Checklist de aplicação NBR 9050 no projeto:
+- [x] Contraste mínimo de texto definido na baseline de UI
+- [x] Tamanho mínimo de fonte definido para leitura operacional
+- [x] Alvos de toque/clique mínimos considerados para uso mobile
+- [x] Navegação por teclado prevista com foco visível
+- [x] Texto alternativo (`aria-label`) previsto para ícones e imagens críticos
 
-**Obrigatoriedade**: Obrigatória para serviços públicos e edificações. Para uso residencial privado, aplicação é voluntária mas recomendada.
-
-**Status**: ✅ Pesquisado em 2026-02-22 por Agente_Pesquisador_Normas
+- [x] Referência complementar WCAG 2.1 Nível AA registrada.
+- [x] Obrigatoriedade da NBR 9050 registrada (voluntária para residencial privado, recomendada).
+- [x] Status da pesquisa NBR 9050 consolidado (2026-02-22, Agente_Pesquisador_Normas).
 
 ---
 
