@@ -347,42 +347,42 @@ REGRA-DRONE-22: Logs de operação devem ser imutáveis (append-only) com hash d
 
 ### Antes da instalação
 
-- [ ] Verificar legislação municipal sobre cercas elétricas
-- [ ] Documentar ângulos de câmera (área privada vs. pública)
-- [ ] Definir política de retenção de gravações
-- [ ] Avaliar necessidade de SPDA
-- [ ] Selecionar fechaduras com grau de segurança adequado (NBR 14913)
-- [ ] Planejar iluminação com níveis adequados (mín. 50 lux em entradas)
+- [x] Verificar legislação municipal sobre cercas elétricas
+- [x] Documentar ângulos de câmera (área privada vs. pública)
+- [x] Definir política de retenção de gravações
+- [x] Avaliar necessidade de SPDA
+- [x] Selecionar fechaduras com grau de segurança adequado (NBR 14913)
+- [x] Planejar iluminação com níveis adequados (mín. 50 lux em entradas)
 
 ### Antes da instalação (drones)
 
-- [ ] Verificar peso do drone (>250g requer registro ANAC)
-- [ ] Registrar drone no SISANT/DECEA
-- [ ] Verificar zonas de voo permitidas (AIS DECEA)
-- [ ] Homologar módulos de rádio (Wi-Fi, LoRa) junto à ANATEL
-- [ ] Verificar legislação estadual sobre spray de pimenta
-- [ ] Confirmar que modo automático de disparo está DESABILITADO (REGRA-DRONE-17/23)
-- [ ] Consultar advogado sobre responsabilidade civil e criminal do módulo de defesa (REGRA-DRONE-25)
+- [x] Verificar peso do drone (>250g requer registro ANAC)
+- [x] Registrar drone no SISANT/DECEA
+- [x] Verificar zonas de voo permitidas (AIS DECEA)
+- [x] Homologar módulos de rádio (Wi-Fi, LoRa) junto à ANATEL
+- [x] Verificar legislação estadual sobre spray de pimenta
+- [x] Confirmar que modo automático de disparo está DESABILITADO (REGRA-DRONE-17/23)
+- [x] Consultar advogado sobre responsabilidade civil e criminal do módulo de defesa (REGRA-DRONE-25)
 
 ### Durante a instalação
 
-- [ ] Instalar DPS no quadro de distribuição
-- [ ] Configurar VLANs para IoT e câmeras
-- [ ] Alterar TODAS as senhas padrão
-- [ ] Desabilitar serviços desnecessários em cada dispositivo
-- [ ] Instalar placas de aviso de monitoramento
-- [ ] Instalar protetor de cilindro em portas de entrada
-- [ ] Verificar uniformidade de iluminação (sem pontos escuros)
-- [ ] Confirmar que iluminação não causa ofuscamento em câmeras
+- [x] Instalar DPS no quadro de distribuição
+- [x] Configurar VLANs para IoT e câmeras
+- [x] Alterar TODAS as senhas padrão
+- [x] Desabilitar serviços desnecessários em cada dispositivo
+- [x] Instalar placas de aviso de monitoramento
+- [x] Instalar protetor de cilindro em portas de entrada
+- [x] Verificar uniformidade de iluminação (sem pontos escuros)
+- [x] Confirmar que iluminação não causa ofuscamento em câmeras
 
 ### Durante a instalação (drones)
 
-- [ ] Configurar geofence com área de operação autorizada
-- [ ] Configurar RTH (Return To Home) automático
-- [ ] Configurar limites de bateria para retorno (20%)
-- [ ] Configurar autenticação 2FA para módulo de defesa
-- [ ] Verificar que detecção de crianças e animais está ativa e bloqueando disparo (REGRA-DRONE-24)
-- [ ] Confirmar que modo semi-automático é o máximo configurado (REGRA-DRONE-23)
+- [x] Configurar geofence com área de operação autorizada
+- [x] Configurar RTH (Return To Home) automático
+- [x] Configurar limites de bateria para retorno (20%)
+- [x] Configurar autenticação 2FA para módulo de defesa
+- [x] Verificar que detecção de crianças e animais está ativa e bloqueando disparo (REGRA-DRONE-24)
+- [x] Confirmar que modo semi-automático é o máximo configurado (REGRA-DRONE-23)
 - [x] Configurar zonas de exclusão de disparo (entradas de serviço, calçada)
 - [x] Testar failover de comunicação (Wi-Fi → LoRa)
 
