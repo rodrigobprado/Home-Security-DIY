@@ -15,10 +15,15 @@ class TestRBACMatrix:
         # Valida que a separação está clara na implementação
         from app.routers.assets import router
 
-        routes = {route.path: list(route.methods) for route in router.routes}
+        # Coleta pares (path, methods) sem dict para evitar sobrescrita de paths duplicados
+        route_pairs = [
+            (route.path, set(route.methods))
+            for route in router.routes
+            if hasattr(route, "methods")
+        ]
 
         # /api/assets GET deve ser read-only (sem require_admin_key no nível do router)
-        get_routes = [path for path, methods in routes.items() if "GET" in methods]
+        get_routes = [path for path, methods in route_pairs if "GET" in methods]
         assert len(get_routes) > 0, "Deve haver rotas GET para ativos"
 
     def test_admin_key_required_for_create(self):
