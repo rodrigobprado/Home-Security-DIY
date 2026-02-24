@@ -104,6 +104,13 @@
       "target": "CONTRIBUTING.md",
       "type": "checklist",
       "resolved_on": "2026-02-24"
+    },
+    {
+      "issue": 675,
+      "priority": "medium",
+      "target": "docs/MATTER_THREAD_EVALUATION.md",
+      "type": "checklist",
+      "resolved_on": "2026-02-24"
     }
   ]
 }
