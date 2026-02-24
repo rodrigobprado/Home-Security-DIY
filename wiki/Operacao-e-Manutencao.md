@@ -13,10 +13,10 @@ Acesse `http://localhost:3000` (ou `dashboard.home.local` em produção):
 No modo completo (`/`), o **Menu Operacional** (ícone no topo direito, ao lado do botão Kiosk) traz atalhos diretos para:
 
 - Administração de ativos
-- Cadastro de sensores (`/admin/assets?type=sensor`)
-- Cadastro de câmeras (`/admin/assets?type=camera`)
-- Cadastro de drones UGV (`/admin/assets?type=ugv`)
-- Cadastro de drones UAV (`/admin/assets?type=uav`)
+- [x] Cadastro de sensores (`/admin/assets?type=sensor`)
+- [x] Cadastro de câmeras (`/admin/assets?type=camera`)
+- [x] Cadastro de drones UGV (`/admin/assets?type=ugv`)
+- [x] Cadastro de drones UAV (`/admin/assets?type=uav`)
 - Modo kiosk (`/simplified`)
 
 O dashboard atualiza em tempo real via WebSocket (fan-out do Home Assistant).
