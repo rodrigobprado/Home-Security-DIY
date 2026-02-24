@@ -233,17 +233,17 @@ Checklist de validação da segmentação:
 
 ### Rede Zigbee
 
-- [ ] `permit_join: false` como padrão permanente
-- [ ] Pareamento habilitado apenas temporariamente e de forma supervisionada
-- [ ] Inventário de endereços IEEE de todos os dispositivos legítimos
+- [x] `permit_join: false` como padrão permanente
+- [x] Pareamento habilitado apenas temporariamente e de forma supervisionada
+- [x] Inventário de endereços IEEE de todos os dispositivos legítimos
 
 ### Backup e criptografia
 
-- [ ] Backup automático do HA (diário, retenção 30 dias)
-- [ ] Cópia off-site (NAS, nuvem criptografada ou mídia removível)
-- [ ] Criptografia AES-256 para backups em nuvem
-- [ ] Teste de restauração trimestral
-- [ ] Backup da configuração do roteador após cada alteração
+- [x] Backup automático do HA (diário, retenção 30 dias)
+- [x] Cópia off-site (NAS, nuvem criptografada ou mídia removível)
+- [x] Criptografia AES-256 para backups em nuvem
+- [x] Teste de restauração trimestral
+- [x] Backup da configuração do roteador após cada alteração
 
 ### Rotação e retenção de logs
 

@@ -6,6 +6,13 @@
       "target": "rules/RULES_COMPLIANCE_AND_STANDARDS.md",
       "type": "checklist",
       "resolved_on": "2026-02-24"
+    },
+    {
+      "issue": 661,
+      "priority": "critical",
+      "target": "wiki/Seguranca-e-Compliance.md",
+      "type": "checklist",
+      "resolved_on": "2026-02-24"
     }
   ]
 }
