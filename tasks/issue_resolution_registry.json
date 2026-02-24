@@ -20,6 +20,13 @@
       "target": "docs/NETWORK_SECURITY_VLAN_CREDENTIALS_CHECKLIST.md",
       "type": "checklist",
       "resolved_on": "2026-02-24"
+    },
+    {
+      "issue": 663,
+      "priority": "high",
+      "target": "docs/INTEGRATION_VALIDATION_CHECKLIST.md",
+      "type": "checklist",
+      "resolved_on": "2026-02-24"
     }
   ]
 }
