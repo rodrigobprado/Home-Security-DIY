@@ -200,6 +200,16 @@
       "forbidden_patterns": [
         "Acao prevista"
       ]
+    },
+    {
+      "issue": 686,
+      "priority": "low",
+      "target": "rules/RULES_GENERAL.md",
+      "type": "textual",
+      "resolved_on": "2026-02-24",
+      "forbidden_patterns": [
+        "> TODO"
+      ]
     }
   ]
 }
