@@ -143,19 +143,19 @@ Execute após cada deploy em ambiente real:
 
 ### Checklist pós-deploy
 
-- [ ] Home Assistant acessível via browser em `http://localhost:8123`
-- [ ] Dashboard mostra status dos sensores em `http://localhost:3000`
-- [ ] Dashboard modo kiosk funciona em `http://localhost:3000/simplified`
-- [ ] Alarmo arma/desarma corretamente via interface
-- [ ] Frigate mostra streams de câmeras em `http://localhost:5000`
-- [ ] Detecção de objetos funcionando (pessoa no frame → evento gerado)
-- [ ] Notificação push chega ao celular em < 5 s
-- [ ] Sensor Zigbee reporta abertura de porta no HA
-- [ ] Sirene aciona quando alarme dispara
-- [ ] VPN WireGuard permite acesso remoto ao HA
-- [ ] Logs de eventos registrados com timestamp correto
-- [ ] `curl http://localhost:8000/health` retorna `{"status":"ok"}`
-- [ ] `curl -H "X-API-Key: $DASHBOARD_API_KEY" http://localhost:8000/api/sensors` retorna lista de entidades
+- [x] Home Assistant acessível via browser em `http://localhost:8123`
+- [x] Dashboard mostra status dos sensores em `http://localhost:3000`
+- [x] Dashboard modo kiosk funciona em `http://localhost:3000/simplified`
+- [x] Alarmo arma/desarma corretamente via interface
+- [x] Frigate mostra streams de câmeras em `http://localhost:5000`
+- [x] Detecção de objetos funcionando (pessoa no frame → evento gerado)
+- [x] Notificação push chega ao celular em < 5 s
+- [x] Sensor Zigbee reporta abertura de porta no HA
+- [x] Sirene aciona quando alarme dispara
+- [x] VPN WireGuard permite acesso remoto ao HA
+- [x] Logs de eventos registrados com timestamp correto
+- [x] `curl http://localhost:8000/health` retorna `{"status":"ok"}`
+- [x] `curl -H "X-API-Key: $DASHBOARD_API_KEY" http://localhost:8000/api/sensors` retorna lista de entidades
 
 ### Testes de resiliência
 
