@@ -77,8 +77,8 @@ Se o servidor for roubado ou destruído, os dados precisam sobreviver.
 
 ## 6. Checklist de Hardening
 
-- [ ] Criptografia de disco (LUKS) ativa.
-- [ ] Dropbear SSH configurado para unlock remoto.
-- [ ] Senha de BIOS configurada e boot USB desativado.
-- [ ] Servidor fisicamente seguro/oculto.
-- [ ] Backup automático off-site configurado.
+- [x] Criptografia de disco (LUKS) ativa.
+- [x] Dropbear SSH configurado para unlock remoto.
+- [x] Senha de BIOS configurada e boot USB desativado.
+- [x] Servidor fisicamente seguro/oculto.
+- [x] Backup automático off-site configurado.
