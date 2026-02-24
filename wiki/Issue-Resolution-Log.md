@@ -14,3 +14,4 @@ Registro cronológico de fechamento das issues de pendências documentais e de c
 | #667 | medium | `wiki/Cenarios-Residenciais.md` | fechado | 2026-02-24 |
 | #668 | high | `docs/ARQUITETURA_SEGURANCA_FISICA.md` | fechado | 2026-02-24 |
 | #669 | medium | `wiki/Testes-e-Validacao.md` | fechado | 2026-02-24 |
+| #670 | high | `docs/TESTING_STRATEGY.md` | fechado | 2026-02-24 |
