@@ -83,7 +83,7 @@ Em fevereiro de 2026 foi realizada uma auditoria red team completa do codebase. 
 | **Nginx** | Security headers completos: `Content-Security-Policy`, `HSTS`, `X-Frame-Options: DENY`, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`. | #16 |
 | **Docker Compose** | Portas MQTT, Zigbee2MQTT e Frigate vinculadas a loopback (`127.0.0.1`). Healthcheck do Mosquitto sem credenciais expostas. Versões de imagens fixadas em semver. | #10, #12, #20, #23 |
 | **Credenciais** | `admin:password` das câmeras substituídos por `CHANGE_ME_*` em todos os arquivos (`.env.example`, K8s Secret do Frigate). | #29, #77 |
-| **Scripts K8s** | `generate-k8s-secrets.sh` gera Secrets localmente a partir do `.env`, nunca commitados. `DASHBOARD_API_KEY` adicionado. | #13 |
+| **Scripts K8s** | `generate-k8s-secrets.sh` gera Secrets localmente a partir do `.env`. Em produção, padrão operacional é `External Secrets Operator` (`k8s/overlays/production/external-secrets.yaml`). | #13, #613 |
 | **MQTT TLS** | Bloco TLS comentado adicionado ao `mosquitto.conf` (porta 8883). Script `generate-mqtt-certs.sh` gera CA + certificado auto-assinado. | #10 |
 | **Home Assistant** | `trusted_proxies` restrito a `127.0.0.1` e `172.17.0.1`. Recorder usando PostgreSQL via `!env_var`. | #18, #25 |
 | **K8s / CI** | Ingress com TLS (`home-security-tls`). Snyk CI com paths corretos. | #24, #27 |
