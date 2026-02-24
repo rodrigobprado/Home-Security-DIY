@@ -111,98 +111,18 @@ Este documento registra as principais decisões de design do projeto, incluindo 
 
 ---
 
-## ADR-005 — Mini PC N100 como Hardware Principal
+## ADR-005 a ADR-010 — Movidos para `docs/adr/`
 
-**Decisão**: Intel N100 (Mini PC) como servidor central rodando Docker Compose (dev) ou K3s (produção).
+As versões oficiais dos ADRs 005 a 010 foram consolidadas no diretório versionado do repositório:
 
-**Alternativas avaliadas**:
+- ADR-005: `docs/adr/005-adoption-mini-pc-n100.md`
+- ADR-006: `docs/adr/006-adoption-poe-cameras.md`
+- ADR-007: `docs/adr/007-adoption-vpn-only-remote-access.md`
+- ADR-008: `docs/adr/008-adoption-postgres-schema-isolation.md`
+- ADR-009: `docs/adr/009-adoption-compose-and-k3s.md`
+- ADR-010: `docs/adr/010-adoption-external-secrets.md`
 
-| Hardware | Motivo da recusa |
-|----------|-----------------|
-| Raspberry Pi 4/5 | Suficiente para HA, mas sem iGPU para aceleração IA do Frigate |
-| NUC Intel | Excelente, porém 3–4× mais caro que N100 |
-| Home Assistant Green | Plug-and-play, mas sem GPU, limitado para Frigate |
-| Servidor rack | Superdimensionado, alto consumo (>100W) |
-| VPS/cloud | Contradiz o princípio de processamento local |
-
-**Motivos da escolha**:
-- iGPU Intel integrada: aceleração de hardware para detecção IA do Frigate (Intel QuickSync)
-- Consumo: 10–20 W (idle/carga) — ideal para operação 24/7
-- Preço: R$ 700–1.200 com 8–16 GB RAM
-- Suporte Linux nativo, Docker, K3s
-
----
-
-## ADR-006 — Câmeras PoE (não Wi-Fi)
-
-**Decisão**: Câmeras conectadas via Ethernet PoE, não Wi-Fi.
-
-**Motivos**:
-- Resistentes a jamming de RF (Wi-Fi/Zigbee) — cenário de ataque A6
-- Alimentação e dados em um único cabo (sem bateria, sem fio de energia separado)
-- Latência menor e conexão mais estável
-- Facilita VLAN isolada (VLAN 30) para câmeras
-
-**Trade-off**: Requer cabeamento estruturado. Compensado pelo switch PoE.
-
----
-
-## ADR-007 — VPN como Único Canal de Acesso Remoto
-
-**Decisão**: Acesso remoto exclusivamente via VPN (WireGuard ou Tailscale). Port forwarding direto proibido.
-
-**Motivos**:
-- Evita exposição dos serviços à internet pública
-- WireGuard: protocolo moderno, auditado, sem overhead
-- Tailscale: VPN com NAT traversal automático, zero-config
-
-**Regra derivada**: `REGRA-CIBER-01` — Ver [Segurança e Compliance](Seguranca-e-Compliance).
-
----
-
-## ADR-008 — PostgreSQL com Schemas Isolados
-
-**Decisão**: PostgreSQL 16 com 3 schemas isolados e usuários com mínimo privilégio para cada componente.
-
-| Schema | Usuário | Responsável |
-|--------|---------|-------------|
-| `homeassistant` | `ha_user` | Home Assistant |
-| `dashboard` | `dashboard_user` | Dashboard API |
-| `metrics` | `metrics_user` | Coleta de métricas |
-
-**Alternativa avaliada**: SQLite (padrão do HA). Descartado para ambientes com múltiplos acessos simultâneos (dashboard, métricas, backups), onde PostgreSQL oferece melhor concorrência e confiabilidade.
-
----
-
-## ADR-009 — Docker Compose (dev) + K3s (produção)
-
-**Decisão**: Dois modos de operação:
-- **Docker Compose**: desenvolvimento, teste, início rápido
-- **K3s (Kubernetes leve)**: produção, alta disponibilidade, rollout controlado
-
-**Motivos**:
-- Docker Compose: zero dependência adicional, curva mínima para novos usuários
-- K3s: suporte a liveness/readiness probes, rolling updates, resource limits, Kustomize overlays por ambiente
-
-**Migração**: `./scripts/deploy.sh production` automatiza o deploy em K3s.
-
----
-
-## ADR-010 — External Secrets em Produção
-
-**Decisão**: Adotar External Secrets Operator (ESO) como padrão operacional de produção para injeção de segredos em runtime.
-
-**Motivos**:
-- Evita versionamento de segredos reais em manifests.
-- Permite rotação centralizada e auditável.
-- Reduz risco de exposição acidental em PRs.
-
-**Trade-off**:
-- Adiciona dependência operacional de um operador no cluster.
-
-**Implementação**:
-- `k8s/overlays/production/external-secrets.yaml`
-- `docs/K8S_SECRETS_MANAGEMENT.md`
+Na wiki, mantém-se apenas resumo e navegação; alterações de conteúdo devem ser feitas nos arquivos em `docs/adr/`.
 
 ---
 
