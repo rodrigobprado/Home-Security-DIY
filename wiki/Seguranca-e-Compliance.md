@@ -4,6 +4,12 @@ O sistema Home Security DIY adota **defesa em profundidade** em duas dimensões:
 
 ---
 
+## Responsible Disclosure
+
+- Política oficial em `SECURITY.md`.
+- Canal privado para reporte: GitHub Security Advisory (`/security/advisories/new`).
+- SLA de resposta definido por severidade (Crítica/Alta/Média/Baixa) com prazos de confirmação e correção.
+
 ## Princípios
 
 | Princípio | Descrição |
