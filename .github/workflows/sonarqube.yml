@@ -50,6 +50,37 @@ jobs:
           distribution: temurin
           java-version: "17"
 
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Generate backend coverage report (>=90%)
+        run: |
+          set -euo pipefail
+          python -m pip install --upgrade pip
+          python -m pip install -r src/dashboard/backend/requirements.txt pytest pytest-cov
+          mkdir -p coverage
+          PYTHONPATH=src/dashboard/backend pytest -q \
+            tests/backend/test_assets_api.py \
+            tests/backend/test_assets_e2e_smoke_contract.py \
+            tests/backend/test_assets_router_coverage.py \
+            --cov=app.routers.assets \
+            --cov-report=xml:coverage/backend-coverage.xml \
+            --cov-fail-under=90
+
+      - name: Generate frontend coverage report (>=90% lines)
+        working-directory: src/dashboard/frontend
+        run: |
+          set -euo pipefail
+          npm ci
+          npm run test:coverage
+
       - name: Build truststore for Sonar TLS (optional)
         id: truststore
         shell: bash
@@ -90,7 +121,6 @@ jobs:
           projectBaseDir: .
           args: >
             -Dsonar.projectKey=Home-Security-DIY
-            -Dsonar.sources=.
             -Dsonar.host.url=${{ env.SONAR_HOST_URL }}
 
   sync-sonar-issues:

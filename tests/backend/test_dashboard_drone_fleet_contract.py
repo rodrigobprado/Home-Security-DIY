@@ -44,6 +44,6 @@ def test_backend_map_config_endpoints_exist():
 def test_main_registers_drones_router_and_http_methods():
     content = MAIN_API.read_text(encoding="utf-8")
 
-    assert "from app.routers import alerts, cameras, drones, sensors, services, ws" in content
+    assert "from app.routers import alerts, assets, audit, cameras, drones, sensors, services, ws" in content
     assert "app.include_router(drones.router" in content
-    assert 'allow_methods=["GET", "POST", "PUT", "OPTIONS"]' in content
+    assert 'allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"]' in content
