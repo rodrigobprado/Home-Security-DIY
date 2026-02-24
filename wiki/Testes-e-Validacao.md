@@ -192,7 +192,7 @@ Ver `.github/workflows/compliance-gates.yml` para o gate de compliance.
 
 ## Status Atual de Cobertura Automatizada
 
-Data de referência: **2026-02-23**
+Data de referência: **2026-02-24**
 
 Execução local validada:
 
@@ -203,7 +203,12 @@ python3 -m venv .venv
 ```
 
 Resultado mais recente:
-- `83 passed in 0.62s`
+- Backend: `155 passed in 1.00s`
+- Frontend: `59 passed` com cobertura:
+  - lines: `100%`
+  - functions: `96.25%`
+  - statements: `98.52%`
+  - branches: `93.61%`
 
 Notas:
 - Esta cobertura refere-se à suíte automatizada do diretório `tests/backend`.
@@ -226,8 +231,10 @@ O gate de compliance inclui também contratos de documentação operacional:
 **Cobertura mínima no CI:**
 - Backend: `pytest-cov` com `--cov-fail-under=70` para `app/`
 - Frontend: `vitest --coverage` com thresholds:
-  - lines/functions/statements >= 60
-  - branches >= 50
+  - lines >= 90
+  - functions >= 85
+  - statements >= 85
+  - branches >= 60
 
 **Pipeline de segurança:**
 - Workflow `Snyk Security` com execução condicional quando `SNYK_TOKEN` está disponível.

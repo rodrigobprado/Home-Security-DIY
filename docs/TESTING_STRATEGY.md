@@ -197,8 +197,10 @@ Ver `.github/workflows/validate.yml` para implementacao completa.
 **Cobertura minima no CI:**
 - Backend: `pytest-cov` com `--cov-fail-under=70` para `app/`
 - Frontend: `vitest --coverage` com thresholds:
-  - lines/functions/statements >= 60
-  - branches >= 50
+  - lines >= 90
+  - functions >= 85
+  - statements >= 85
+  - branches >= 60
 
 ### 6.2 Pipeline de seguranca
 
