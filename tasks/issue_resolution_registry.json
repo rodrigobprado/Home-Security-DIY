@@ -13,6 +13,13 @@
       "target": "wiki/Seguranca-e-Compliance.md",
       "type": "checklist",
       "resolved_on": "2026-02-24"
+    },
+    {
+      "issue": 662,
+      "priority": "critical",
+      "target": "docs/NETWORK_SECURITY_VLAN_CREDENTIALS_CHECKLIST.md",
+      "type": "checklist",
+      "resolved_on": "2026-02-24"
     }
   ]
 }

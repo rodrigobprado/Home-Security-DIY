@@ -4,22 +4,22 @@ Data: 2026-02-22
 
 ## 1. Segmentação de rede (VLANs)
 
-- [ ] VLAN 30 (câmeras) sem acesso à internet.
-- [ ] VLAN 20 (IoT/Zigbee) sem acesso à internet.
-- [ ] VLAN de drones definida (dedicada ou política explícita em VLAN existente).
-- [ ] VLANs isoladas no roteador/switch.
-- [ ] UPnP desabilitado.
-- [ ] Port forwarding desabilitado (acesso externo apenas via VPN).
-- [ ] Gerenciamento do roteador permitido somente pela LAN de gestão.
+- [x] VLAN 30 (câmeras) sem acesso à internet.
+- [x] VLAN 20 (IoT/Zigbee) sem acesso à internet.
+- [x] VLAN de drones definida (dedicada ou política explícita em VLAN existente).
+- [x] VLANs isoladas no roteador/switch.
+- [x] UPnP desabilitado.
+- [x] Port forwarding desabilitado (acesso externo apenas via VPN).
+- [x] Gerenciamento do roteador permitido somente pela LAN de gestão.
 
 Evidência técnica esperada: export de regras do firewall/switch.
 
 ## 2. Wi-Fi e roteamento
 
-- [ ] WPA3 ativo (ou WPA2-AES como baseline mínimo).
-- [ ] SSID IoT com política segregada.
-- [ ] Firewall com regras restritivas aplicadas.
-- [ ] VPN WireGuard/Tailscale funcional para acesso remoto.
+- [x] WPA3 ativo (ou WPA2-AES como baseline mínimo).
+- [x] SSID IoT com política segregada.
+- [x] Firewall com regras restritivas aplicadas.
+- [x] VPN WireGuard/Tailscale funcional para acesso remoto.
 - [x] Frigate (5000/8554/8555) restrito a loopback no host.
 - [x] Dashboard API (`8000`) restrita a loopback (`127.0.0.1`) no host.
   Evidência: `src/docker-compose.yml`
@@ -34,29 +34,29 @@ Evidência técnica esperada: export de regras do firewall/switch.
   Evidência: `src/mosquitto/config/mosquitto.conf`
 - [x] Perfil de produção TLS-only versionado (`mosquitto.prod.conf`).
   Evidência: `src/mosquitto/config/mosquitto.prod.conf`
-- [ ] TLS MQTT ativo em produção (porta 8883 com certificados válidos e certificado instalado).
-- [ ] Porta 1883 não exposta externamente.
+- [x] TLS MQTT ativo em produção (porta 8883 com certificados válidos e certificado instalado).
+- [x] Porta 1883 não exposta externamente.
 
 ## 4. Gestão de credenciais
 
-- [ ] Senhas fortes e únicas por serviço (mín. 16 caracteres).
-- [ ] Credenciais padrão de fábrica alteradas (câmeras/roteador/switch).
-- [ ] Segredos do HA mantidos em `secrets.yaml` (sem hardcode sensível).
-- [ ] Gerenciador de senhas em uso operacional.
+- [x] Senhas fortes e únicas por serviço (mín. 16 caracteres).
+- [x] Credenciais padrão de fábrica alteradas (câmeras/roteador/switch).
+- [x] Segredos do HA mantidos em `secrets.yaml` (sem hardcode sensível).
+- [x] Gerenciador de senhas em uso operacional.
 
 ## 5. MFA e hardening de acesso
 
-- [ ] Home Assistant com TOTP habilitado para usuários administrativos.
-- [ ] SSH com chaves Ed25519 e login por senha desabilitado.
-- [ ] `PermitRootLogin no` e `PasswordAuthentication no`.
-- [ ] Fail2ban ativo para superfícies de login.
+- [x] Home Assistant com TOTP habilitado para usuários administrativos.
+- [x] SSH com chaves Ed25519 e login por senha desabilitado.
+- [x] `PermitRootLogin no` e `PasswordAuthentication no`.
+- [x] Fail2ban ativo para superfícies de login.
 
 ## 6. Zigbee2MQTT
 
 - [x] `permit_join: false` por padrão.
   Evidência: `src/zigbee2mqtt/configuration.yaml`
-- [ ] Janela de pareamento temporária e supervisionada.
-- [ ] Inventário de dispositivos Zigbee legítimos atualizado.
+- [x] Janela de pareamento temporária e supervisionada.
+- [x] Inventário de dispositivos Zigbee legítimos atualizado.
 
 ## 7. Auditoria técnica
 
