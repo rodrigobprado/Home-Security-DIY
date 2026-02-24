@@ -13,7 +13,7 @@ O projeto combina automação, vídeo inteligente, sensores e drones para segura
 | **Zigbee2MQTT** | Bridge Zigbee → MQTT para sensores sem fio |
 | **Mosquitto** | Broker MQTT — barramento de eventos |
 | **PostgreSQL 16** | Banco de dados central (schemas isolados por serviço) |
-| **Dashboard** | Interface operacional React (modo completo + kiosk) |
+| **Dashboard** | Interface operacional React (modo completo + kiosk) com menu de atalhos para admin/cadastros |
 | **Docker / K3s** | Execução em dev (Compose) e prod (K3s) |
 
 ## Comece por aqui

@@ -11,15 +11,6 @@ const STATIC_SENSORS = [
   { id: 'binary_sensor.zigbee2mqtt_connection_state', label: 'Zigbee', icon: '📡' },
 ]
 
-const SENSOR_TYPE_ICONS = {
-  pir: '👁',
-  door: '🚪',
-  window: '🪟',
-  smoke: '🔥',
-  motion: '👁',
-  zigbee: '📡',
-}
-
 function getSensorIcon(asset) {
   const lower = (asset.entity_id + asset.name).toLowerCase()
   if (lower.includes('porta') || lower.includes('door')) return '🚪'

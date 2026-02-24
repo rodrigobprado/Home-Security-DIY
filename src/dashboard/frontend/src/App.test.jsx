@@ -23,7 +23,7 @@ class MockWebSocket {
 }
 
 function mockFetchForDashboard() {
-  global.fetch = vi.fn(async (url, options = {}) => {
+  global.fetch = vi.fn(async (url) => {
     if (url === "/api/alerts?limit=30") {
       return { ok: true, json: async () => [] };
     }
@@ -96,6 +96,12 @@ describe("App routing and dashboard", () => {
     expect(await screen.findByText(/HOME SECURITY/i)).toBeInTheDocument();
     expect(screen.getByText("Mapa Operacional")).toBeInTheDocument();
     expect(screen.getByText("Drones")).toBeInTheDocument();
+    expect(screen.getByText("Menu Operacional")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Admin de Ativos/i })).toHaveAttribute("href", "/admin/assets");
+    expect(screen.getByRole("link", { name: /Cadastro de Sensores/i })).toHaveAttribute("href", "/admin/assets?type=sensor");
+    expect(screen.getByRole("link", { name: /Cadastro de Câmeras/i })).toHaveAttribute("href", "/admin/assets?type=camera");
+    expect(screen.getByRole("link", { name: /Cadastro UGV/i })).toHaveAttribute("href", "/admin/assets?type=ugv");
+    expect(screen.getByRole("link", { name: /Cadastro UAV/i })).toHaveAttribute("href", "/admin/assets?type=uav");
 
     fireEvent.click(screen.getAllByText("Start Patrol")[0]);
     await waitFor(() =>

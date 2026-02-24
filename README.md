@@ -64,6 +64,14 @@ Para testar o sistema em seu computador ou servidor de desenvolvimento:
 4. Acesse:
    - Home Assistant: `http://localhost:8123`
    - Frigate NVR: `http://localhost:5000`
+   - Dashboard Operacional: `http://localhost:3000`
+
+### Navegação do Dashboard
+
+- `/` — dashboard completo com **Menu Operacional** (atalhos para admin e cadastros).
+- `/admin/assets` — administração de ativos (CRUD de sensores, câmeras, UGV e UAV).
+- `/admin/assets?type=sensor|camera|ugv|uav` — cadastro com filtro inicial por tipo.
+- `/simplified` — modo kiosk/simplificado para monitor dedicado.
 
 > 📘 **Guia completo**: Veja [src/docs/QUICK_START.md](src/docs/QUICK_START.md)
 

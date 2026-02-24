@@ -1,10 +1,11 @@
 import { render, screen } from "@testing-library/react";
 import { vi } from "vitest";
 import CameraGrid from "./CameraGrid";
+import { useAssets } from "../hooks/useAssets";
 
 // Mock do hook useAssets para isolar o componente
 vi.mock("../hooks/useAssets", () => ({
-  useAssets: () => ({
+  useAssets: vi.fn(() => ({
     cameraAssets: [],
     sensorAssets: [],
     droneAssets: [],
@@ -12,7 +13,7 @@ vi.mock("../hooks/useAssets", () => ({
     assetsLoading: false,
     assetsError: null,
     refetch: vi.fn(),
-  }),
+  })),
 }));
 
 describe("CameraGrid", () => {
@@ -26,7 +27,7 @@ describe("CameraGrid", () => {
   });
 
   it("renders dynamic cameras when assets loaded", () => {
-    vi.mocked(require("../hooks/useAssets").useAssets).mockReturnValueOnce({
+    vi.mocked(useAssets).mockReturnValueOnce({
       cameraAssets: [
         { entity_id: "cam_frente", name: "Frente", asset_type: "camera", is_active: true },
         { entity_id: "cam_quintal", name: "Quintal", asset_type: "camera", is_active: true },
