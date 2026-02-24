@@ -55,6 +55,13 @@
       "target": "wiki/Cenarios-Residenciais.md",
       "type": "checklist",
       "resolved_on": "2026-02-24"
+    },
+    {
+      "issue": 668,
+      "priority": "high",
+      "target": "docs/ARQUITETURA_SEGURANCA_FISICA.md",
+      "type": "checklist",
+      "resolved_on": "2026-02-24"
     }
   ]
 }

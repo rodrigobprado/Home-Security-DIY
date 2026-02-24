@@ -12,3 +12,4 @@ Registro cronológico de fechamento das issues de pendências documentais e de c
 | #665 | medium | `docs/GUIA_MONTAGEM_UGV.md` | fechado | 2026-02-24 |
 | #666 | medium | `docs/GUIA_MONTAGEM_UAV.md` | fechado | 2026-02-24 |
 | #667 | medium | `wiki/Cenarios-Residenciais.md` | fechado | 2026-02-24 |
+| #668 | high | `docs/ARQUITETURA_SEGURANCA_FISICA.md` | fechado | 2026-02-24 |
