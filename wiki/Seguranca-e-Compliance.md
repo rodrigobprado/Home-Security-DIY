@@ -173,39 +173,49 @@ cryptroot-unlock
 - Acesso remoto: **exclusivamente via VPN** (WireGuard/Tailscale)
 - Port forwarding direto: **PROIBIDO**
 
+Checklist de validação da segmentação:
+- [x] Política de backup off-site agendada e validada
+- [x] VLAN 10 definida para gestão com acesso controlado
+- [x] VLAN 20 definida para IoT sem acesso à internet
+- [x] VLAN 30 definida para câmeras sem acesso à internet
+- [x] Regra `VLAN 30 -> WAN: DENY ALL` aplicada
+- [x] Regra `VLAN 20 -> WAN: DENY ALL` aplicada
+- [x] Acesso remoto restrito a VPN
+- [x] Port forwarding direto desabilitado
+
 ---
 
 ## Checklist de Hardening Preventivo
 
 ### Gerenciamento de senhas
 
-- [ ] Mínimo 16 caracteres para serviços críticos (HA, SSH, MQTT)
-- [ ] Senha única por serviço (nunca reutilizar)
-- [ ] Gerenciador de senhas em uso (Bitwarden, KeePass)
-- [ ] **Todas** as credenciais padrão de fábrica alteradas (câmeras, roteador, switch)
-- [ ] Credenciais do HA em `secrets.yaml` — nunca hardcoded
+- [x] Mínimo 16 caracteres para serviços críticos (HA, SSH, MQTT)
+- [x] Senha única por serviço (nunca reutilizar)
+- [x] Gerenciador de senhas em uso (Bitwarden, KeePass)
+- [x] **Todas** as credenciais padrão de fábrica alteradas (câmeras, roteador, switch)
+- [x] Credenciais do HA em `secrets.yaml` — nunca hardcoded
 
 ### Autenticação de dois fatores (2FA)
 
-- [ ] Home Assistant: TOTP habilitado para todos os usuários
-- [ ] VPN WireGuard: chave criptográfica (inerente ao protocolo)
-- [ ] SSH: chave pública Ed25519 — login por senha desabilitado
+- [x] Home Assistant: TOTP habilitado para todos os usuários
+- [x] VPN WireGuard: chave criptográfica (inerente ao protocolo)
+- [x] SSH: chave pública Ed25519 — login por senha desabilitado
 
 ### Acesso SSH
 
-- [ ] `PasswordAuthentication no`
-- [ ] `PermitRootLogin no`
-- [ ] Porta não padrão (ex.: 2222)
-- [ ] Fail2ban configurado (bloqueio após 3 tentativas)
-- [ ] Chave Ed25519 ou RSA 4096 bits
+- [x] `PasswordAuthentication no`
+- [x] `PermitRootLogin no`
+- [x] Porta não padrão (ex.: 2222)
+- [x] Fail2ban configurado (bloqueio após 3 tentativas)
+- [x] Chave Ed25519 ou RSA 4096 bits
 
 ### Firewall e rede
 
-- [ ] VLAN 30 (câmeras) sem acesso à internet
-- [ ] VLAN 20 (IoT) sem acesso à internet
-- [ ] UPnP desabilitado no roteador
-- [ ] Port forwarding: nenhum
-- [ ] Gerenciamento do roteador apenas pela LAN
+- [x] VLAN 30 (câmeras) sem acesso à internet
+- [x] VLAN 20 (IoT) sem acesso à internet
+- [x] UPnP desabilitado no roteador
+- [x] Port forwarding: nenhum
+- [x] Gerenciamento do roteador apenas pela LAN
 
 ### Firmware e atualizações
 
