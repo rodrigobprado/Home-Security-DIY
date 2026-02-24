@@ -6,11 +6,11 @@ O sistema atual opera com Zigbee 3.0 como base para sensores e automações crí
 
 ## Checklist objetivo de migração
 
-- [ ] Sirenes Matter disponíveis e testadas no mercado nacional
-- [ ] Sensores de segurança Matter (fumaça, gás, abertura) amplamente disponíveis
-- [ ] Preços competitivos com Zigbee no Brasil
-- [ ] Home Assistant com suporte Matter estável e completo
-- [ ] Alarmo com suporte nativo a dispositivos Matter
+- [x] Sirenes Matter disponíveis e testadas no mercado nacional
+- [x] Sensores de segurança Matter (fumaça, gás, abertura) amplamente disponíveis
+- [x] Preços competitivos com Zigbee no Brasil
+- [x] Home Assistant com suporte Matter estável e completo
+- [x] Alarmo com suporte nativo a dispositivos Matter
 
 ## Resultado da avaliação (2026-02-22)
 

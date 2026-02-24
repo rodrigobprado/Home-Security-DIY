@@ -20,3 +20,4 @@ Registro cronológico de fechamento das issues de pendências documentais e de c
 | #673 | critical | `docs/DRONE_REGULATORY_COMPLIANCE_BR.md` | fechado | 2026-02-24 |
 | #674 | low | `CONTRIBUTING.md` | fechado | 2026-02-24 |
 | #675 | medium | `docs/MATTER_THREAD_EVALUATION.md` | fechado | 2026-02-24 |
+| #676 | medium | `docs/MATTER_THREAD_DECISION_2026-02-22.md` | fechado | 2026-02-24 |
