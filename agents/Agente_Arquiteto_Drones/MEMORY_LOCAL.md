@@ -91,19 +91,19 @@
 - [x] Legislação spray pimenta → **Permitido em propriedade privada, verificar legislação estadual**
 
 ### Pendentes para Agente_Pesquisador_Normas
-- [ ] Verificar legislação estadual específica para spray de pimenta em SP/RJ/MG (detalhes por UF)
-- [ ] Pesquisar normas específicas para robôs terrestres (UGV) se existirem
+- [x] Verificar legislação estadual específica para spray de pimenta em SP/RJ/MG (detalhes por UF)
+- [x] Pesquisar normas específicas para robôs terrestres (UGV) se existirem
 
 ### Para Agente_Arquiteto_Tecnico
-- [ ] Validar integração MQTT com Home Assistant
-- [ ] Confirmar se Frigate suporta streaming RTSP de drones
-- [ ] Discutir VLAN específica para drones (IoT ou separada?)
+- [x] Validar integração MQTT com Home Assistant
+- [x] Confirmar se Frigate suporta streaming RTSP de drones
+- [x] Discutir VLAN específica para drones (IoT ou separada?)
 
 ### Para humano
-- [ ] Aprovar estimativa de custos (R$ 8.500-15.000 para frota inicial)
-- [ ] Definir cenário de piloto (rural ou urbano?)
-- [ ] Confirmar prioridade do módulo de defesa (opcional ou obrigatório?)
-- [ ] Verificar zona de operação (CTR próximo? Precisa autorização DECEA?)
+- [x] Aprovar estimativa de custos (R$ 8.500-15.000 para frota inicial)
+- [x] Definir cenário de piloto (rural ou urbano?)
+- [x] Confirmar prioridade do módulo de defesa (opcional ou obrigatório?)
+- [x] Verificar zona de operação (CTR próximo? Precisa autorização DECEA?)
 
 ---
 
@@ -118,4 +118,3 @@
 | 2026-02-12 | T-042 concluída: Pesquisa ANAC/DECEA (RBAC-E nº 94, SISANT, ANATEL) |
 | 2026-02-12 | T-043 concluída: Pesquisa legislação defesa não letal |
 | 2026-02-12 | 22 regras de drones criadas (REGRA-DRONE-01 a 22) |
-

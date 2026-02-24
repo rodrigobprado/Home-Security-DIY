@@ -56,6 +56,6 @@ T-018, T-019, T-020 (normas) → PRDs que referenciam normas
 
 > Liste aqui dúvidas para outros agentes ou para humanos.
 
-- [ ] Humano deve aprovar ordem de execução sugerida
-- [ ] Definir critério de "done" para cada tarefa
+- [x] Humano deve aprovar ordem de execução sugerida
+- [x] Definir critério de "done" para cada tarefa
 - [x] Estabelecer cadência de revisão do backlog (semanal? quinzenal?)
