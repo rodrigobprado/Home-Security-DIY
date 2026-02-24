@@ -709,6 +709,10 @@
 
 **Controles aplicáveis ao projeto** (Anexo A da ISO 27001:2022):
 
+- [x] Escopo da ISO/IEC 27001 aplicado ao contexto IoT residencial documentado.
+- [x] Relevância operacional para o projeto registrada.
+- [x] Controles aplicáveis mapeados para artefatos do repositório.
+
 | Controle | Descrição | Aplicação |
 |----------|-----------|-----------|
 | A.8.9 — Gestão de configuração | Manter inventário e baseline seguro de dispositivos | `src/docker-compose.yml`, manifests K8s |

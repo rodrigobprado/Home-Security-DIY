@@ -28,6 +28,8 @@
 
 ## Workflow 3 — Processo atual (2026-02)
 
+✅ Pendência resolvida: workflow atualizado para modelo GitHub Issues + PR + CI.
+
 ### Planejamento
 1. Identificar pendências via auditoria de TODOs/FIXMEs no repositório (SKILL_TASK_001).
 2. Criar issues GitHub consolidadas por tema; adicionar ao `TASKS_BACKLOG.md`.
@@ -48,4 +50,3 @@
 1. Atualizar `docs/` a cada PR que altere arquitetura, APIs ou segurança.
 2. Registrar decisões arquiteturais relevantes em `memory/MEMORY_SHARED.md`.
 3. Fechar issue no GitHub com referência ao commit/PR.
-

@@ -313,4 +313,5 @@ Template para `MEMORY_LOCAL.md`:
 >
 > **Permissões definidas**: Todos os agentes têm permissão de **leitura** em todo o repositório.
 > Permissão de **escrita** restrita a: pasta própria (`agents/<nome>/`), `tasks/`, `memory/` e arquivos solicitados explicitamente pelo orquestrador.
-
+>
+> ✅ Pendência resolvida: diretórios de memória e permissões operacionais definidos.

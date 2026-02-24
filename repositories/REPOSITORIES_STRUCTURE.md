@@ -22,6 +22,8 @@
 
 > **Arquitetura de repositório atual (2026-02)**: Monorepo único `Home-Security-DIY`.
 >
+> ✅ Pendência resolvida: estratégia de repositório definida e documentada como monorepo.
+>
 > ```
 > Home-Security-DIY/
 > ├── src/              # Código-fonte: Docker Compose, backend FastAPI, frontend React, drones
@@ -39,4 +41,3 @@
 > ```
 >
 > **Não há repositórios separados** — todo o código e documentação vivem neste monorepo.
-
