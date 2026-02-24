@@ -180,6 +180,16 @@
         "prevista no projeto",
         "previstos para integracao"
       ]
+    },
+    {
+      "issue": 684,
+      "priority": "critical",
+      "target": "docs/LEGALIDADE_MODULO_DEFESA_SP_RJ_MG.md",
+      "type": "textual",
+      "resolved_on": "2026-02-24",
+      "forbidden_patterns": [
+        "estiver pendente"
+      ]
     }
   ]
 }
