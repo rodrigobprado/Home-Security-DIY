@@ -132,6 +132,13 @@
       "target": "docs/DRONES_MOCK_TO_HARDWARE_RUNBOOK.md",
       "type": "checklist",
       "resolved_on": "2026-02-24"
+    },
+    {
+      "issue": 679,
+      "priority": "medium",
+      "target": "docs/ASSETS_CATALOG_ROLLOUT_RUNBOOK.md",
+      "type": "checklist",
+      "resolved_on": "2026-02-24"
     }
   ]
 }
