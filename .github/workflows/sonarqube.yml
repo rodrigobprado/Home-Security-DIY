@@ -58,10 +58,11 @@ jobs:
       - name: Generate backend coverage report (>=90%)
         run: |
           set -euo pipefail
-          python3 -m pip install --upgrade pip
-          python3 -m pip install -r src/dashboard/backend/requirements.txt pytest pytest-cov
+          python3 -m venv .sonar-venv
+          .sonar-venv/bin/pip install --upgrade pip
+          .sonar-venv/bin/pip install -r src/dashboard/backend/requirements.txt pytest pytest-cov
           mkdir -p coverage
-          PYTHONPATH=src/dashboard/backend python3 -m pytest -q \
+          PYTHONPATH=src/dashboard/backend .sonar-venv/bin/pytest -q \
             tests/backend/test_assets_api.py \
             tests/backend/test_assets_e2e_smoke_contract.py \
             tests/backend/test_assets_router_coverage.py \
