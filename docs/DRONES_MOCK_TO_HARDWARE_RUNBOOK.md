@@ -10,11 +10,11 @@ Migrar o módulo de drones de simulação para operação em hardware real com r
 4. **Operação assistida**: liberar comandos críticos apenas com observador humano.
 
 ## Checklist pré-transição
-- [ ] HMAC habilitado para comandos (`COMMAND_HMAC_SECRET_*`).
-- [ ] `ALLOW_UNSIGNED_HOMEASSISTANT_COMMANDS_*` desligado em produção.
-- [ ] Geofence e limites de altitude definidos (UAV).
-- [ ] Exclusão de zonas críticas configurada (UGV).
-- [ ] Canal redundante de failover testado (`*/lora/command`).
+- [x] HMAC habilitado para comandos (`COMMAND_HMAC_SECRET_*`).
+- [x] `ALLOW_UNSIGNED_HOMEASSISTANT_COMMANDS_*` desligado em produção.
+- [x] Geofence e limites de altitude definidos (UAV).
+- [x] Exclusão de zonas críticas configurada (UGV).
+- [x] Canal redundante de failover testado (`*/lora/command`).
 
 ## Procedimento
 1. Subir serviços com profile de drones:

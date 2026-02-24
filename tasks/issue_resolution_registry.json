@@ -125,6 +125,13 @@
       "target": "docs/HARDENING_ANTI_TAMPER.md",
       "type": "checklist",
       "resolved_on": "2026-02-24"
+    },
+    {
+      "issue": 678,
+      "priority": "medium",
+      "target": "docs/DRONES_MOCK_TO_HARDWARE_RUNBOOK.md",
+      "type": "checklist",
+      "resolved_on": "2026-02-24"
     }
   ]
 }
