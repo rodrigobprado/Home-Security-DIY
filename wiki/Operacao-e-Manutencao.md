@@ -91,6 +91,12 @@ Checklist mínimo para mudança sem downtime (Home Assistant):
 
 Transição de drones mock -> hardware: `docs/DRONES_MOCK_TO_HARDWARE_RUNBOOK.md`
 
+Ativação dos serviços de drones no ambiente local:
+```bash
+cd src
+docker compose --profile drones up -d ugv uav
+```
+
 Metas operacionais (SLO/SLA): `docs/SLOS_SLAS_CRITICAL_SERVICES.md`
 
 Resumo operacional:
