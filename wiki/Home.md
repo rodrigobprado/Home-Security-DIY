@@ -62,6 +62,7 @@ O projeto combina automação, vídeo inteligente, sensores e drones para segura
 - Dependabot padronizado para `github-actions`, Docker, pip e npm com agenda semanal e labels de triagem.
 - README da raiz consolidado com setup de desenvolvimento/produção e fluxo operacional do dashboard.
 - Checklists de rede e hardening em `QUICK_START`, `ARQUITETURA_TECNICA` e `ARQUITETURA_SEGURANCA_FISICA` consolidados como concluídos.
+- Checklists de validação em `MATTER_THREAD_EVALUATION` e `TESTING_STRATEGY` consolidados e cobertos por contratos automatizados.
 
 ## Documentação no repositório
 
