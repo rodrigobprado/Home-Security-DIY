@@ -18,3 +18,4 @@ Registro cronológico de fechamento das issues de pendências documentais e de c
 | #671 | critical | `docs/LEGALIDADE_MODULO_DEFESA_SP_RJ_MG.md` | fechado | 2026-02-24 |
 | #672 | high | `docs/ARQUITETURA_TECNICA.md` | fechado | 2026-02-24 |
 | #673 | critical | `docs/DRONE_REGULATORY_COMPLIANCE_BR.md` | fechado | 2026-02-24 |
+| #674 | low | `CONTRIBUTING.md` | fechado | 2026-02-24 |

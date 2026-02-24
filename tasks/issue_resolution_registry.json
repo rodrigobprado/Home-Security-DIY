@@ -97,6 +97,13 @@
       "target": "docs/DRONE_REGULATORY_COMPLIANCE_BR.md",
       "type": "checklist",
       "resolved_on": "2026-02-24"
+    },
+    {
+      "issue": 674,
+      "priority": "low",
+      "target": "CONTRIBUTING.md",
+      "type": "checklist",
+      "resolved_on": "2026-02-24"
     }
   ]
 }
