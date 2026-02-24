@@ -10,7 +10,7 @@ Acesse `http://localhost:3000` (ou `dashboard.home.local` em produção):
 - **Modo kiosk (`/simplified`)**: tela de TV/monitor dedicado — barra de alarme, mapa e grid de câmeras
 - **Admin de ativos (`/admin/assets`)**: CRUD de sensores, câmeras, UGV e UAV
 
-No modo completo (`/`), o card **Menu Operacional** traz atalhos diretos para:
+No modo completo (`/`), o **Menu Operacional** (ícone no topo direito, ao lado do botão Kiosk) traz atalhos diretos para:
 
 - Administração de ativos
 - Cadastro de sensores (`/admin/assets?type=sensor`)

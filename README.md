@@ -68,7 +68,7 @@ Para testar o sistema em seu computador ou servidor de desenvolvimento:
 
 ### Navegação do Dashboard
 
-- `/` — dashboard completo com **Menu Operacional** (atalhos para admin e cadastros).
+- `/` — dashboard completo com **Menu Operacional** no canto superior direito (ícone ao lado do botão Kiosk).
 - `/admin/assets` — administração de ativos (CRUD de sensores, câmeras, UGV e UAV).
 - `/admin/assets?type=sensor|camera|ugv|uav` — cadastro com filtro inicial por tipo.
 - `/simplified` — modo kiosk/simplificado para monitor dedicado.

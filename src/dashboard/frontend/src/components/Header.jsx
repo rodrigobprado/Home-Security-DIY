@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
+import QuickActionsMenu from './QuickActionsMenu'
 import useStore from '../store/useStore'
 
 export default function Header() {
@@ -42,6 +43,7 @@ export default function Header() {
         <span className="font-mono text-gray-300">
           {time.toLocaleTimeString('pt-BR')}
         </span>
+        <QuickActionsMenu />
         <Link
           to={isSimplified ? '/' : '/simplified'}
           className="px-2 py-1 rounded bg-border hover:bg-accent/20 text-xs transition-colors"
