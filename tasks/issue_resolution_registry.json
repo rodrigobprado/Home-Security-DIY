@@ -190,6 +190,16 @@
       "forbidden_patterns": [
         "estiver pendente"
       ]
+    },
+    {
+      "issue": 685,
+      "priority": "medium",
+      "target": "prd/PRD_DRONE_DEFENSE_MODULE.md",
+      "type": "textual",
+      "resolved_on": "2026-02-24",
+      "forbidden_patterns": [
+        "Acao prevista"
+      ]
     }
   ]
 }
