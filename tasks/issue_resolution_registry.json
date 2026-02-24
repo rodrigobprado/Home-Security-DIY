@@ -118,6 +118,13 @@
       "target": "docs/MATTER_THREAD_DECISION_2026-02-22.md",
       "type": "checklist",
       "resolved_on": "2026-02-24"
+    },
+    {
+      "issue": 677,
+      "priority": "critical",
+      "target": "docs/HARDENING_ANTI_TAMPER.md",
+      "type": "checklist",
+      "resolved_on": "2026-02-24"
     }
   ]
 }
