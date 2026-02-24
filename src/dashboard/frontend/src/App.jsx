@@ -3,6 +3,7 @@ import Header from './components/Header'
 import { useWebSocket } from './hooks/useWebSocket'
 import Dashboard from './pages/Dashboard'
 import SimplifiedView from './pages/SimplifiedView'
+import AssetsAdmin from './pages/AssetsAdmin'
 
 function AppLayout() {
   useWebSocket() // Inicia e mantém conexão WebSocket global
@@ -13,6 +14,7 @@ function AppLayout() {
       <Routes>
         <Route path="/" element={<Dashboard />} />
         <Route path="/simplified" element={<SimplifiedView />} />
+        <Route path="/admin/assets" element={<AssetsAdmin />} />
       </Routes>
     </div>
   )

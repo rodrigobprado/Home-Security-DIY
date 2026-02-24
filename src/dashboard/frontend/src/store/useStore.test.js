@@ -7,6 +7,9 @@ describe("useStore actions", () => {
       alerts: [],
       services: {},
       wsStatus: "connecting",
+      assets: [],
+      assetsLoading: false,
+      assetsError: null,
     });
   });
 
@@ -38,5 +41,58 @@ describe("useStore actions", () => {
   it("sets services payload", () => {
     useStore.getState().setServices({ mqtt: "online" });
     expect(useStore.getState().services.mqtt).toBe("online");
+  });
+
+  // --- Testes de assets (Issue #337) ---
+
+  it("setAssets replaces the assets array", () => {
+    const assets = [{ id: "1", name: "Sensor A", asset_type: "sensor" }];
+    useStore.getState().setAssets(assets);
+    expect(useStore.getState().assets).toEqual(assets);
+  });
+
+  it("addAsset prepends a new asset", () => {
+    const existing = { id: "1", name: "Sensor A", asset_type: "sensor" };
+    useStore.setState({ assets: [existing] });
+
+    const newAsset = { id: "2", name: "Camera B", asset_type: "camera" };
+    useStore.getState().addAsset(newAsset);
+
+    const assets = useStore.getState().assets;
+    expect(assets[0]).toEqual(newAsset);
+    expect(assets[1]).toEqual(existing);
+  });
+
+  it("updateAsset replaces asset with matching id", () => {
+    const original = { id: "1", name: "Sensor A", status: "active" };
+    useStore.setState({ assets: [original] });
+
+    const updated = { id: "1", name: "Sensor A", status: "inactive" };
+    useStore.getState().updateAsset(updated);
+
+    expect(useStore.getState().assets[0].status).toBe("inactive");
+  });
+
+  it("removeAsset removes asset by id", () => {
+    const assets = [
+      { id: "1", name: "Sensor A" },
+      { id: "2", name: "Camera B" },
+    ];
+    useStore.setState({ assets });
+    useStore.getState().removeAsset("1");
+
+    expect(useStore.getState().assets).toHaveLength(1);
+    expect(useStore.getState().assets[0].id).toBe("2");
+  });
+
+  it("setAssetsLoading and setAssetsError manage loading state", () => {
+    useStore.getState().setAssetsLoading(true);
+    expect(useStore.getState().assetsLoading).toBe(true);
+
+    useStore.getState().setAssetsError("Network error");
+    expect(useStore.getState().assetsError).toBe("Network error");
+
+    useStore.getState().setAssetsLoading(false);
+    expect(useStore.getState().assetsLoading).toBe(false);
   });
 });

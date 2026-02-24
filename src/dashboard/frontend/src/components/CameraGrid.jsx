@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
+import { useAssets } from '../hooks/useAssets'
 
-const CAMERAS = [
+// Fallback estático — usado quando catálogo dinâmico está vazio
+const STATIC_CAMERAS = [
   { name: 'cam_entrada', label: 'Entrada' },
   { name: 'cam_fundos',  label: 'Fundos' },
   { name: 'cam_garagem', label: 'Garagem' },
@@ -55,11 +57,26 @@ function CameraFeed({ name, label }) {
 }
 
 export default function CameraGrid() {
+  const { cameraAssets } = useAssets()
+
+  // Usa catálogo dinâmico se disponível; fallback estático se vazio
+  const cameras = cameraAssets.length > 0
+    ? cameraAssets.map((a) => ({
+        name: a.entity_id,
+        label: a.name,
+      }))
+    : STATIC_CAMERAS
+
   return (
     <div className="card flex flex-col gap-3">
-      <h2 className="text-xs font-semibold uppercase tracking-wider text-muted">Câmeras</h2>
+      <div className="flex items-center justify-between">
+        <h2 className="text-xs font-semibold uppercase tracking-wider text-muted">Câmeras</h2>
+        {cameraAssets.length > 0 && (
+          <span className="text-xs text-accent">{cameraAssets.length} cadastradas</span>
+        )}
+      </div>
       <div className="grid grid-cols-2 gap-2">
-        {CAMERAS.map((cam) => (
+        {cameras.map((cam) => (
           <CameraFeed key={cam.name} {...cam} />
         ))}
       </div>
