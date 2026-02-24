@@ -9,9 +9,6 @@ class TestRBACMatrix:
     def test_rbac_matrix_viewer_only_read(self):
         """viewer: somente leitura — endpoints GET são permitidos, POST/PUT/DELETE exigem admin."""
         # Esta é uma validação de design: leitura pública (com operator key), escrita requer admin
-        readonly_methods = ["GET"]
-        write_methods = ["POST", "PUT", "DELETE"]
-
         # Valida que a separação está clara na implementação
         from app.routers.assets import router
 
@@ -83,7 +80,6 @@ class TestRBACAdminKeyConfig:
         # Patch settings para admin key vazia
         from app import config as cfg_module
 
-        original_key = cfg_module.settings.dashboard_admin_key
         monkeypatch.setattr(cfg_module.settings, "dashboard_admin_key", "")
 
         from app.security import require_admin_key

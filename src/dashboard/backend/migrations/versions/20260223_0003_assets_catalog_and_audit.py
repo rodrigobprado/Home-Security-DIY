@@ -15,6 +15,7 @@ revision: str = "20260223_0003"
 down_revision: Union[str, None] = "20260219_0002"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
+NOW_SQL = "now()"
 
 
 def upgrade() -> None:
@@ -34,13 +35,13 @@ def upgrade() -> None:
             "created_at",
             sa.DateTime(timezone=True),
             nullable=False,
-            server_default=sa.text("now()"),
+            server_default=sa.text(NOW_SQL),
         ),
         sa.Column(
             "updated_at",
             sa.DateTime(timezone=True),
             nullable=False,
-            server_default=sa.text("now()"),
+            server_default=sa.text(NOW_SQL),
         ),
         sa.Column("created_by", sa.String(length=100), nullable=True),
         sa.Column("updated_by", sa.String(length=100), nullable=True),
@@ -89,7 +90,7 @@ def upgrade() -> None:
             "created_at",
             sa.DateTime(timezone=True),
             nullable=False,
-            server_default=sa.text("now()"),
+            server_default=sa.text(NOW_SQL),
         ),
         sa.ForeignKeyConstraint(
             ["asset_id"],
@@ -121,7 +122,7 @@ def upgrade() -> None:
             "created_at",
             sa.DateTime(timezone=True),
             nullable=False,
-            server_default=sa.text("now()"),
+            server_default=sa.text(NOW_SQL),
         ),
         sa.CheckConstraint(
             "action IN ('create', 'update', 'delete', 'restore')",

@@ -20,6 +20,7 @@ from app.security import require_api_key
 OPERATOR_KEY = "test-api-key"
 ADMIN_KEY = "test-admin-key"
 TEST_BASE_URL = "http://testserver"
+ASSETS_ENDPOINT = "/api/assets"
 
 
 class _FullSmokeSession:
@@ -74,7 +75,8 @@ class _FullSmokeSession:
         self.committed.append(True)
 
     async def refresh(self, obj):
-        pass
+        # No-op intencional para o test double de sessão.
+        return None
 
 
 def _build_smoke_app():
@@ -103,7 +105,7 @@ async def test_smoke_create_asset_generates_audit_event():
     transport = httpx.ASGITransport(app=app)
     async with httpx.AsyncClient(transport=transport, base_url=TEST_BASE_URL) as client:
         resp = await client.post(
-            "/api/assets",
+            ASSETS_ENDPOINT,
             headers={"X-API-Key": OPERATOR_KEY, "X-Admin-Key": ADMIN_KEY},
             json={
                 "asset_type": "sensor",
@@ -249,7 +251,7 @@ async def test_smoke_rbac_create_blocked_without_admin_key():
     async with httpx.AsyncClient(transport=transport, base_url=TEST_BASE_URL) as client:
         # Sem X-Admin-Key
         resp = await client.post(
-            "/api/assets",
+            ASSETS_ENDPOINT,
             headers={"X-API-Key": OPERATOR_KEY},  # operator key, sem admin key
             json={
                 "asset_type": "sensor",
@@ -270,7 +272,7 @@ async def test_smoke_list_assets_no_auth_returns_403():
     app, session = _build_smoke_app()
     transport = httpx.ASGITransport(app=app)
     async with httpx.AsyncClient(transport=transport, base_url=TEST_BASE_URL) as client:
-        resp = await client.get("/api/assets")
+        resp = await client.get(ASSETS_ENDPOINT)
     assert resp.status_code == 403
 
 
@@ -304,9 +306,6 @@ async def test_smoke_no_regression_alerts_endpoint():
     mock_alert.new_state = "on"
     mock_alert.severity = "warning"
     mock_alert.message = None
-
-    # Sobrescrever execute temporariamente para retornar o alerta
-    original_execute = session.execute
 
     async def _exec_alerts(stmt):
         result = MagicMock()
