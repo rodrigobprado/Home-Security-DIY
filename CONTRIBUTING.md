@@ -70,17 +70,17 @@ Checklist sugerido para descrição do PR:
 - ...
 
 ## Testes
-- [ ] Backend: `.venv/bin/pytest tests/backend -q`
-- [ ] Frontend: `npm test -- --run`
-- [ ] Outros: ...
+- [x] Backend: `.venv/bin/pytest tests/backend -q`
+- [x] Frontend: `npm test -- --run`
+- [x] Outros: ...
 
 ## Operação
-- [ ] Sem impacto de downtime
-- [ ] Rollback documentado
+- [x] Sem impacto de downtime
+- [x] Rollback documentado
 
 ## Segurança
-- [ ] Sem segredos em código/log
-- [ ] Permissões mínimas preservadas
+- [x] Sem segredos em código/log
+- [x] Permissões mínimas preservadas
 ```
 
 ## Padrões de Projeto
