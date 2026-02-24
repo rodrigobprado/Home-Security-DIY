@@ -7,7 +7,7 @@ from pydantic import BaseModel, field_validator
 from sqlalchemy import desc, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.models import Alert, DashboardConfig, DevicePosition
+from app.db.models import Alert, Asset, DashboardConfig, DevicePosition
 from app.db.session import get_db
 
 router = APIRouter(prefix="/api", tags=["alerts"])
@@ -45,7 +45,33 @@ async def list_alerts(
 
 @router.get("/map/devices")
 async def list_device_positions(db: AsyncSession = Depends(get_db)) -> list[dict]:
-    """Retorna posições dos dispositivos no mapa operacional."""
+    """Retorna posições dos dispositivos no mapa operacional.
+
+    Prioriza o catálogo dinâmico de ativos (dashboard.assets).
+    Fallback para device_positions legadas se catálogo estiver vazio.
+    """
+    # Tenta catálogo dinâmico de ativos
+    assets_result = await db.execute(
+        select(Asset).where(Asset.is_active == True)  # noqa: E712
+    )
+    assets = assets_result.scalars().all()
+
+    if assets:
+        return [
+            {
+                "entity_id": a.entity_id,
+                "label": a.name,
+                "x": 50.0,  # posição padrão; ajustável via device_positions
+                "y": 50.0,
+                "device_type": a.asset_type if a.asset_type in ("camera", "sensor") else "drone",
+                "asset_id": str(a.id),
+                "asset_type": a.asset_type,
+                "status": a.status,
+            }
+            for a in assets
+        ]
+
+    # Fallback: device_positions legadas
     result = await db.execute(select(DevicePosition))
     devices = result.scalars().all()
     return [
