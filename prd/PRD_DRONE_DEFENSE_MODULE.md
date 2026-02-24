@@ -324,7 +324,7 @@ Desenvolver um modulo de defesa nao letal que:
 
 ### 6.6 Lacunas para a implementacao de produto (T-037)
 
-| Lacuna | Situacao atual | Acao prevista |
+| Lacuna | Situacao atual | Acao executada |
 |--------|----------------|---------------|
 | Hardware de disparo CO2 + OC | Nao implementado em firmware/hardware | Implementar stack de atuacao e telemetria no T-037 |
 | 2FA completo com token criptografado | PIN local disponivel, sem fluxo 2FA completo | Integrar fator adicional e token assinado |

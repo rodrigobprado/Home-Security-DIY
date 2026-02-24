@@ -29,3 +29,4 @@ Registro cronológico de fechamento das issues de pendências documentais e de c
 | #682 | low | `docs/DOCS_TODO.md` | fechado | 2026-02-24 |
 | #683 | medium | `docs/ARQUITETURA_HARDWARE_UGV.md` | fechado | 2026-02-24 |
 | #684 | critical | `docs/LEGALIDADE_MODULO_DEFESA_SP_RJ_MG.md` | fechado | 2026-02-24 |
+| #685 | medium | `prd/PRD_DRONE_DEFENSE_MODULE.md` | fechado | 2026-02-24 |
