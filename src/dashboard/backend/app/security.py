@@ -9,6 +9,7 @@ from fastapi.security import APIKeyHeader, HTTPAuthorizationCredentials, HTTPBea
 from app.config import settings
 
 _api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
+_admin_key_header = APIKeyHeader(name="X-Admin-Key", auto_error=False)
 _bearer_scheme = HTTPBearer(auto_error=False)
 _api_auth_failures: MutableMapping[str, deque[float]] = defaultdict(deque)
 _ws_auth_attempts: MutableMapping[str, deque[float]] = defaultdict(deque)
@@ -16,6 +17,11 @@ _AUTH_WINDOW_SECONDS = 60
 _AUTH_MAX_FAILURES_PER_WINDOW = 20
 _WS_AUTH_WINDOW_SECONDS = 60
 _WS_AUTH_MAX_ATTEMPTS_PER_WINDOW = 60
+
+# Rate limit para operações admin (menor tolerância)
+_admin_auth_failures: MutableMapping[str, deque[float]] = defaultdict(deque)
+_ADMIN_AUTH_WINDOW_SECONDS = 60
+_ADMIN_AUTH_MAX_FAILURES_PER_WINDOW = 10
 
 
 def _configured_api_key() -> str:
@@ -73,6 +79,43 @@ async def require_api_key(
     ):
         raise HTTPException(status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail="Too many auth failures.")
     raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Invalid API key.")
+
+
+async def require_admin_key(
+    request: Request,
+    x_admin_key: str | None = Security(_admin_key_header),
+) -> None:
+    """Exige chave de nível admin (DASHBOARD_ADMIN_KEY) para operações CRUD de ativos.
+
+    Se DASHBOARD_ADMIN_KEY não estiver configurado, todas as operações admin são bloqueadas
+    (fail-secure: sem chave admin configurada = sem acesso admin).
+    """
+    admin_key = (settings.dashboard_admin_key or "").strip()
+    if not admin_key:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Admin key not configured. Set DASHBOARD_ADMIN_KEY to enable asset management.",
+        )
+
+    ip = _client_ip(request.client.host if request.client else None)
+    if _is_valid_api_key(x_admin_key, admin_key):
+        return
+
+    if not _register_rate_event(
+        _admin_auth_failures,
+        ip,
+        now=time.time(),
+        window_seconds=_ADMIN_AUTH_WINDOW_SECONDS,
+        max_events=_ADMIN_AUTH_MAX_FAILURES_PER_WINDOW,
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail="Too many admin auth failures.",
+        )
+    raise HTTPException(
+        status_code=status.HTTP_403_FORBIDDEN,
+        detail="Invalid admin key. Use X-Admin-Key header.",
+    )
 
 
 async def require_ws_api_key(websocket: WebSocket) -> None:

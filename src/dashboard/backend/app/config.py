@@ -18,6 +18,7 @@ class Settings(BaseSettings):
 
     # Dashboard API security
     dashboard_api_key: str = ""
+    dashboard_admin_key: str = ""  # chave de nível admin para CRUD de ativos
     dashboard_allowed_origins: list[str] = [
         "http://localhost:3000",
         "http://127.0.0.1:3000",
@@ -74,6 +75,18 @@ class Settings(BaseSettings):
         upper_secret = secret.upper()
         if "CHANGE_ME" in upper_secret or "UNCONFIGURED" in upper_secret:
             raise ValueError(f"{info.field_name.upper()} contains insecure placeholder value.")
+        return secret
+
+    @field_validator("dashboard_admin_key")
+    @classmethod
+    def validate_admin_key(cls, value: str) -> str:
+        """Admin key é opcional; se configurado, não pode ser placeholder."""
+        secret = (value or "").strip()
+        if not secret:
+            return secret  # permitido ser vazio (RBAC admin desabilitado)
+        upper = secret.upper()
+        if "CHANGE_ME" in upper or "UNCONFIGURED" in upper:
+            raise ValueError("DASHBOARD_ADMIN_KEY contains insecure placeholder value.")
         return secret
 
 
