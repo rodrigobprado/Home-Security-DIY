@@ -155,25 +155,37 @@ def upgrade() -> None:
     # --- backfill: migrar device_positions -> assets ---
     op.execute(
         """
-        INSERT INTO dashboard.assets (id, asset_type, name, entity_id, status, location,
-                                      is_active, created_at, updated_at, created_by)
-        SELECT
-            gen_random_uuid(),
-            CASE device_type
-                WHEN 'camera' THEN 'camera'
-                WHEN 'drone'  THEN 'ugv'
-                ELSE 'sensor'
-            END,
-            label,
-            entity_id,
-            'active',
-            NULL,
-            true,
-            now(),
-            now(),
-            'migration_backfill'
-        FROM dashboard.device_positions
-        ON CONFLICT (entity_id) DO NOTHING
+        DO $$
+        BEGIN
+            IF to_regclass('dashboard.device_positions') IS NOT NULL THEN
+                INSERT INTO dashboard.assets (id, asset_type, name, entity_id, status, location,
+                                              is_active, created_at, updated_at, created_by)
+                SELECT
+                    (
+                        substr(md5(random()::text || clock_timestamp()::text), 1, 8) || '-' ||
+                        substr(md5(random()::text || clock_timestamp()::text), 1, 4) || '-' ||
+                        '4' || substr(md5(random()::text || clock_timestamp()::text), 1, 3) || '-' ||
+                        substr('89ab', floor(random() * 4)::int + 1, 1) || substr(md5(random()::text || clock_timestamp()::text), 1, 3) || '-' ||
+                        substr(md5(random()::text || clock_timestamp()::text), 1, 12)
+                    )::uuid,
+                    CASE device_type
+                        WHEN 'camera' THEN 'camera'
+                        WHEN 'drone'  THEN 'ugv'
+                        ELSE 'sensor'
+                    END,
+                    label,
+                    entity_id,
+                    'active',
+                    NULL,
+                    true,
+                    now(),
+                    now(),
+                    'migration_backfill'
+                FROM dashboard.device_positions
+                ON CONFLICT (entity_id) DO NOTHING;
+            END IF;
+        END
+        $$;
         """
     )
 
