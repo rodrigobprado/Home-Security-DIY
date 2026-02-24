@@ -2,7 +2,7 @@
 
 > Sistema de Home Security – Open Source / Open Hardware
 >
-> Versao: 1.0 | Data: 2026-02-18
+> Versao: 1.1 | Data: 2026-02-23 | Adicionado: Catálogo de Ativos e Trilha de Auditoria (Issues #336, #339)
 
 ---
 
@@ -15,7 +15,8 @@ O sistema utiliza APIs REST, WebSocket e MQTT para comunicacao entre componentes
 - **Formato**: JSON para APIs REST, JSON para MQTT payloads
 - **Autenticacao**:
   - Home Assistant: Bearer token (Long-Lived Access Token)
-  - Dashboard API: `X-API-Key` ou Bearer
+  - Dashboard API (operador): `X-API-Key` header ou `Authorization: Bearer <key>`
+  - Dashboard API (admin): `X-Admin-Key` header (necessário para CRUD de ativos)
   - MQTT: usuario/senha
 - **Codigos de erro**: Padrao HTTP para REST APIs
 
@@ -314,6 +315,189 @@ websocat \
 
 ---
 
+## 8. Catalogo de Ativos (`/api/assets`)
+
+**Base URL**: `http://<HOST>:8000`
+**Autenticacao leitura**: `X-API-Key: <DASHBOARD_API_KEY>` (operador)
+**Autenticacao escrita**: `X-API-Key` + `X-Admin-Key: <DASHBOARD_ADMIN_KEY>` (admin)
+
+### Tipos de ativo
+
+| `asset_type` | Descricao |
+|-------------|-----------|
+| `sensor` | Sensor Zigbee (porta, janela, PIR) |
+| `camera` | Camera IP / Frigate |
+| `ugv` | Drone terrestre (UGV) |
+| `uav` | Drone aereo (UAV) |
+
+### Status possiveis
+
+| `status` | Descricao |
+|----------|-----------|
+| `active` | Ativo e operacional |
+| `inactive` | Desativado (soft delete) |
+| `offline` | Sem comunicacao |
+| `maintenance` | Em manutencao |
+
+### Endpoints
+
+| Metodo | Endpoint | Auth | Descricao |
+|--------|----------|------|-----------|
+| `GET` | `/api/assets` | Operador | Lista ativos com paginacao e filtros |
+| `GET` | `/api/assets/{asset_id}` | Operador | Detalhes de um ativo |
+| `POST` | `/api/assets` | Admin | Cadastrar novo ativo |
+| `PUT` | `/api/assets/{asset_id}` | Admin | Atualizar ativo |
+| `DELETE` | `/api/assets/{asset_id}` | Admin | Soft-delete (marca `is_active=False`) |
+| `POST` | `/api/assets/{asset_id}/restore` | Admin | Reativar ativo desativado |
+
+### Filtros para `GET /api/assets`
+
+| Parametro | Tipo | Descricao |
+|-----------|------|-----------|
+| `asset_type` | string | Filtrar por tipo (`sensor`, `camera`, `ugv`, `uav`) |
+| `status` | string | Filtrar por status |
+| `is_active` | bool | `true` retorna apenas ativos; `false` apenas inativos |
+| `search` | string | Busca parcial em `name`, `entity_id`, `location` |
+| `page` | int | Pagina (padrao: 1) |
+| `page_size` | int | Itens por pagina (padrao: 50, max: 200) |
+
+**Exemplo — listar sensores ativos:**
+
+```bash
+curl -H "X-API-Key: ${DASHBOARD_API_KEY}" \
+  "http://localhost:8000/api/assets?asset_type=sensor&is_active=true"
+```
+
+```json
+{
+  "items": [
+    {
+      "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "asset_type": "sensor",
+      "name": "Sensor Porta Entrada",
+      "entity_id": "binary_sensor.porta_entrada",
+      "location": "entrada",
+      "description": null,
+      "status": "active",
+      "is_active": true,
+      "config_json": null,
+      "created_at": "2026-02-23T10:00:00+00:00",
+      "updated_at": "2026-02-23T10:00:00+00:00"
+    }
+  ],
+  "total": 1,
+  "page": 1,
+  "page_size": 50,
+  "pages": 1
+}
+```
+
+**Exemplo — cadastrar ativo (requer admin key):**
+
+```bash
+curl -X POST http://localhost:8000/api/assets \
+  -H "X-API-Key: ${DASHBOARD_API_KEY}" \
+  -H "X-Admin-Key: ${DASHBOARD_ADMIN_KEY}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "asset_type": "sensor",
+    "name": "Sensor Janela Sala",
+    "entity_id": "binary_sensor.janela_sala",
+    "location": "sala",
+    "description": "Sensor magnetico de janela"
+  }'
+```
+
+**Resposta (201 Created):**
+
+```json
+{
+  "id": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
+  "asset_type": "sensor",
+  "name": "Sensor Janela Sala",
+  "entity_id": "binary_sensor.janela_sala",
+  "location": "sala",
+  "description": "Sensor magnetico de janela",
+  "status": "active",
+  "is_active": true,
+  "config_json": null,
+  "created_at": "2026-02-23T10:05:00+00:00",
+  "updated_at": "2026-02-23T10:05:00+00:00"
+}
+```
+
+> **Nota de seguranca**: respostas nunca incluem `credential_ref` nem dados sensíveis de `asset_credentials`.
+> Quando `DASHBOARD_ADMIN_KEY` nao esta configurado, operacoes de escrita retornam **503**.
+
+---
+
+## 9. Trilha de Auditoria (`/api/audit`)
+
+**Autenticacao**: `X-API-Key` (operador) — somente leitura
+
+| Metodo | Endpoint | Descricao |
+|--------|----------|-----------|
+| `GET` | `/api/audit` | Lista registros de auditoria com filtros |
+| `GET` | `/api/audit/export` | Exportar trilha (JSON ou CSV) |
+
+### Filtros para `GET /api/audit`
+
+| Parametro | Tipo | Descricao |
+|-----------|------|-----------|
+| `asset_id` | UUID | Filtrar por ativo |
+| `action` | string | Filtrar por acao (`create`, `update`, `delete`, `restore`) |
+| `actor` | string | Filtrar por autor da operacao |
+| `since` | ISO datetime | Registros a partir de data |
+| `until` | ISO datetime | Registros ate data |
+| `page` | int | Pagina (padrao: 1) |
+| `page_size` | int | Itens por pagina (padrao: 50, max: 200) |
+
+**Exemplo — listar auditoria de um ativo:**
+
+```bash
+curl -H "X-API-Key: ${DASHBOARD_API_KEY}" \
+  "http://localhost:8000/api/audit?asset_id=a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+```
+
+```json
+{
+  "items": [
+    {
+      "id": 1,
+      "asset_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "action": "create",
+      "before_json": null,
+      "after_json": "{\"name\": \"Sensor Porta Entrada\", \"status\": \"active\"}",
+      "actor": "admin",
+      "actor_ip": "192.168.10.5",
+      "created_at": "2026-02-23T10:00:00+00:00"
+    }
+  ],
+  "total": 1,
+  "page": 1,
+  "page_size": 50,
+  "pages": 1
+}
+```
+
+**Exportar trilha de auditoria:**
+
+```bash
+# JSON
+curl -H "X-API-Key: ${DASHBOARD_API_KEY}" \
+  "http://localhost:8000/api/audit/export?format=json" \
+  -o audit_export.json
+
+# CSV
+curl -H "X-API-Key: ${DASHBOARD_API_KEY}" \
+  "http://localhost:8000/api/audit/export?format=csv" \
+  -o audit_export.csv
+```
+
+Resposta inclui header `Content-Disposition: attachment; filename="audit_YYYYMMDD_HHMMSS.{format}"`.
+
+---
+
 ## Referencias
 
 - [Home Assistant REST API](https://developers.home-assistant.io/docs/api/rest)
@@ -321,3 +505,5 @@ websocat \
 - [Frigate HTTP API](https://docs.frigate.video/integrations/api)
 - [Zigbee2MQTT MQTT Topics](https://www.zigbee2mqtt.io/guide/usage/mqtt_topics_and_messages.html)
 - [Mosquitto Configuration](https://mosquitto.org/man/mosquitto-conf-5.html)
+- [ADR 011 — Catálogo Dinâmico de Ativos](adr/011-adoption-assets-catalog.md)
+- [Runbook de Rollout do Catálogo](ASSETS_CATALOG_ROLLOUT_RUNBOOK.md)
