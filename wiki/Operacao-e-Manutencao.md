@@ -77,6 +77,12 @@ kubectl rollout restart deployment/dashboard-frontend -n home-security
 
 Atualização controlada do Home Assistant: `docs/HOME_ASSISTANT_ZERO_DOWNTIME_UPDATE_RUNBOOK.md`
 
+Checklist mínimo para mudança sem downtime (Home Assistant):
+- validar backup + saúde do PostgreSQL antes da troca
+- executar `check_config` antes do restart/rollout
+- validar smoke test HTTP e integrações críticas após atualização
+- manter rollback pronto (`docker compose` ou `kubectl rollout undo`)
+
 Transição de drones mock -> hardware: `docs/DRONES_MOCK_TO_HARDWARE_RUNBOOK.md`
 
 Metas operacionais (SLO/SLA): `docs/SLOS_SLAS_CRITICAL_SERVICES.md`
