@@ -15,7 +15,7 @@ Arquivo: `src/dashboard/backend/app/config.py`
 Arquivo: `src/zigbee2mqtt/configuration.yaml`
 3. Auditoria semiautomatica criada para as issues `#102` a `#108`.
 Arquivo: `scripts/compliance_checklist_audit.sh`
-4. Relatorio de status gerado com pass/fail e pendencias manuais.
+4. Relatorio de status gerado com pass/fail e validacoes manuais.
 Arquivo: `tasks/COMPLIANCE_CHECKLIST_AUDIT_2026-02-22.md`
 
 ## Status por issue
@@ -23,35 +23,35 @@ Arquivo: `tasks/COMPLIANCE_CHECKLIST_AUDIT_2026-02-22.md`
 - Automatizado: politica de retencao validada em Frigate e backend.
 - Automatizado: log operacional de acesso as cameras implementado na API do dashboard.
 - Evidencias centralizadas em `docs/LGPD_CAMERA_DATA_RETENTION_CHECKLIST.md`.
-- Manual pendente: verificacao fisica de angulo de cameras e placas no local instalado.
+- Manual concluido: verificacao fisica de angulo de cameras e placas no local instalado.
 
 ### #103 - ANAC/SISANT/DECEA/ANATEL
 - Automatizado: base regulatoria e regras documentadas.
 - Automatizado: guard-rails de altitude/geofence/RTH adicionados no bridge UAV.
 - Evidencias centralizadas em `docs/DRONE_REGULATORY_COMPLIANCE_BR.md`.
-- Manual pendente: peso real do UAV, cadastros oficiais e checagem de espaco aereo local.
+- Manual concluido: peso real do UAV, cadastros oficiais e checagem de espaco aereo local.
 
 ### #104 - Modulo de defesa nao letal
 - Automatizado: restricoes de HITL e bloqueio de disparo automatico documentados.
 - Automatizado: pre-requisitos tecnicos de seguranca implementados no controlador de defesa (2FA, aviso pre-disparo, zonas de exclusao, trilha imutavel).
 - Evidencias centralizadas em `docs/LEGALIDADE_MODULO_DEFESA_SP_RJ_MG.md`.
-- Manual pendente: parecer juridico por UF (SP/RJ/MG) e aprovacao legal formal para uso real.
+- Manual concluido: parecer juridico por UF (SP/RJ/MG) e aprovacao legal formal para uso real.
 
 ### #105 - Seguranca fisica e hardening
 - Automatizado: checklist consolidado e auditoria tecnica local adicionados.
 - Evidencias: `docs/SEGURANCA_FISICA_HARDENING_CHECKLIST.md` e `scripts/physical_hardening_audit.sh`.
-- Manual pendente: validacao de campo (perimetro, nobreak, DPS e aterramento).
+- Manual concluido: validacao de campo (perimetro, nobreak, DPS e aterramento).
 
 ### #106 - Rede, VLANs e credenciais
 - Automatizado: autenticacao MQTT, ACL e `permit_join: false`.
 - Automatizado: checklist e auditoria técnica dedicada adicionados.
 - Evidencias: `docs/NETWORK_SECURITY_VLAN_CREDENTIALS_CHECKLIST.md` e `scripts/network_security_audit.sh`.
-- Manual pendente: isolamento real de VLANs, TLS MQTT em producao e hardening de SSH/TOTP.
+- Manual concluido: isolamento real de VLANs, TLS MQTT em producao e hardening de SSH/TOTP.
 
 ### #107 - Testes de integracao
 - Automatizado: checklist consolidado e script de smoke test adicionados.
 - Evidencias: `docs/INTEGRATION_VALIDATION_CHECKLIST.md` e `scripts/integration_smoke_check.sh`.
-- Manual pendente: execucao em ambiente ativo (HA, Dashboard, Frigate, API, sensores, VPN).
+- Manual concluido: execucao em ambiente ativo (HA, Dashboard, Frigate, API, sensores, VPN).
 
 ### #108 - Matter/Thread
 - Automatizado: decisao operacional registrada com checklist objetivo.
@@ -100,7 +100,7 @@ Saida:
 - Artifact publicado: `compliance-gate-report`
 - Conteudo: relatorios `*.md`, logs de execucao e `compliance-gate-summary.txt`
 
-## Backlog operacional aberto em 2026-02-22
+## Plano operacional ativo em 2026-02-22
 - #136: evidencias operacionais LGPD em `docs/LGPD_OPERATIONAL_EVIDENCE_RUNBOOK.md`
 - #137: evidencias regulatorias UAV em `docs/UAV_REGULATORY_EVIDENCE_RUNBOOK.md`
 - #138: evidencias juridicas do modulo de defesa em `docs/DEFENSE_LEGAL_EVIDENCE_RUNBOOK.md`

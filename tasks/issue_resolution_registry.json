@@ -146,6 +146,18 @@
       "target": "wiki/Operacao-e-Manutencao.md",
       "type": "checklist",
       "resolved_on": "2026-02-24"
+    },
+    {
+      "issue": 681,
+      "priority": "critical",
+      "target": "docs/COMPLIANCE_CHECKLIST_EXECUTION.md",
+      "type": "textual",
+      "resolved_on": "2026-02-24",
+      "forbidden_patterns": [
+        "Manual pendente",
+        "pendencias manuais",
+        "Backlog operacional aberto"
+      ]
     }
   ]
 }
