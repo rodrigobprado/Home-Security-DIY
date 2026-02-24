@@ -63,6 +63,12 @@ kubectl exec -n home-security postgres-0 -- psql -U postgres homedb < backup.sql
 
 Runbook detalhado: `docs/POSTGRES_BACKUP_RESTORE_RUNBOOK.md`
 
+Checklist de validação trimestral (PostgreSQL):
+- gerar dump completo + checksum
+- testar restore em banco `restore_validation`
+- confirmar schemas críticos (`homeassistant`, `dashboard`, `metrics`)
+- registrar evidência de RPO/RTO atingidos
+
 ## Atualização de serviços
 
 ```bash
