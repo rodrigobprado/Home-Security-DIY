@@ -15,3 +15,4 @@ Registro cronológico de fechamento das issues de pendências documentais e de c
 | #668 | high | `docs/ARQUITETURA_SEGURANCA_FISICA.md` | fechado | 2026-02-24 |
 | #669 | medium | `wiki/Testes-e-Validacao.md` | fechado | 2026-02-24 |
 | #670 | high | `docs/TESTING_STRATEGY.md` | fechado | 2026-02-24 |
+| #671 | critical | `docs/LEGALIDADE_MODULO_DEFESA_SP_RJ_MG.md` | fechado | 2026-02-24 |

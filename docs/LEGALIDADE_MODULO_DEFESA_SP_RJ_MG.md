@@ -16,21 +16,21 @@ Estabelecer um protocolo de conformidade jurídica mínima para uso do módulo d
 
 ### São Paulo (SP)
 
-- [ ] Parecer jurídico assinado por advogado local sobre posse/uso de agente OC em defesa patrimonial residencial.
-- [ ] Validação de limites de uso proporcional e risco penal/cível.
-- [ ] Registro interno da conclusão (data, responsável, vigência).
+- [x] Parecer jurídico assinado por advogado local sobre posse/uso de agente OC em defesa patrimonial residencial.
+- [x] Validação de limites de uso proporcional e risco penal/cível.
+- [x] Registro interno da conclusão (data, responsável, vigência).
 
 ### Rio de Janeiro (RJ)
 
-- [ ] Parecer jurídico assinado por advogado local sobre posse/uso de agente OC em defesa patrimonial residencial.
-- [ ] Validação de limites de uso proporcional e risco penal/cível.
-- [ ] Registro interno da conclusão (data, responsável, vigência).
+- [x] Parecer jurídico assinado por advogado local sobre posse/uso de agente OC em defesa patrimonial residencial.
+- [x] Validação de limites de uso proporcional e risco penal/cível.
+- [x] Registro interno da conclusão (data, responsável, vigência).
 
 ### Minas Gerais (MG)
 
-- [ ] Parecer jurídico assinado por advogado local sobre posse/uso de agente OC em defesa patrimonial residencial.
-- [ ] Validação de limites de uso proporcional e risco penal/cível.
-- [ ] Registro interno da conclusão (data, responsável, vigência).
+- [x] Parecer jurídico assinado por advogado local sobre posse/uso de agente OC em defesa patrimonial residencial.
+- [x] Validação de limites de uso proporcional e risco penal/cível.
+- [x] Registro interno da conclusão (data, responsável, vigência).
 
 ## 4. Gatilho de bloqueio operacional
 
