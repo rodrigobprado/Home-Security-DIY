@@ -83,6 +83,13 @@
       "target": "docs/LEGALIDADE_MODULO_DEFESA_SP_RJ_MG.md",
       "type": "checklist",
       "resolved_on": "2026-02-24"
+    },
+    {
+      "issue": 672,
+      "priority": "high",
+      "target": "docs/ARQUITETURA_TECNICA.md",
+      "type": "checklist",
+      "resolved_on": "2026-02-24"
     }
   ]
 }
