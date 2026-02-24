@@ -51,6 +51,24 @@ Desenvolver um ecossistema open source/open hardware de **drones autônomos modu
 └─────────────────────┴─────────────────────┴─────────────────────────────┘
 ```
 
+### 1.4 Status de execução das tasks (T-031 a T-045)
+
+| Task | Status | Evidência principal |
+|------|--------|---------------------|
+| T-031 — Arquitetura de hardware UGV | ✅ Concluída | `docs/ARQUITETURA_HARDWARE_UGV.md` |
+| T-032 — Arquitetura de hardware UAV | ✅ Concluída | `docs/ARQUITETURA_HARDWARE_UAV.md` |
+| T-033 — Firmware de controle baixo nível | ✅ Concluída | `src/drones/ugv/app/ugv_control.py` |
+| T-034 — Stack ROS2 para navegação | ✅ Concluída | `docs/UGV_ROS2_NAVIGATION.md` |
+| T-035 — Pipeline de visão computacional | ✅ Concluída | `docs/DRONE_AI_VISION_PIPELINE.md` |
+| T-036 — Comunicação redundante | ✅ Concluída | `docs/DRONE_COMMUNICATION_REDUNDANCY.md` |
+| T-037 — Módulo de defesa não letal | ✅ Concluída | `docs/DRONE_DEFENSE_IMPLEMENTATION.md` |
+| T-038 — Integração com Home Assistant | ✅ Concluída | `docs/DRONE_HOMEASSISTANT_MQTT_INTEGRATION.md` |
+| T-039 — Dashboard de frota | ✅ Concluída | `src/dashboard/frontend/src/components/DroneStatus.jsx` |
+| T-040 — PRD do módulo de defesa | ✅ Concluída | `prd/PRD_DRONE_DEFENSE_MODULE.md` |
+| T-041 — PRD de comunicação de drones | ✅ Concluída | `prd/PRD_DRONE_COMMUNICATION.md` |
+| T-044 — Guia de montagem UGV | ✅ Concluída | `docs/GUIA_MONTAGEM_UGV.md` |
+| T-045 — Guia de montagem UAV | ✅ Concluída | `docs/GUIA_MONTAGEM_UAV.md` |
+
 ---
 
 ## 2. Arquitetura de Hardware
