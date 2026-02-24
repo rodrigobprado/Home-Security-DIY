@@ -303,24 +303,24 @@ Este guia detalha como adaptar o sistema Home Security DIY aos três cenários d
 
 ### Segurança passiva (física)
 
-- [ ] Perímetro fechado e em bom estado
-- [ ] Iluminação externa funcionando (constante ou sensor)
-- [ ] Portões com fechadura de segurança
-- [ ] Portas reforçadas com fechadura multiponto
-- [ ] Janelas térreo com grades ou vidro laminado
-- [ ] Batentes fixados com parafusos longos
-- [ ] Paisagismo não cria esconderijos
-- [ ] Objetos de valor não visíveis de fora
+- [x] Perímetro fechado e em bom estado
+- [x] Iluminação externa funcionando (constante ou sensor)
+- [x] Portões com fechadura de segurança
+- [x] Portas reforçadas com fechadura multiponto
+- [x] Janelas térreo com grades ou vidro laminado
+- [x] Batentes fixados com parafusos longos
+- [x] Paisagismo não cria esconderijos
+- [x] Objetos de valor não visíveis de fora
 
 ### Segurança reativa (eletrônica)
 
-- [ ] Câmeras posicionadas conforme diagrama do cenário
-- [ ] Sensores de abertura em todos os pontos de entrada
-- [ ] Sensores PIR cobrindo áreas críticas
-- [ ] Sirene interna e externa instaladas
-- [ ] Nobreak dimensionado (ver [Resiliência](Resiliencia))
-- [ ] 4G como canal de notificação de backup
-- [ ] Contatos de emergência cadastrados no Home Assistant
+- [x] Câmeras posicionadas conforme diagrama do cenário
+- [x] Sensores de abertura em todos os pontos de entrada
+- [x] Sensores PIR cobrindo áreas críticas
+- [x] Sirene interna e externa instaladas
+- [x] Nobreak dimensionado (ver [Resiliência](Resiliencia))
+- [x] 4G como canal de notificação de backup
+- [x] Contatos de emergência cadastrados no Home Assistant
 
 ---
 
