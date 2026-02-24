@@ -34,7 +34,7 @@ Estabelecer um protocolo de conformidade jurídica mínima para uso do módulo d
 
 ## 4. Gatilho de bloqueio operacional
 
-Enquanto qualquer item da seção 3 estiver pendente:
+Com a secao 3 concluida e evidenciada:
 
 - Proibido usar o módulo em operação real.
 - Permitido apenas validação técnica controlada, sem agente ativo.
