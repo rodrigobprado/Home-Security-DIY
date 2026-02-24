@@ -20,7 +20,7 @@ Evidência técnica esperada: export de regras do firewall/switch.
 - [ ] SSID IoT com política segregada.
 - [ ] Firewall com regras restritivas aplicadas.
 - [ ] VPN WireGuard/Tailscale funcional para acesso remoto.
-- [x] Frigate (8554/8555) restrito a loopback no host.
+- [x] Frigate (5000/8554/8555) restrito a loopback no host.
   Evidência: `src/docker-compose.yml`
 
 ## 3. MQTT/TLS
