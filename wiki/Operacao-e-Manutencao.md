@@ -81,6 +81,11 @@ Transição de drones mock -> hardware: `docs/DRONES_MOCK_TO_HARDWARE_RUNBOOK.md
 
 Metas operacionais (SLO/SLA): `docs/SLOS_SLAS_CRITICAL_SERVICES.md`
 
+Resumo operacional:
+- Janela de medição padrão dos SLOs: 30 dias corridos.
+- Alerta preventivo quando o consumo do error budget atingir 50% no mês.
+- Revisão formal das metas a cada semestre ou após recorrência de P1.
+
 ## Hardening e resiliência
 
 - Consulte `docs/HARDENING_ANTI_TAMPER.md` para configurações de segurança
