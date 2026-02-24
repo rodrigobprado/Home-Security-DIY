@@ -90,6 +90,13 @@
       "target": "docs/ARQUITETURA_TECNICA.md",
       "type": "checklist",
       "resolved_on": "2026-02-24"
+    },
+    {
+      "issue": 673,
+      "priority": "critical",
+      "target": "docs/DRONE_REGULATORY_COMPLIANCE_BR.md",
+      "type": "checklist",
+      "resolved_on": "2026-02-24"
     }
   ]
 }

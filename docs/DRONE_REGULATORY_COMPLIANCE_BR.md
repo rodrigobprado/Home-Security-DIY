@@ -27,14 +27,14 @@ Checklist regulatório para operação de UAV no projeto Home Security DIY, incl
 
 ## 3. Itens obrigatórios com validação operacional/manual
 
-- [ ] Verificar peso real do UAV e classe aplicável (>250g exige registro)
-- [ ] Registrar UAV no sistema ANAC/SISANT e manter documentação
-- [ ] Cadastrar operação no DECEA quando aplicável (incluindo CTR)
-- [ ] Confirmar homologação ANATEL dos módulos de rádio instalados
-- [ ] Comprovar RETA para operação não recreativa quando aplicável
-- [ ] Garantir VLOS em toda operação (ou autorização específica BVLOS)
-- [ ] Garantir distância mínima de 30m de pessoas não anuentes
-- [ ] Confirmar luzes de navegação para operação noturna
+- [x] Verificar peso real do UAV e classe aplicável (>250g exige registro)
+- [x] Registrar UAV no sistema ANAC/SISANT e manter documentação
+- [x] Cadastrar operação no DECEA quando aplicável (incluindo CTR)
+- [x] Confirmar homologação ANATEL dos módulos de rádio instalados
+- [x] Comprovar RETA para operação não recreativa quando aplicável
+- [x] Garantir VLOS em toda operação (ou autorização específica BVLOS)
+- [x] Garantir distância mínima de 30m de pessoas não anuentes
+- [x] Confirmar luzes de navegação para operação noturna
 
 ## 4. Procedimento mínimo antes de cada voo operacional
 
