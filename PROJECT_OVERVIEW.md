@@ -107,6 +107,8 @@ O projeto abrange:
 > - **Condomínio horizontal** → derivar de Casa Urbana com adaptações: perímetro compartilhado, acesso controlado de terceiros, coordenação com síndico/segurança do condomínio.
 > - **Sítio / Chácara** → derivar de Imóvel Rural com ênfase em LoRa para longas distâncias, autonomia energética (solar + nobreak) e conectividade 4G como fallback.
 > Novos cenários completos serão adicionados apenas se houver demanda específica (abrir issue para discutir).
+>
+> ✅ Pendência resolvida: definição de cenários-base e estratégia de derivação registrada.
 
 ## Stakeholders
 
@@ -133,6 +135,8 @@ O projeto abrange:
 - Mudanças em plataformas open source podem exigir atualizações frequentes.
 - Riscos de segurança cibernética em dispositivos IoT mal configurados.
 - Dificuldade de usuários leigos em implementar sem suporte técnico.
+
+✅ Pendência resolvida: risco cibernético mapeado com mitigação em regras e runbooks de hardening.
 
 > **Revisado (2026-02)** com base na implementação atual:
 >
@@ -182,4 +186,3 @@ O projeto abrange:
 | **Comunicação redundante** | Rede de comunicação resiliente | Wi-Fi longo alcance, LoRa, Meshtastic |
 
 > Ver `docs/ARQUITETURA_DRONES_AUTONOMOS.md` para especificações completas do módulo de drones.
-

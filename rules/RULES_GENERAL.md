@@ -25,7 +25,7 @@
 ## Regras de edição
 
 - Ler sempre o arquivo completo antes de editar.
-- Respeitar seções marcadas como `> TODO` e não apagá-las; apenas substituí-las por conteúdo final.
+- Respeitar seções pendentes e não apagá-las; sempre substituí-las por conteúdo final ao concluir.
 - Evitar criar arquivos fora da estrutura definida, a menos que seja acordado em `MEMORY_SHARED.md`.
 
 ## Convenções de identificadores
@@ -72,4 +72,3 @@
 - Não armazenar dados sensíveis em arquivos `.md` (senhas, tokens, IPs reais)
 - Manter o `.gitignore` atualizado para excluir arquivos temporários
 - Realizar `git push` regularmente para manter o backup atualizado
-

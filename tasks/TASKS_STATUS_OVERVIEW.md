@@ -26,4 +26,5 @@
 > - Revisão obrigatória via Pull Request antes de merge para `main`
 > - CI/CD verifica cobertura de testes, typecheck e linting
 > - Ao concluir: issue fechada com `closes #NNN` no commit; entrada movida para `TASKS_DONE.md`
-
+>
+> ✅ Pendência resolvida: fluxo operacional de status está definido e em uso.

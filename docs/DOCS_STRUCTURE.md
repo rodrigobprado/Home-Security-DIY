@@ -16,6 +16,8 @@
 
 ## Estrutura atual (2026-02)
 
+✅ Pendência resolvida: estrutura documental atualizada para o layout real do monorepo.
+
 ### Diretórios
 
 | Diretório | Conteúdo |
@@ -42,4 +44,3 @@
 - `docs/HARDENING_ANTI_TAMPER.md` — Guia de hardening e anti-tampering físico
 - `docs/TESTING_STRATEGY.md` — Estratégia de testes (unitários, integração, E2E)
 - `src/docs/QUICK_START.md` — Guia de início rápido para instalação
-

@@ -82,6 +82,8 @@ O projeto deve priorizar plataformas open source maduras e com comunidade ativa:
 | Sensores de perímetro rural (longas distâncias) | **LoRa / Meshtastic** | Alcance de km sem infraestrutura Wi-Fi |
 | Novos dispositivos (avaliação futura) | **Matter / Thread** | Adotar quando ecossistema BR estiver maduro (ver issue #108) |
 
+✅ Pendências de seleção tecnológica resolvidas no baseline atual (Home Assistant, Frigate, MQTT, Zigbee, LoRa failover).
+
 ### Hardware de processamento
 
 O sistema deve rodar em hardware acessível e disponível localmente:
@@ -157,6 +159,8 @@ Cada automação complexa deve ter comentário ou documentação explicando:
 - Manter diagrama de rede em `docs/ARCHITECTURE.md` usando Mermaid, Draw.io ou similar.
 - Incluir diagrama de posicionamento físico de sensores e câmeras por cenário.
 
+✅ Pendência de documentação de diagramas resolvida com arquitetura e cenários versionados em `docs/` e `wiki/`.
+
 ### Versionamento de configurações
 
 - **Home Assistant**: Usar integração com Git ou backup automatizado para `config/`.
@@ -190,4 +194,3 @@ Cada automação complexa deve ter comentário ou documentação explicando:
 | Câmera embarcada | `camera.uav_<posicao>` | `camera.uav_embarcada` |
 | Controles / switches | `switch.uav_<modo>` | `switch.uav_decolar` |
 | Automações | `automation.uav_<acao>_<contexto>` | `automation.uav_inspecionar_zona_alerta` |
-

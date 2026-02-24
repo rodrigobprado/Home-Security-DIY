@@ -204,5 +204,6 @@ Descrever o ecossistema de agentes que atuam neste projeto, seus papéis especia
 > 5. `Agente_Documentador` → guias de montagem UGV/UAV (T-044, T-045) ao concluir hardware
 >
 > **Divisão de responsabilidades**: Validada para o contexto atual.
+>
+> ✅ Pendência resolvida: ordem de execução da Fase 2 documentada e tarefas já concluídas.
 > 6 agentes cobrem todos os domínios do projeto. `Agente_Arquiteto_Drones` (AGENT_006) adicionado especificamente para o módulo de drones autônomos.
-
