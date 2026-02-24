@@ -73,6 +73,14 @@ describe("useStore actions", () => {
     expect(useStore.getState().assets[0].status).toBe("inactive");
   });
 
+  it("updateAsset keeps array untouched when id does not match", () => {
+    const original = { id: "1", name: "Sensor A", status: "active" };
+    useStore.setState({ assets: [original] });
+
+    useStore.getState().updateAsset({ id: "2", name: "Outro", status: "inactive" });
+    expect(useStore.getState().assets).toEqual([original]);
+  });
+
   it("removeAsset removes asset by id", () => {
     const assets = [
       { id: "1", name: "Sensor A" },

@@ -30,4 +30,11 @@ describe("QuickActionsMenu", () => {
     fireEvent.mouseDown(document.body);
     expect(screen.queryByRole("navigation", { name: /Menu Operacional/i })).not.toBeInTheDocument();
   });
+
+  it("closes dropdown when clicking a menu link", () => {
+    renderMenu();
+    fireEvent.click(screen.getByRole("button", { name: /Abrir menu operacional/i }));
+    fireEvent.click(screen.getByRole("link", { name: "Admin de Ativos" }));
+    expect(screen.queryByRole("navigation", { name: /Menu Operacional/i })).not.toBeInTheDocument();
+  });
 });
