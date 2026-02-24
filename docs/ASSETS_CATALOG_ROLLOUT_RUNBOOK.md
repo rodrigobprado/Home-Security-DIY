@@ -6,11 +6,11 @@
 
 ## 1. Pré-requisitos
 
-- [ ] `DASHBOARD_ADMIN_KEY` configurado em todos os ambientes de destino
-- [ ] Banco de dados acessível e migração prévia testada em staging
-- [ ] Backup do banco realizado (`scripts/backup.sh`) antes do deploy
-- [ ] Pipeline CI verde (todos os testes passando)
-- [ ] Stack do docker-compose ou K8s respondendo
+- [x] `DASHBOARD_ADMIN_KEY` configurado em todos os ambientes de destino
+- [x] Banco de dados acessível e migração prévia testada em staging
+- [x] Backup do banco realizado (`scripts/backup.sh`) antes do deploy
+- [x] Pipeline CI verde (todos os testes passando)
+- [x] Stack do docker-compose ou K8s respondendo
 
 ---
 
