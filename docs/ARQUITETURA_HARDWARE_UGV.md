@@ -15,7 +15,7 @@ Objetivos de engenharia:
 - operacao outdoor (quintal/jardim/corredor lateral),
 - modularidade para manutencao e upgrade,
 - custo controlado para MVP,
-- compatibilidade com stack ROS2 prevista no projeto (T-034).
+- compatibilidade com stack ROS2 definida no projeto (T-034).
 
 ---
 
@@ -171,7 +171,7 @@ Itens de compatibilidade confirmados por arquitetura:
 - Controle de base diferencial com interface `cmd_vel`.
 - SBC com recursos suficientes para Nav2 + telemetria + camera (RPi5 recomendado).
 
-Topicos/frames previstos para integracao (MVP):
+Topicos/frames definidos para integracao (MVP):
 - `/cmd_vel` (geometry_msgs/Twist)
 - `/odom` (nav_msgs/Odometry)
 - `/scan` (sensor_msgs/LaserScan)
