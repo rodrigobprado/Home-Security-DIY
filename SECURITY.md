@@ -49,12 +49,40 @@ Inclua no report:
 
 Nós nos comprometemos a responder em até 48 horas.
 
+### SLA de resposta por severidade
+
+| Severidade | Confirmação inicial | Mitigação/Plano | Janela alvo de correção |
+|---|---|---|---|
+| Crítica | até 24h | até 48h | até 7 dias corridos |
+| Alta | até 48h | até 5 dias corridos | até 14 dias corridos |
+| Média | até 5 dias corridos | até 10 dias corridos | até 30 dias corridos |
+| Baixa | até 7 dias corridos | até 20 dias corridos | próxima release planejada |
+
+## Escopo de reporte
+
+### Em escopo
+- API e frontend do dashboard (`src/dashboard/**`)
+- Manifests Docker/K8s e scripts de deploy (`src/docker-compose.yml`, `k8s/**`, `scripts/**`)
+- Configurações e integrações críticas de segurança (MQTT, Home Assistant, Frigate)
+
+### Fora de escopo
+- Ataques de engenharia social sem vulnerabilidade técnica comprovada
+- Vulnerabilidades dependentes exclusivamente de configuração local insegura já documentada
+- Falhas em hardware/firmware de terceiros sem relação direta com este repositório
+
 ## Processo de Resposta
 
 1. **Triagem**: Analisaremos o report para confirmar a vulnerabilidade e determinar sua severidade.
 2. **Correção**: Desenvolveremos um patch de correção em um branch privado.
 3. **Validação**: Testaremos a correção para garantir que não introduza regressões.
 4. **Divulgação**: Publicaremos a correção e um Security Advisory detalhando o problema (após a mitigação estar disponível).
+
+## Política de divulgação e crédito
+
+- Não divulgar detalhes exploráveis antes de patch/mitigação disponível.
+- Após correção, publicar advisory com versão afetada, versão corrigida, impacto e recomendação.
+- Pesquisadores que desejarem serão creditados no advisory.
+- CVE poderá ser solicitado quando aplicável ao impacto e ao ecossistema.
 
 ## Boas Práticas de Segurança para Usuários
 
