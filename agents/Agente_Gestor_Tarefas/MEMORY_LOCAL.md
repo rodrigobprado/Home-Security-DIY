@@ -58,5 +58,4 @@ T-018, T-019, T-020 (normas) → PRDs que referenciam normas
 
 - [ ] Humano deve aprovar ordem de execução sugerida
 - [ ] Definir critério de "done" para cada tarefa
-- [ ] Estabelecer cadência de revisão do backlog (semanal? quinzenal?)
-
+- [x] Estabelecer cadência de revisão do backlog (semanal? quinzenal?)
