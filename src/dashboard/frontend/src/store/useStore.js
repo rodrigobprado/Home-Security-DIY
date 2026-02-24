@@ -13,6 +13,11 @@ const useStore = create((set) => ({
   // Status de conexão WebSocket
   wsStatus: 'connecting', // connecting | connected | disconnected
 
+  // Catálogo de ativos (Issue #337)
+  assets: [],
+  assetsLoading: false,
+  assetsError: null,
+
   // Actions
   setStates: (states) => set({ states }),
 
@@ -35,6 +40,24 @@ const useStore = create((set) => ({
   setServices: (services) => set({ services }),
 
   setWsStatus: (wsStatus) => set({ wsStatus }),
+
+  // Assets actions
+  setAssets: (assets) => set({ assets }),
+  setAssetsLoading: (assetsLoading) => set({ assetsLoading }),
+  setAssetsError: (assetsError) => set({ assetsError }),
+
+  addAsset: (asset) =>
+    set((s) => ({ assets: [asset, ...s.assets] })),
+
+  updateAsset: (updatedAsset) =>
+    set((s) => ({
+      assets: s.assets.map((a) => (a.id === updatedAsset.id ? updatedAsset : a)),
+    })),
+
+  removeAsset: (assetId) =>
+    set((s) => ({
+      assets: s.assets.filter((a) => a.id !== assetId),
+    })),
 }))
 
 export default useStore
