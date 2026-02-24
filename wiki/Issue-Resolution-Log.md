@@ -5,3 +5,4 @@ Registro cronológico de fechamento das issues de pendências documentais e de c
 | Issue | Prioridade | Arquivo-alvo | Status | Data |
 |---|---|---|---|---|
 | #660 | critical | `rules/RULES_COMPLIANCE_AND_STANDARDS.md` | fechado | 2026-02-24 |
+| #661 | critical | `wiki/Seguranca-e-Compliance.md` | fechado | 2026-02-24 |
