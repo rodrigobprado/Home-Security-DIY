@@ -60,6 +60,7 @@ O projeto combina automação, vídeo inteligente, sensores e drones para segura
 - Estratégia de secrets no Kubernetes com External Secrets em produção (`k8s/overlays/production/external-secrets.yaml`).
 - Dependências dos drones totalmente pinadas (`==`), incluindo dependências opcionais comentadas para ativação futura.
 - Dependabot padronizado para `github-actions`, Docker, pip e npm com agenda semanal e labels de triagem.
+- README da raiz consolidado com setup de desenvolvimento/produção e fluxo operacional do dashboard.
 
 ## Documentação no repositório
 
