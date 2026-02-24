@@ -1,30 +1,65 @@
+import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 
 const LINKS = [
-  { to: '/admin/assets', label: 'Admin de Ativos', description: 'Gestão completa de sensores, câmeras e drones.' },
-  { to: '/admin/assets?type=sensor', label: 'Cadastro de Sensores', description: 'Abrir cadastro já filtrado para sensores.' },
-  { to: '/admin/assets?type=camera', label: 'Cadastro de Câmeras', description: 'Abrir cadastro já filtrado para câmeras.' },
-  { to: '/admin/assets?type=ugv', label: 'Cadastro UGV', description: 'Abrir cadastro já filtrado para drones terrestres.' },
-  { to: '/admin/assets?type=uav', label: 'Cadastro UAV', description: 'Abrir cadastro já filtrado para drones aéreos.' },
-  { to: '/simplified', label: 'Modo Kiosk', description: 'Tela simplificada para monitor dedicado.' },
+  { to: '/', label: 'Home' },
+  { to: '/admin/assets', label: 'Admin de Ativos' },
+  { to: '/admin/assets?type=sensor', label: 'Cadastro de Sensores' },
+  { to: '/admin/assets?type=camera', label: 'Cadastro de Câmeras' },
+  { to: '/admin/assets?type=ugv', label: 'Cadastro UGV' },
+  { to: '/admin/assets?type=uav', label: 'Cadastro UAV' },
+  { to: '/simplified', label: 'Modo Kiosk' },
 ]
 
 export default function QuickActionsMenu() {
+  const [open, setOpen] = useState(false)
+  const containerRef = useRef(null)
+
+  useEffect(() => {
+    function onDocumentClick(event) {
+      if (!containerRef.current) return
+      if (!containerRef.current.contains(event.target)) setOpen(false)
+    }
+    function onEscape(event) {
+      if (event.key === 'Escape') setOpen(false)
+    }
+    document.addEventListener('mousedown', onDocumentClick)
+    document.addEventListener('keydown', onEscape)
+    return () => {
+      document.removeEventListener('mousedown', onDocumentClick)
+      document.removeEventListener('keydown', onEscape)
+    }
+  }, [])
+
   return (
-    <div className="card flex flex-col gap-2">
-      <h2 className="text-xs font-semibold uppercase tracking-wider text-muted">Menu Operacional</h2>
-      <div className="grid gap-2">
-        {LINKS.map((link) => (
-          <Link
-            key={link.to}
-            to={link.to}
-            className="block rounded border border-border bg-surface px-2 py-2 hover:border-accent/50 hover:bg-accent/5 transition-colors"
-          >
-            <p className="text-sm font-medium text-primary">{link.label}</p>
-            <p className="text-xs text-muted">{link.description}</p>
-          </Link>
-        ))}
-      </div>
+    <div ref={containerRef} className="relative">
+      <button
+        type="button"
+        aria-label="Abrir menu operacional"
+        aria-expanded={open ? 'true' : 'false'}
+        onClick={() => setOpen((prev) => !prev)}
+        className="h-11 w-11 rounded bg-[#1f2125] border border-border text-[#56c6b3] hover:bg-[#2a2d31] transition-colors flex items-center justify-center"
+      >
+        <span className="text-xl leading-none">☰</span>
+      </button>
+
+      {open && (
+        <nav
+          aria-label="Menu Operacional"
+          className="absolute right-0 top-14 z-50 min-w-[260px] rounded bg-[#24262b] border border-[#30323a] py-2 shadow-xl"
+        >
+          {LINKS.map((link) => (
+            <Link
+              key={link.to}
+              to={link.to}
+              onClick={() => setOpen(false)}
+              className="block px-4 py-2 text-lg text-[#7a7d84] hover:text-[#56c6b3] hover:bg-[#2b2d33] transition-colors"
+            >
+              {link.label}
+            </Link>
+          ))}
+        </nav>
+      )}
     </div>
   )
 }

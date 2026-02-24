@@ -96,7 +96,11 @@ describe("App routing and dashboard", () => {
     expect(await screen.findByText(/HOME SECURITY/i)).toBeInTheDocument();
     expect(screen.getByText("Mapa Operacional")).toBeInTheDocument();
     expect(screen.getByText("Drones")).toBeInTheDocument();
-    expect(screen.getByText("Menu Operacional")).toBeInTheDocument();
+    const menuButton = screen.getByRole("button", { name: /Abrir menu operacional/i });
+    expect(menuButton).toBeInTheDocument();
+    fireEvent.click(menuButton);
+    expect(screen.getByRole("navigation", { name: /Menu Operacional/i })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /^Home$/i })).toHaveAttribute("href", "/");
     expect(screen.getByRole("link", { name: /Admin de Ativos/i })).toHaveAttribute("href", "/admin/assets");
     expect(screen.getByRole("link", { name: /Cadastro de Sensores/i })).toHaveAttribute("href", "/admin/assets?type=sensor");
     expect(screen.getByRole("link", { name: /Cadastro de Câmeras/i })).toHaveAttribute("href", "/admin/assets?type=camera");
