@@ -93,6 +93,12 @@ python3 -m venv .venv
 .venv/bin/pytest -q tests/backend
 ```
 
+### 3.6 Dependabot e atualizações automáticas
+
+- O repositório usa Dependabot com execução semanal para `github-actions`, `docker`, `pip` e `npm`.
+- PRs de dependências recebem labels automáticas para triagem rápida.
+- Alterações na política ficam em `.github/dependabot.yml`.
+
 ---
 
 ## 4. Como contribuir
