@@ -7,42 +7,136 @@ version: 2
 updates:
   - package-ecosystem: "github-actions"
     directory: "/"
+    target-branch: "main"
     schedule:
       interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "America/Sao_Paulo"
     open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "ci"
+    commit-message:
+      prefix: "chore(deps)"
+    groups:
+      github-actions:
+        patterns:
+          - "*"
 
   - package-ecosystem: "docker"
     directory: "/src"
+    target-branch: "main"
     schedule:
       interval: "weekly"
+      day: "monday"
+      time: "06:10"
+      timezone: "America/Sao_Paulo"
     open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "docker"
+    commit-message:
+      prefix: "chore(deps)"
+    groups:
+      docker-images:
+        patterns:
+          - "*"
 
   - package-ecosystem: "pip"
     directory: "/src/dashboard/backend"
+    target-branch: "main"
     schedule:
       interval: "weekly"
+      day: "monday"
+      time: "06:20"
+      timezone: "America/Sao_Paulo"
     open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "python"
+    commit-message:
+      prefix: "chore(deps)"
+    groups:
+      dashboard-backend-pip:
+        patterns:
+          - "*"
 
   - package-ecosystem: "pip"
     directory: "/src/drones/common"
+    target-branch: "main"
     schedule:
       interval: "weekly"
+      day: "monday"
+      time: "06:30"
+      timezone: "America/Sao_Paulo"
     open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "python"
+      - "drones"
+    commit-message:
+      prefix: "chore(deps)"
+    groups:
+      drones-common-pip:
+        patterns:
+          - "*"
 
   - package-ecosystem: "pip"
     directory: "/src/drones/ugv/app"
+    target-branch: "main"
     schedule:
       interval: "weekly"
+      day: "monday"
+      time: "06:35"
+      timezone: "America/Sao_Paulo"
     open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "python"
+      - "drones"
+    commit-message:
+      prefix: "chore(deps)"
+    groups:
+      drones-ugv-pip:
+        patterns:
+          - "*"
 
   - package-ecosystem: "pip"
     directory: "/src/drones/uav"
+    target-branch: "main"
     schedule:
       interval: "weekly"
+      day: "monday"
+      time: "06:40"
+      timezone: "America/Sao_Paulo"
     open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "python"
+      - "drones"
+    commit-message:
+      prefix: "chore(deps)"
+    groups:
+      drones-uav-pip:
+        patterns:
+          - "*"
 
   - package-ecosystem: "npm"
     directory: "/src/dashboard/frontend"
+    target-branch: "main"
     schedule:
       interval: "weekly"
+      day: "monday"
+      time: "06:50"
+      timezone: "America/Sao_Paulo"
     open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "frontend"
+    commit-message:
+      prefix: "chore(deps)"
+    groups:
+      dashboard-frontend-npm:
+        patterns:
+          - "*"
