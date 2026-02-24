@@ -48,6 +48,13 @@
       "target": "docs/GUIA_MONTAGEM_UAV.md",
       "type": "checklist",
       "resolved_on": "2026-02-24"
+    },
+    {
+      "issue": 667,
+      "priority": "medium",
+      "target": "wiki/Cenarios-Residenciais.md",
+      "type": "checklist",
+      "resolved_on": "2026-02-24"
     }
   ]
 }
