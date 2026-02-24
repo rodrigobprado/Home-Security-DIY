@@ -41,6 +41,13 @@
       "target": "docs/GUIA_MONTAGEM_UGV.md",
       "type": "checklist",
       "resolved_on": "2026-02-24"
+    },
+    {
+      "issue": 666,
+      "priority": "medium",
+      "target": "docs/GUIA_MONTAGEM_UAV.md",
+      "type": "checklist",
+      "resolved_on": "2026-02-24"
     }
   ]
 }
