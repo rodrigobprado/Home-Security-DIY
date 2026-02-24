@@ -2,9 +2,15 @@
 
 Todas as mudanças relevantes deste projeto serão registradas neste arquivo.
 
-O formato segue Keep a Changelog e versionamento semântico.
+O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/)
+e [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
 ## [Unreleased]
+
+### Changed
+- Padronização do changelog com versão publicada e regras de atualização.
+
+## [0.1.0] - 2026-02-24
 
 ### Added
 - Runbook de backup e restore do PostgreSQL em `docs/POSTGRES_BACKUP_RESTORE_RUNBOOK.md`.
@@ -20,3 +26,6 @@ O formato segue Keep a Changelog e versionamento semântico.
 - `mosquitto` adiciona listener loopback para TLS em `127.0.0.1:8883` e seleção de configuração por `APP_ENV`.
 - Dependências dos drones fixadas com versões exatas (`==`).
 - Configuração do Dependabot atualizada para ecossistemas reais do repositório.
+
+[unreleased]: https://github.com/rodrigobprado/Home-Security-DIY/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/rodrigobprado/Home-Security-DIY/releases/tag/v0.1.0

@@ -61,6 +61,7 @@ O projeto combina automação, vídeo inteligente, sensores e drones para segura
 ## Documentação no repositório
 
 - `README.md` — visão geral e quickstart
+- `CHANGELOG.md` — histórico versionado de mudanças por release
 - `docs/` — arquitetura, hardening, threat model, ADRs
 - `docs/*RUNBOOK*.md` — guias operacionais de manutenção e recuperação
 - `prd/` — Product Requirements Documents
