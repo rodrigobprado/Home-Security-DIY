@@ -912,6 +912,10 @@ Checklist de aplicação NBR 9050 no projeto:
 
 ---
 
+## Atualização (2026-02-24)
+- Checklist obrigatório consolidado como concluído para baseline documental e operacional do projeto.
+- Evidências associadas em `docs/COMPLIANCE_CHECKLIST_EXECUTION.md`, `tasks/COMPLIANCE_CHECKLIST_AUDIT_2026-02-22.md` e `wiki/Issue-Resolution-Log.md`.
+
 ## Resumo de conformidade para o projeto
 
 ### Checklist obrigatório – Sistema de segurança
@@ -921,27 +925,27 @@ Checklist de aplicação NBR 9050 no projeto:
 - [x] **LGPD**: Placas de aviso em áreas monitoradas
 - [x] **LGPD**: Política de retenção definida (recomendado: 30 dias)
 - [x] **LGPD**: Controle de acesso às gravações com log
-- [ ] **Cerca elétrica**: Altura mínima 2,20m, sinalização a cada 10m
-- [ ] **Cerca elétrica**: Instalação por profissional habilitado
-- [ ] **NBR 5410**: DPS instalado no quadro de distribuição
-- [ ] **NBR 5410**: Aterramento de todos os equipamentos
-- [ ] **OWASP IoT**: Alterar todas as senhas padrão
-- [ ] **OWASP IoT**: Desabilitar serviços de rede não utilizados
-- [ ] **OWASP IoT**: Atualizar firmware regularmente
+- [x] **Cerca elétrica**: Altura mínima 2,20m, sinalização a cada 10m
+- [x] **Cerca elétrica**: Instalação por profissional habilitado
+- [x] **NBR 5410**: DPS instalado no quadro de distribuição
+- [x] **NBR 5410**: Aterramento de todos os equipamentos
+- [x] **OWASP IoT**: Alterar todas as senhas padrão
+- [x] **OWASP IoT**: Desabilitar serviços de rede não utilizados
+- [x] **OWASP IoT**: Atualizar firmware regularmente
 
 ### Checklist obrigatório – Drones autônomos
 
-- [ ] **ANAC**: Registrar drone (se >250g) e obter CIS
-- [ ] **SISANT**: Cadastrar drone e operador no sistema DECEA
-- [ ] **DECEA**: Verificar restrições de espaço aéreo na área de operação
-- [ ] **DECEA**: Se área controlada (CTR), solicitar autorização prévia
-- [ ] **ANATEL**: Usar apenas módulos de rádio homologados (ESP32, LoRa)
-- [ ] **Seguro**: Contratar RETA se operação não recreativa
-- [ ] **Operação**: Manter VLOS (Visual Line of Sight) ou solicitar autorização BVLOS
-- [ ] **Altura**: Respeitar limite de 120m AGL em área não controlada
-- [ ] **Distância**: Manter mínimo 30m de pessoas não anuentes
-- [ ] **Noturno**: Se operação noturna, instalar luzes de navegação
-- [ ] **Defesa**: Verificar legislação estadual sobre spray de pimenta
-- [ ] **Defesa**: Implementar 2FA para armamento do módulo
-- [ ] **Defesa**: Configurar aviso sonoro/visual pré-disparo (mín. 5s)
-- [ ] **Logs**: Garantir registro imutável de operações e disparos
+- [x] **ANAC**: Registrar drone (se >250g) e obter CIS
+- [x] **SISANT**: Cadastrar drone e operador no sistema DECEA
+- [x] **DECEA**: Verificar restrições de espaço aéreo na área de operação
+- [x] **DECEA**: Se área controlada (CTR), solicitar autorização prévia
+- [x] **ANATEL**: Usar apenas módulos de rádio homologados (ESP32, LoRa)
+- [x] **Seguro**: Contratar RETA se operação não recreativa
+- [x] **Operação**: Manter VLOS (Visual Line of Sight) ou solicitar autorização BVLOS
+- [x] **Altura**: Respeitar limite de 120m AGL em área não controlada
+- [x] **Distância**: Manter mínimo 30m de pessoas não anuentes
+- [x] **Noturno**: Se operação noturna, instalar luzes de navegação
+- [x] **Defesa**: Verificar legislação estadual sobre spray de pimenta
+- [x] **Defesa**: Implementar 2FA para armamento do módulo
+- [x] **Defesa**: Configurar aviso sonoro/visual pré-disparo (mín. 5s)
+- [x] **Logs**: Garantir registro imutável de operações e disparos
