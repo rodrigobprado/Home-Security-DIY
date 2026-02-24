@@ -10,9 +10,9 @@ Responsavel: <nome>
 | camera.exemplo_1 | portao frontal | PASS/FAIL | PASS/FAIL | PASS/FAIL | PASS/FAIL |
 
 ## Evidencias anexadas
-- [ ] Fotos dos angulos de cada camera
-- [ ] Foto/registro da sinalizacao de monitoramento
-- [ ] Captura de tela do log de acesso a gravacoes
+- Evidência: Fotos dos angulos de cada camera (anexar)
+- Evidência: Foto/registro da sinalizacao de monitoramento (anexar)
+- Evidência: Captura de tela do log de acesso a gravacoes (anexar)
 
 ## Observacoes
 - Item:
