@@ -21,6 +21,7 @@ Evidência técnica esperada: export de regras do firewall/switch.
 - [ ] Firewall com regras restritivas aplicadas.
 - [ ] VPN WireGuard/Tailscale funcional para acesso remoto.
 - [x] Frigate (5000/8554/8555) restrito a loopback no host.
+- [x] Dashboard API (`8000`) restrita a loopback (`127.0.0.1`) no host.
   Evidência: `src/docker-compose.yml`
 
 ## 3. MQTT/TLS

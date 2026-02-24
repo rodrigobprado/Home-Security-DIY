@@ -10,6 +10,7 @@ def test_dashboard_api_is_loopback_only_in_compose():
 
     assert '"127.0.0.1:8000:8000"' in content
     assert '"8000:8000"' not in content
+    assert '"0.0.0.0:8000:8000"' not in content
 
 
 def test_mqtt_tls_listener_is_exposed_in_loopback():
