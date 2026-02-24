@@ -26,3 +26,4 @@ Registro cronológico de fechamento das issues de pendências documentais e de c
 | #679 | medium | `docs/ASSETS_CATALOG_ROLLOUT_RUNBOOK.md` | fechado | 2026-02-24 |
 | #680 | medium | `wiki/Operacao-e-Manutencao.md` | fechado | 2026-02-24 |
 | #681 | critical | `docs/COMPLIANCE_CHECKLIST_EXECUTION.md` | fechado | 2026-02-24 |
+| #682 | low | `docs/DOCS_TODO.md` | fechado | 2026-02-24 |

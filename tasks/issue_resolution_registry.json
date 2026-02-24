@@ -158,6 +158,17 @@
         "pendencias manuais",
         "Backlog operacional aberto"
       ]
+    },
+    {
+      "issue": 682,
+      "priority": "low",
+      "target": "docs/DOCS_TODO.md",
+      "type": "textual",
+      "resolved_on": "2026-02-24",
+      "forbidden_patterns": [
+        "planejad",
+        "pendências de documentação resolvidas"
+      ]
     }
   ]
 }
