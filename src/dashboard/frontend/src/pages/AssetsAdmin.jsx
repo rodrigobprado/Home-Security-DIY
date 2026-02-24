@@ -2,7 +2,8 @@
  * Página de Administração de Ativos — Issue #337.
  * Permite listar, cadastrar, editar e desativar sensores, câmeras, UGV e UAV.
  */
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import useStore from '../store/useStore'
 import { useAssets } from '../hooks/useAssets'
 
@@ -277,16 +278,23 @@ function AssetRow({ asset, onEdit, onDelete, onRestore }) {
 // ---------------------------------------------------------------------------
 export default function AssetsAdmin() {
   const { assets, assetsLoading, assetsError, refetch } = useAssets()
-  const { addAsset, updateAsset, removeAsset } = useStore()
+  const { addAsset, updateAsset } = useStore()
+  const [searchParams, setSearchParams] = useSearchParams()
+
+  const typeParam = (searchParams.get('type') || '').toLowerCase()
+  const initialType = Object.hasOwn(ASSET_TYPE_LABELS, typeParam) ? typeParam : ''
 
   const [showForm, setShowForm] = useState(false)
   const [editTarget, setEditTarget] = useState(null)
   const [adminKey, setAdminKey] = useState('')
-  const [filterType, setFilterType] = useState('')
+  const [filterType, setFilterType] = useState(initialType)
   const [filterStatus, setFilterStatus] = useState('')
   const [filterSearch, setFilterSearch] = useState('')
   const [feedback, setFeedback] = useState(null)
-  const [confirmDelete, setConfirmDelete] = useState(null)
+
+  useEffect(() => {
+    setFilterType(initialType)
+  }, [initialType])
 
   function showFeedback(msg, isError = false) {
     setFeedback({ msg, isError })
@@ -351,6 +359,14 @@ export default function AssetsAdmin() {
     }
     return true
   })
+
+  function handleFilterTypeChange(nextType) {
+    setFilterType(nextType)
+    const next = new URLSearchParams(searchParams)
+    if (nextType) next.set('type', nextType)
+    else next.delete('type')
+    setSearchParams(next, { replace: true })
+  }
 
   return (
     <div className="flex flex-col gap-4 p-4 overflow-y-auto h-full">
@@ -425,7 +441,7 @@ export default function AssetsAdmin() {
         />
         <select
           value={filterType}
-          onChange={(e) => setFilterType(e.target.value)}
+          onChange={(e) => handleFilterTypeChange(e.target.value)}
           className="bg-surface border border-border rounded px-2 py-1.5 text-sm text-primary"
         >
           <option value="">Todos os tipos</option>

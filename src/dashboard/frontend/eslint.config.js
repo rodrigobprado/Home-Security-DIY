@@ -14,6 +14,8 @@ export default [
         document: "readonly",
         fetch: "readonly",
         WebSocket: "readonly",
+        URLSearchParams: "readonly",
+        FileReader: "readonly",
         setInterval: "readonly",
         clearInterval: "readonly",
         setTimeout: "readonly",

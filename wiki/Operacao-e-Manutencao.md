@@ -8,6 +8,16 @@ Acesse `http://localhost:3000` (ou `dashboard.home.local` em produção):
 
 - **Modo completo (`/`)**: visão completa com alarme, sensores, mapa, câmeras, drones e status dos serviços
 - **Modo kiosk (`/simplified`)**: tela de TV/monitor dedicado — barra de alarme, mapa e grid de câmeras
+- **Admin de ativos (`/admin/assets`)**: CRUD de sensores, câmeras, UGV e UAV
+
+No modo completo (`/`), o card **Menu Operacional** traz atalhos diretos para:
+
+- Administração de ativos
+- Cadastro de sensores (`/admin/assets?type=sensor`)
+- Cadastro de câmeras (`/admin/assets?type=camera`)
+- Cadastro de drones UGV (`/admin/assets?type=ugv`)
+- Cadastro de drones UAV (`/admin/assets?type=uav`)
+- Modo kiosk (`/simplified`)
 
 O dashboard atualiza em tempo real via WebSocket (fan-out do Home Assistant).
 

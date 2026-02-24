@@ -1,4 +1,5 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { MemoryRouter } from "react-router-dom";
 import { vi } from "vitest";
 import AssetsAdmin from "./AssetsAdmin";
 
@@ -24,6 +25,14 @@ function setupMockAssets(overrides = {}) {
   });
 }
 
+function renderWithRouter(initialEntries = ["/admin/assets"]) {
+  return render(
+    <MemoryRouter initialEntries={initialEntries}>
+      <AssetsAdmin />
+    </MemoryRouter>,
+  );
+}
+
 describe("AssetsAdmin", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -31,20 +40,20 @@ describe("AssetsAdmin", () => {
   });
 
   it("renders the page title and empty state message", () => {
-    render(<AssetsAdmin />);
+    renderWithRouter();
     expect(screen.getByText("Cadastro de Ativos")).toBeInTheDocument();
     expect(screen.getByText(/Nenhum ativo cadastrado/)).toBeInTheDocument();
   });
 
   it("shows loading state", () => {
     setupMockAssets({ assetsLoading: true });
-    render(<AssetsAdmin />);
+    renderWithRouter();
     expect(screen.getByText("Carregando ativos...")).toBeInTheDocument();
   });
 
   it("shows error state", () => {
     setupMockAssets({ assetsError: "Network error" });
-    render(<AssetsAdmin />);
+    renderWithRouter();
     expect(screen.getByText(/Erro: Network error/)).toBeInTheDocument();
   });
 
@@ -71,14 +80,14 @@ describe("AssetsAdmin", () => {
         },
       ],
     });
-    render(<AssetsAdmin />);
+    renderWithRouter();
     expect(screen.getByText("Sensor Porta")).toBeInTheDocument();
     expect(screen.getByText("Camera Entrada")).toBeInTheDocument();
     expect(screen.getByText(/binary_sensor.porta/)).toBeInTheDocument();
   });
 
   it("shows the form when clicking Novo Ativo", () => {
-    render(<AssetsAdmin />);
+    renderWithRouter();
     const btn = screen.getByText("+ Novo Ativo");
     fireEvent.click(btn);
     expect(screen.getByText("Novo Ativo")).toBeInTheDocument();
@@ -86,7 +95,7 @@ describe("AssetsAdmin", () => {
   });
 
   it("closes the form when clicking Cancelar", () => {
-    render(<AssetsAdmin />);
+    renderWithRouter();
     fireEvent.click(screen.getByText("+ Novo Ativo"));
     expect(screen.getByPlaceholderText(/ex: Sensor Porta Entrada/)).toBeInTheDocument();
     fireEvent.click(screen.getByText("Cancelar"));
@@ -94,21 +103,21 @@ describe("AssetsAdmin", () => {
   });
 
   it("shows admin key input field", () => {
-    render(<AssetsAdmin />);
+    renderWithRouter();
     expect(
       screen.getByPlaceholderText(/Necessária para criar, editar ou desativar ativos/),
     ).toBeInTheDocument();
   });
 
   it("shows filter controls", () => {
-    render(<AssetsAdmin />);
+    renderWithRouter();
     expect(screen.getByPlaceholderText(/Buscar por nome ou entity_id/)).toBeInTheDocument();
     expect(screen.getByText("Todos os tipos")).toBeInTheDocument();
     expect(screen.getByText("Todos os status")).toBeInTheDocument();
   });
 
   it("calls refetch when clicking Atualizar", () => {
-    render(<AssetsAdmin />);
+    renderWithRouter();
     const btn = screen.getByText("↻ Atualizar");
     fireEvent.click(btn);
     expect(mockRefetch).toHaveBeenCalledOnce();
@@ -128,7 +137,7 @@ describe("AssetsAdmin", () => {
         },
       ],
     });
-    render(<AssetsAdmin />);
+    renderWithRouter();
     expect(screen.getByText("Sensor Inativo")).toBeInTheDocument();
     // Ativo inativo deve ter botão Restaurar, não Desativar
     expect(screen.getByText("Restaurar")).toBeInTheDocument();
@@ -136,7 +145,7 @@ describe("AssetsAdmin", () => {
   });
 
   it("shows form validation error for missing admin key", async () => {
-    render(<AssetsAdmin />);
+    renderWithRouter();
     fireEvent.click(screen.getByText("+ Novo Ativo"));
 
     const nameInput = screen.getByPlaceholderText(/ex: Sensor Porta Entrada/);
@@ -177,11 +186,40 @@ describe("AssetsAdmin", () => {
         },
       ],
     });
-    render(<AssetsAdmin />);
+    renderWithRouter();
 
     const searchInput = screen.getByPlaceholderText(/Buscar por nome ou entity_id/);
     fireEvent.change(searchInput, { target: { value: "Camera" } });
 
+    expect(screen.getByText("Camera Entrada")).toBeInTheDocument();
+    expect(screen.queryByText("Sensor Porta")).not.toBeInTheDocument();
+  });
+
+  it("applies filterType from query param", () => {
+    setupMockAssets({
+      assets: [
+        {
+          id: "uuid-1",
+          name: "Sensor Porta",
+          entity_id: "binary_sensor.porta",
+          asset_type: "sensor",
+          status: "active",
+          is_active: true,
+          location: null,
+        },
+        {
+          id: "uuid-2",
+          name: "Camera Entrada",
+          entity_id: "camera.entrada",
+          asset_type: "camera",
+          status: "active",
+          is_active: true,
+          location: null,
+        },
+      ],
+    });
+
+    renderWithRouter(["/admin/assets?type=camera"]);
     expect(screen.getByText("Camera Entrada")).toBeInTheDocument();
     expect(screen.queryByText("Sensor Porta")).not.toBeInTheDocument();
   });
