@@ -269,6 +269,7 @@ REGRA-DRONE-10: Whitelist de pessoas autorizadas deve ser configurável.
 - `docs/ARQUITETURA_DRONES_AUTONOMOS.md` — fonte principal desta página
 - `docs/ARQUITETURA_HARDWARE_UGV.md` — especificações detalhadas do UGV
 - `docs/ARQUITETURA_HARDWARE_UAV.md` — especificações detalhadas do UAV
+- `docs/DRONES_MOCK_TO_HARDWARE_RUNBOOK.md` — transição segura de mock para hardware real
 - `docs/LEGAL_AND_ETHICS.md` — aspectos legais e éticos
 - `prd/PRD_AUTONOMOUS_DRONES.md` — requisitos detalhados
 - [PX4 Autopilot](https://px4.io/) | [ROS2](https://docs.ros.org/) | [Nav2](https://nav2.org/)
