@@ -139,6 +139,13 @@
       "target": "docs/ASSETS_CATALOG_ROLLOUT_RUNBOOK.md",
       "type": "checklist",
       "resolved_on": "2026-02-24"
+    },
+    {
+      "issue": 680,
+      "priority": "medium",
+      "target": "wiki/Operacao-e-Manutencao.md",
+      "type": "checklist",
+      "resolved_on": "2026-02-24"
     }
   ]
 }

@@ -24,3 +24,4 @@ Registro cronológico de fechamento das issues de pendências documentais e de c
 | #677 | critical | `docs/HARDENING_ANTI_TAMPER.md` | fechado | 2026-02-24 |
 | #678 | medium | `docs/DRONES_MOCK_TO_HARDWARE_RUNBOOK.md` | fechado | 2026-02-24 |
 | #679 | medium | `docs/ASSETS_CATALOG_ROLLOUT_RUNBOOK.md` | fechado | 2026-02-24 |
+| #680 | medium | `wiki/Operacao-e-Manutencao.md` | fechado | 2026-02-24 |
