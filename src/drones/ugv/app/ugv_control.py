@@ -7,34 +7,71 @@ import hmac
 import hashlib
 import shutil
 import subprocess
+import logging
 from pathlib import Path
 import paho.mqtt.client as mqtt
 
+APP_ENV = os.environ.get("APP_ENV", "production").strip().lower()
+DRONES_ALLOW_MOCK_IMPORTS = (
+    os.environ.get("DRONES_ALLOW_MOCK_IMPORTS", "false").strip().lower() in {"1", "true", "yes"}
+)
+LOG_LEVEL = os.environ.get("UGV_LOG_LEVEL", "INFO").strip().upper()
+
+logging.basicConfig(
+    level=getattr(logging, LOG_LEVEL, logging.INFO),
+    format="%(asctime)s %(levelname)s %(name)s event=%(message)s",
+)
+logger = logging.getLogger("ugv_control")
+
+
+def _log(event: str, **fields) -> None:
+    logger.info(json.dumps({"event": event, **fields}, ensure_ascii=True, sort_keys=True))
+
+
 # Add common folder to path
-sys.path.append(os.path.join(os.path.dirname(__file__), 'common'))
+sys.path.append(os.path.join(os.path.dirname(__file__), "common"))
 try:
     from health_monitor import HealthMonitor
     from defense_controller import DefenseController
-except ImportError as e:
-    print(f"Error importing common modules: {e}")
-    # Mock for testing if modules missing
-    class HealthMonitor:
-        def __init__(self, **kwargs):
-            # Intentional no-op: allows local simulation when common module is absent.
-            _ = kwargs
+except ImportError as exc:
+    if APP_ENV in {"dev", "development", "test"} and DRONES_ALLOW_MOCK_IMPORTS:
+        logger.warning(
+            "using mock drone runtime dependencies because DRONES_ALLOW_MOCK_IMPORTS=true in non-production"
+        )
 
-        def check_health(self): return True, "OK"
+        class HealthMonitor:
+            def __init__(self, **kwargs):
+                _ = kwargs
 
-        def update_heartbeat(self):
-            # Intentional no-op for fallback mock implementation.
-            return None
+            def check_health(self):
+                return True, "OK"
 
-    class DefenseController:
-        def __init__(self, **kwargs):
-            # Intentional no-op: allows local simulation when common module is absent.
-            _ = kwargs
+            def update_heartbeat(self):
+                return None
 
-        def get_status(self): return {"state": "mock"}
+        class DefenseController:
+            def __init__(self, **kwargs):
+                _ = kwargs
+
+            def get_status(self):
+                return {"state": "mock"}
+
+            def arm(self, *_args, **_kwargs):
+                return True, "mock"
+
+            def disarm(self, *_args, **_kwargs):
+                return True
+
+            def set_mode(self, *_args, **_kwargs):
+                return True, "mock"
+
+            def request_fire(self, *_args, **_kwargs):
+                return False, "mock"
+    else:
+        raise RuntimeError(
+            "Failed importing UGV common modules. This runtime refuses silent mock fallback in production. "
+            "Set DRONES_ALLOW_MOCK_IMPORTS=true only for dev/test diagnostics."
+        ) from exc
 
 # Configuration from Environment Variables
 SERIAL_PORT = os.environ.get('SERIAL_PORT', '/dev/ttyUSB0')
@@ -57,7 +94,6 @@ ALLOW_UNSIGNED_HOMEASSISTANT_COMMANDS = (
     os.environ.get("ALLOW_UNSIGNED_HOMEASSISTANT_COMMANDS_UGV", "false").strip().lower()
     in {"1", "true", "yes"}
 )
-APP_ENV = os.environ.get("APP_ENV", "production").strip().lower()
 if ALLOW_UNSIGNED_HOMEASSISTANT_COMMANDS and APP_ENV not in {"dev", "development", "test"}:
     raise RuntimeError(
         "ALLOW_UNSIGNED_HOMEASSISTANT_COMMANDS_UGV is forbidden outside dev/test environments."
@@ -150,8 +186,8 @@ def load_patrol_routes():
             PATROL_ROUTES = data
         else:
             PATROL_ROUTES = default_routes
-    except Exception as exc:
-        print(f"Failed to load patrol routes ({routes_file}): {exc}")
+    except (OSError, ValueError, json.JSONDecodeError) as exc:
+        logger.warning("failed loading patrol routes path=%s error=%s", routes_file, exc)
         PATROL_ROUTES = default_routes
 
 
@@ -163,8 +199,8 @@ def save_patrol_routes():
             json.dumps(PATROL_ROUTES, ensure_ascii=True, indent=2),
             encoding="utf-8",
         )
-    except Exception as exc:
-        print(f"Failed to persist patrol routes: {exc}")
+    except OSError as exc:
+        logger.error("failed persisting patrol routes path=%s error=%s", routes_file, exc)
 
 
 def publish_status(client, payload):
@@ -210,15 +246,25 @@ def send_route_to_ros2(route_name, waypoints):
             text=True,
             timeout=15,
         )
-        stdout = (proc.stdout or "").strip()
-        if stdout:
-            print(f"ROS2 patrol publish output: {stdout}")
-        return True, "published_to_ros2"
-    except Exception as exc:
-        return False, str(exc)
+    except subprocess.TimeoutExpired as exc:
+        logger.error("ros2 patrol publish timeout route=%s error=%s", route_name, exc)
+        return False, "ros2_timeout"
+    except subprocess.CalledProcessError as exc:
+        stderr = (exc.stderr or "").strip()
+        logger.error("ros2 patrol publish failed route=%s stderr=%s", route_name, stderr)
+        return False, f"ros2_error:{stderr or 'called_process_error'}"
+    except OSError as exc:
+        logger.error("ros2 patrol publish os_error route=%s error=%s", route_name, exc)
+        return False, "ros2_os_error"
+
+    stdout = (proc.stdout or "").strip()
+    if stdout:
+        _log("ros2_patrol_publish", route=route_name, stdout=stdout)
+    return True, "published_to_ros2"
 
 def on_connect(client, userdata, flags, rc):
-    print(f"Connected to MQTT Broker with result code {rc}")
+    _ = userdata
+    _log("mqtt_connected", rc=rc)
     client.subscribe(MQTT_TOPIC_CMD)
     client.subscribe(MQTT_TOPIC_WAYPOINTS_SET)
     client.subscribe(MQTT_TOPIC_LINK_METRICS)
@@ -227,7 +273,9 @@ def on_connect(client, userdata, flags, rc):
 
 
 def on_disconnect(client, userdata, rc):
-    print(f"Disconnected from MQTT Broker rc={rc}")
+    _ = client
+    _ = userdata
+    logger.warning("mqtt_disconnected rc=%s", rc)
 
 
 def set_link_mode(client, mode, reason):
@@ -236,20 +284,18 @@ def set_link_mode(client, mode, reason):
         return
     CURRENT_LINK_MODE = mode
     LAST_LINK_REASON = reason
-    try:
-        client.publish(
-            MQTT_TOPIC_LINK_STATE,
-            json.dumps(
-                {
-                    "mode": CURRENT_LINK_MODE,
-                    "reason": LAST_LINK_REASON,
-                    "ts": int(time.time()),
-                    "rssi": last_link_rssi,
-                }
-            ),
-        )
-    except Exception as exc:
-        print(f"Failed to publish link mode: {exc}")
+    client.publish(
+        MQTT_TOPIC_LINK_STATE,
+        json.dumps(
+            {
+                "mode": CURRENT_LINK_MODE,
+                "reason": LAST_LINK_REASON,
+                "ts": int(time.time()),
+                "rssi": last_link_rssi,
+            }
+        ),
+    )
+    _log("link_mode_changed", mode=CURRENT_LINK_MODE, reason=LAST_LINK_REASON, wifi_rssi=last_link_rssi)
 
 
 def handle_lora_command(client, payload):
@@ -327,7 +373,7 @@ def _handle_link_metrics_payload(payload):
     try:
         last_link_rssi = int(rssi)
     except (TypeError, ValueError):
-        pass
+        logger.warning("invalid_link_metrics_payload payload=%s", payload)
 
 
 def _handle_vision_safety_payload(payload):
@@ -529,12 +575,12 @@ def on_message(client, _userdata, msg):
     try:
         health.update_heartbeat()
         payload = json.loads(msg.payload.decode())
-    except Exception as exc:
-        print(f"Error parsing command: {exc}")
+    except (UnicodeDecodeError, json.JSONDecodeError, ValueError) as exc:
+        logger.warning("invalid_mqtt_payload topic=%s error=%s", msg.topic, exc)
         return
 
     command = payload.get("cmd")
-    print(f"MQTT CMD: topic={msg.topic} cmd={command}")
+    _log("mqtt_command_received", topic=msg.topic, cmd=command)
     last_mqtt_rx_ts = time.time()
 
     if msg.topic == MQTT_TOPIC_LINK_METRICS:
@@ -547,7 +593,7 @@ def on_message(client, _userdata, msg):
 
     authorized, auth_reason = verify_command_auth(payload)
     if not authorized:
-        print(f"Ignoring unauthorized command: {auth_reason}")
+        logger.warning("unauthorized_command topic=%s reason=%s", msg.topic, auth_reason)
         return
 
     if msg.topic == MQTT_TOPIC_WAYPOINTS_SET:
@@ -563,7 +609,7 @@ def on_message(client, _userdata, msg):
         return
 
     if not is_healthy:
-        print(f"Ignoring command due to health failure: {reason}")
+        logger.warning("ignoring_command_due_to_health_failure reason=%s", reason)
         return
 
     _handle_navigation_command(client, payload, command)
@@ -572,16 +618,16 @@ def send_motor_cmd(left, right):
     if ser and ser.is_open:
         cmd = f"M {left} {right}\n"
         ser.write(cmd.encode())
-        print(f"Sent to ESP32: {cmd.strip()}")
+        _log("motor_command_sent", left=left, right=right)
 
 
 def _connect_serial():
     global ser
     try:
         ser = serial.Serial(SERIAL_PORT, BAUD_RATE, timeout=0.1)
-        print(f"Connected to ESP32 on {SERIAL_PORT}")
-    except Exception as exc:
-        print(f"Error connecting to ESP32: {exc}")
+        _log("serial_connected", serial_port=SERIAL_PORT, baud_rate=BAUD_RATE)
+    except (serial.SerialException, OSError, ValueError) as exc:
+        logger.error("serial_connect_failed port=%s error=%s", SERIAL_PORT, exc)
 
 
 def _connect_mqtt():
@@ -600,8 +646,8 @@ def _connect_mqtt():
         client.loop_start()
         last_mqtt_rx_ts = time.time()
         return client
-    except Exception as exc:
-        print(f"Error connecting to MQTT: {exc}")
+    except OSError as exc:
+        logger.error("mqtt_connect_failed broker=%s port=%s error=%s", MQTT_BROKER, MQTT_PORT, exc)
         return None
 
 
@@ -623,11 +669,11 @@ def _read_serial_ticks(ticks_l, ticks_r):
                     battery_level = int(parts[1])
                     health.update_battery(max(0, min(100, battery_level)))
                 except ValueError:
-                    print(f"Invalid battery payload: {line}")
+                    logger.warning("invalid_battery_payload line=%s", line)
         elif line.startswith("LoRa Recv: "):
-            print(f"[LoRa] {line.strip()}")
-    except Exception as exc:
-        print(f"Serial Read Error: {exc}")
+            _log("lora_serial_message", line=line.strip())
+    except (serial.SerialException, UnicodeDecodeError, ValueError, OSError) as exc:
+        logger.warning("serial_read_error error=%s", exc)
     return ticks_l, ticks_r
 
 
@@ -664,7 +710,7 @@ def _publish_telemetry(client, is_healthy, reason, ticks_l, ticks_r):
 
 
 def main():
-    print("UGV Brain Starting...")
+    _log("ugv_brain_starting", app_env=APP_ENV)
     load_patrol_routes()
     _connect_serial()
 
@@ -680,7 +726,7 @@ def main():
         is_healthy, reason = health.check_health()
         if not is_healthy and ser and ser.is_open:
             # Hook para estop por hardware em versões futuras.
-            pass
+            logger.warning("ugv_unhealthy_state reason=%s", reason)
 
         ticks_l, ticks_r = _read_serial_ticks(ticks_l, ticks_r)
 

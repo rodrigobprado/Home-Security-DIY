@@ -70,7 +70,7 @@ class DefenseController:
             last = self.audit_log_path.read_text(encoding="utf-8").strip().splitlines()[-1]
             payload = json.loads(last)
             return payload.get("hash", "GENESIS")
-        except Exception:
+        except (OSError, ValueError, json.JSONDecodeError, IndexError):
             return "GENESIS"
 
     def _append_audit(self, action, details):
@@ -93,7 +93,7 @@ class DefenseController:
                 fp.write(json.dumps(entry, ensure_ascii=True) + "\n")
             os.chmod(self.audit_log_path, 0o600)
             self.audit_head = digest
-        except Exception as exc:
+        except OSError as exc:
             logging.error("Audit log write failed: %s", exc)
 
     def _is_locked(self):

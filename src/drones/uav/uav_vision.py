@@ -2,6 +2,7 @@ import json
 import os
 import time
 import sys
+import logging
 from pathlib import Path
 from datetime import datetime
 
@@ -35,6 +36,13 @@ MQTT_TOPIC_DETECTIONS = "uav/vision/detections"
 MQTT_TOPIC_HEALTH = "uav/vision/health"
 MQTT_TOPIC_SAFETY = "uav/vision/safety"
 
+LOG_LEVEL = os.environ.get("UAV_VISION_LOG_LEVEL", "INFO").strip().upper()
+logging.basicConfig(
+    level=getattr(logging, LOG_LEVEL, logging.INFO),
+    format="%(asctime)s %(levelname)s %(name)s event=%(message)s",
+)
+logger = logging.getLogger("uav_vision")
+
 
 def create_backend():
     if MODEL_BACKEND == "tflite":
@@ -58,7 +66,9 @@ def open_capture(client: mqtt.Client):
         cap = cv2.VideoCapture(source)
         if cap.isOpened():
             publish_health(client, "camera_connected", str(source))
+            logger.info("camera_connected source=%s backend=%s", source, MODEL_BACKEND)
             return cap, source
+        logger.warning("camera_open_failed source=%s", source)
     return None, None
 
 
@@ -91,10 +101,19 @@ def main():
     client = mqtt.Client()
     if MQTT_USER and MQTT_PASSWORD:
         client.username_pw_set(MQTT_USER, MQTT_PASSWORD)
-    client.connect(MQTT_BROKER, MQTT_PORT, 60)
+    try:
+        client.connect(MQTT_BROKER, MQTT_PORT, 60)
+    except OSError as exc:
+        logger.error("mqtt_connect_failed broker=%s port=%s error=%s", MQTT_BROKER, MQTT_PORT, exc)
+        return
     client.loop_start()
 
-    backend = create_backend()
+    try:
+        backend = create_backend()
+    except (RuntimeError, OSError, ValueError) as exc:
+        logger.error("vision_backend_init_failed backend=%s error=%s", MODEL_BACKEND, exc)
+        publish_health(client, "backend_init_failed")
+        return
     tracker = SortLikeTracker(max_disappeared=12, max_distance=120)
 
     cap, source = open_capture(client)
@@ -105,25 +124,37 @@ def main():
     interval = 1.0 / max(1.0, PROCESS_FPS)
     last = 0.0
 
-    while True:
-        ret, frame = cap.read()
-        if not ret:
-            cap.release()
-            time.sleep(1.0)
-            cap, source = open_capture(client)
-            if cap is None:
-                time.sleep(5.0)
-            continue
+    try:
+        while True:
+            ret, frame = cap.read()
+            if not ret:
+                cap.release()
+                time.sleep(1.0)
+                cap, source = open_capture(client)
+                if cap is None:
+                    publish_health(client, "camera_reconnect_failed")
+                    time.sleep(5.0)
+                continue
 
-        now = time.time()
-        if now - last < interval:
-            continue
-        last = now
+            now = time.time()
+            if now - last < interval:
+                continue
+            last = now
 
-        detections = backend.infer(frame)
-        tracked = tracker.update(detections)
-        block_defense = annotate_safety(tracked, frame.shape)
-        publish_detection(client, tracked, block_defense, source)
+            try:
+                detections = backend.infer(frame)
+                tracked = tracker.update(detections)
+                block_defense = annotate_safety(tracked, frame.shape)
+                publish_detection(client, tracked, block_defense, source)
+            except (RuntimeError, ValueError, cv2.error) as exc:
+                logger.warning("vision_inference_failed error=%s", exc)
+                publish_health(client, "inference_error", str(source))
+                time.sleep(0.5)
+    except KeyboardInterrupt:
+        logger.info("uav_vision_stopped_by_signal")
+    finally:
+        cap.release()
+        client.loop_stop()
 
 
 if __name__ == "__main__":
