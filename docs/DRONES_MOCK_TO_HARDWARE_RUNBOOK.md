@@ -15,6 +15,8 @@ Migrar o módulo de drones de simulação para operação em hardware real com r
 - [x] Geofence e limites de altitude definidos (UAV).
 - [x] Exclusão de zonas críticas configurada (UGV).
 - [x] Canal redundante de failover testado (`*/lora/command`).
+- [x] Runtime sem fallback mock silencioso em produção (`DRONES_ALLOW_MOCK_IMPORTS=false`).
+- [x] Logging estruturado ativo (UGV/UAV) para comandos, failover e falhas de integração.
 
 ## Procedimento
 1. Subir serviços com profile de drones:
@@ -43,6 +45,24 @@ docker compose --profile drones up -d ugv uav
 - Failover Wi-Fi -> LoRa observado e funcional.
 - Sem violação de geofence/altitude em 7 dias de shadow mode.
 - Observabilidade ativa (logs + eventos MQTT + dashboard).
+- Sem `print` operacional em runtime crítico; logs devem conter evento + contexto.
+
+## Variáveis de runtime (hardening)
+
+Obrigatórias para segurança:
+- `APP_ENV=production`
+- `COMMAND_HMAC_SECRET_UGV`, `COMMAND_HMAC_SECRET_UAV`
+- `DEFENSE_PIN_UGV`, `DEFENSE_PIN_UAV`
+- `ALLOW_UNSIGNED_HOMEASSISTANT_COMMANDS_UGV=false`
+- `ALLOW_UNSIGNED_HOMEASSISTANT_COMMANDS_UAV=false`
+
+Somente diagnóstico em dev/test:
+- `DRONES_ALLOW_MOCK_IMPORTS=true` (proibido em produção)
+
+Níveis de log:
+- `UGV_LOG_LEVEL` (default `INFO`)
+- `UAV_LOG_LEVEL` (default `INFO`)
+- `UAV_VISION_LOG_LEVEL` (default `INFO`)
 
 ## Rollback
 - Voltar para mock: desligar profile `drones`.

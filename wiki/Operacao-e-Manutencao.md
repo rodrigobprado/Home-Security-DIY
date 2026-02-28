@@ -109,6 +109,25 @@ MQTT TLS (produção):
 - Com `APP_ENV=production`, o Mosquitto usa `mosquitto.prod.conf` (TLS-only em `8883`).
 - Gerar certificados com `./scripts/generate-mqtt-certs.sh` antes da promoção.
 
+## Runtime de drones (hardening)
+
+Para UGV/UAV em produção:
+- manter `APP_ENV=production`;
+- manter `DRONES_ALLOW_MOCK_IMPORTS=false` (fallback mock só é permitido em `dev/test`);
+- manter `ALLOW_UNSIGNED_HOMEASSISTANT_COMMANDS_UGV/UAV=false`;
+- validar `COMMAND_HMAC_SECRET_UGV/UAV` e `DEFENSE_PIN_UGV/UAV` configurados.
+
+Observabilidade operacional:
+- logs dos serviços UGV/UAV/UAV Vision usam logging estruturado e devem registrar:
+  - comando recebido;
+  - motivo de failover (`wifi_timeout_or_low_rssi`);
+  - falhas de MQTT/serial/inferência com contexto.
+
+Níveis de log:
+- `UGV_LOG_LEVEL` (default `INFO`)
+- `UAV_LOG_LEVEL` (default `INFO`)
+- `UAV_VISION_LOG_LEVEL` (default `INFO`)
+
 ## Hardening e resiliência
 
 - Consulte `docs/HARDENING_ANTI_TAMPER.md` para configurações de segurança

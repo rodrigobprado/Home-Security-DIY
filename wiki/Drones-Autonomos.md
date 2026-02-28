@@ -172,6 +172,19 @@ FALLBACK: Modo autônomo (retorno à base ou posição segura)
 | Wi-Fi 2.4 GHz | MQTT | 200–1.000 m |
 | LoRa 915 MHz | LoRaWAN, Meshtastic | 2–15 km |
 
+## Hardening de Runtime (UGV/UAV)
+
+Status atual da implementação:
+- logs estruturados em runtime (substituindo `print` operacional);
+- rejeição explícita de fallback mock em produção;
+- fallback mock permitido apenas em `dev/test` com `DRONES_ALLOW_MOCK_IMPORTS=true`;
+- tratamento de erros específicos para MQTT, serial, ROS2 e inferência.
+
+Diretrizes de operação:
+- produção deve usar `APP_ENV=production`;
+- `ALLOW_UNSIGNED_HOMEASSISTANT_COMMANDS_*` deve permanecer `false`;
+- comandos MQTT críticos devem manter assinatura HMAC válida.
+
 ---
 
 ## Módulo de Defesa Não Letal

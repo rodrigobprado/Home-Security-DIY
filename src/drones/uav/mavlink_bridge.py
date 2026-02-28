@@ -5,20 +5,48 @@ import sys
 import math
 import hmac
 import hashlib
+import logging
 import paho.mqtt.client as mqtt
 
+APP_ENV = os.environ.get("APP_ENV", "production").strip().lower()
+DRONES_ALLOW_MOCK_IMPORTS = (
+    os.environ.get("DRONES_ALLOW_MOCK_IMPORTS", "false").strip().lower() in {"1", "true", "yes"}
+)
+LOG_LEVEL = os.environ.get("UAV_LOG_LEVEL", "INFO").strip().upper()
+
+logging.basicConfig(
+    level=getattr(logging, LOG_LEVEL, logging.INFO),
+    format="%(asctime)s %(levelname)s %(name)s event=%(message)s",
+)
+logger = logging.getLogger("uav_mavlink_bridge")
+
+
+def _log(event: str, **fields) -> None:
+    logger.info(json.dumps({"event": event, **fields}, ensure_ascii=True, sort_keys=True))
+
+
 # Add common folder to path
-sys.path.append(os.path.join(os.path.dirname(__file__), '../common'))
+sys.path.append(os.path.join(os.path.dirname(__file__), "../common"))
 try:
     from defense_controller import DefenseController
-except ImportError:
-    # Mock defense for now if not found
-    class DefenseController:
-        def __init__(self, **kwargs):
-            # Intentional no-op: allows local simulation when common module is absent.
-            _ = kwargs
+except ImportError as exc:
+    if APP_ENV in {"dev", "development", "test"} and DRONES_ALLOW_MOCK_IMPORTS:
+        logger.warning(
+            "using mock defense controller because DRONES_ALLOW_MOCK_IMPORTS=true in non-production"
+        )
 
-        def get_status(self): return {"state": "mock"}
+        class DefenseController:
+            def __init__(self, **kwargs):
+                _ = kwargs
+
+            def get_status(self):
+                return {"state": "mock"}
+
+    else:
+        raise RuntimeError(
+            "Failed importing UAV defense controller. This runtime refuses silent mock fallback in production. "
+            "Set DRONES_ALLOW_MOCK_IMPORTS=true only for dev/test diagnostics."
+        ) from exc
 
 # Configuration
 MQTT_BROKER = os.environ.get('MQTT_BROKER', 'localhost')
@@ -41,7 +69,6 @@ ALLOW_UNSIGNED_HOMEASSISTANT_COMMANDS = (
     os.environ.get("ALLOW_UNSIGNED_HOMEASSISTANT_COMMANDS_UAV", "false").strip().lower()
     in {"1", "true", "yes"}
 )
-APP_ENV = os.environ.get("APP_ENV", "production").strip().lower()
 if ALLOW_UNSIGNED_HOMEASSISTANT_COMMANDS and APP_ENV not in {"dev", "development", "test"}:
     raise RuntimeError(
         "ALLOW_UNSIGNED_HOMEASSISTANT_COMMANDS_UAV is forbidden outside dev/test environments."
@@ -131,7 +158,8 @@ def enforce_regulatory_safety():
     last_regulatory_reason = "ok"
 
 def on_connect(client, userdata, flags, rc):
-    print(f"Connected to MQTT Broker (RC: {rc})")
+    _ = userdata
+    _log("mqtt_connected", rc=rc)
     client.subscribe(MQTT_TOPIC_CMD)
     client.subscribe(MQTT_TOPIC_LORA_CMD)
     client.subscribe(MQTT_TOPIC_LINK_METRICS)
@@ -193,7 +221,7 @@ def _update_link_metrics(payload):
     try:
         last_link_rssi = int(payload.get("wifi_rssi"))
     except (TypeError, ValueError):
-        pass
+        logger.warning("invalid_link_metrics_payload payload=%s", payload)
 
 
 def _handle_lora_command(cmd):
@@ -207,52 +235,54 @@ def _handle_lora_command(cmd):
 
 def _handle_uav_command(cmd):
     if cmd == 'arm':
-        print("Command: ARM")
+        _log("uav_command", cmd="ARM")
         uav_state["armed"] = True
         return
     if cmd == 'disarm':
-        print("Command: DISARM")
+        _log("uav_command", cmd="DISARM")
         uav_state["armed"] = False
         return
     if cmd == 'takeoff':
-        print("Command: TAKEOFF")
+        _log("uav_command", cmd="TAKEOFF")
         uav_state["mode"] = "AUTO"
         uav_state["alt"] = 10.0
         return
     if cmd == 'land':
-        print("Command: LAND")
+        _log("uav_command", cmd="LAND")
         uav_state["mode"] = "LAND"
         uav_state["alt"] = 0.0
         return
     if cmd == 'return_home':
-        print("Command: RETURN_HOME")
+        _log("uav_command", cmd="RETURN_HOME")
         uav_state["mode"] = "RTL"
         return
     if cmd == 'stop':
-        print("Command: STOP/HOLD")
+        _log("uav_command", cmd="STOP")
         uav_state["mode"] = "HOLD"
         return
     if cmd == 'inspect_zone':
-        print("Command: INSPECT_ZONE")
+        _log("uav_command", cmd="INSPECT_ZONE")
         uav_state["mode"] = "AUTO"
         uav_state["alt"] = 12.0
+        return
+    logger.warning("unknown_uav_command cmd=%s", cmd)
 
 
 def on_message(_client, _userdata, msg):
     global last_mqtt_rx_ts
     try:
         payload = json.loads(msg.payload.decode())
-    except Exception as exc:
-        print(f"Error executing command: {exc}")
+    except (UnicodeDecodeError, json.JSONDecodeError, ValueError) as exc:
+        logger.warning("invalid_mqtt_payload topic=%s error=%s", msg.topic, exc)
         return
 
     cmd = payload.get('cmd')
-    print(f"MQTT CMD: topic={msg.topic} cmd={cmd}")
+    _log("mqtt_command_received", topic=msg.topic, cmd=cmd)
     last_mqtt_rx_ts = time.time()
 
     authorized, auth_reason = verify_command_auth(payload)
     if not authorized:
-        print(f"Ignoring unauthorized command: {auth_reason}")
+        logger.warning("unauthorized_command topic=%s reason=%s", msg.topic, auth_reason)
         return
 
     if msg.topic == MQTT_TOPIC_LINK_METRICS:
@@ -266,7 +296,7 @@ def on_message(_client, _userdata, msg):
     _handle_uav_command(cmd)
 
 def main():
-    print(f"Starting UAV MAVLink Bridge (Simulated Connection: {MAVLINK_CONNECTION})...")
+    _log("uav_bridge_starting", mavlink_connection=MAVLINK_CONNECTION, app_env=APP_ENV)
     
     client = mqtt.Client()
     if MQTT_USER and MQTT_PASSWORD:
@@ -278,8 +308,8 @@ def main():
     try:
         client.connect(MQTT_BROKER, MQTT_PORT, 60)
         client.loop_start()
-    except Exception as e:
-        print(f"Error connecting to MQTT: {e}")
+    except OSError as exc:
+        logger.error("mqtt_connect_failed broker=%s port=%s error=%s", MQTT_BROKER, MQTT_PORT, exc)
         return
 
     last_pub_time = 0
