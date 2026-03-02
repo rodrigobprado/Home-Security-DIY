@@ -49,7 +49,8 @@ describe("OperationalMap", () => {
 
   it("sends drone command and shows success message", async () => {
     render(<OperationalMap />);
-    fireEvent.click(await screen.findByText("Start Patrol"));
+    const startButtons = await screen.findAllByRole("button", { name: "Start Patrol" });
+    fireEvent.click(startButtons[0]);
 
     await waitFor(() =>
       expect(apiFetch).toHaveBeenCalledWith(
@@ -72,7 +73,8 @@ describe("OperationalMap", () => {
     });
 
     render(<OperationalMap />);
-    fireEvent.click(await screen.findByText("Start Patrol"));
+    const startButtons = await screen.findAllByRole("button", { name: "Start Patrol" });
+    fireEvent.click(startButtons[0]);
 
     await waitFor(() => expect(screen.getByText("Falha ao enviar comando.")).toBeInTheDocument());
   });
