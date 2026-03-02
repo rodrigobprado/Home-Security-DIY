@@ -9,10 +9,12 @@ import pytest
 from fastapi import HTTPException
 from pydantic import ValidationError
 
+from app.config import settings
 from app.db.models import Asset
 from app.routers.assets import (
     AssetCreate,
     AssetUpdate,
+    _forwarded_chain,
     _get_actor_ip,
     create_asset,
     delete_asset,
@@ -123,9 +125,29 @@ def test_asset_update_validator_rejects_invalid_json():
         AssetUpdate(config_json="{invalid-json")
 
 
-def test_get_actor_ip_prefers_x_forwarded_for():
-    req = _request(forwarded_for="192.168.1.10, 10.0.0.1")
-    assert _get_actor_ip(req) == "192.168.1.10"
+def test_get_actor_ip_ignores_forwarded_chain_when_proxy_is_not_trusted():
+    previous = settings.trusted_proxy_ips
+    try:
+        settings.trusted_proxy_ips = []
+        req = _request(actor_ip="203.0.113.10", forwarded_for="192.168.1.10, 10.0.0.1")
+        assert _get_actor_ip(req) == "203.0.113.10"
+    finally:
+        settings.trusted_proxy_ips = previous
+
+
+def test_get_actor_ip_uses_forwarded_chain_when_proxy_is_trusted():
+    previous = settings.trusted_proxy_ips
+    try:
+        settings.trusted_proxy_ips = ["203.0.113.10"]
+        req = _request(actor_ip="203.0.113.10", forwarded_for="192.168.1.10, 10.0.0.1")
+        assert _get_actor_ip(req) == "192.168.1.10"
+    finally:
+        settings.trusted_proxy_ips = previous
+
+
+def test_forwarded_chain_is_normalized():
+    req = _request(forwarded_for=" 192.168.1.10, invalid-ip,10.0.0.1 ")
+    assert _forwarded_chain(req) == "192.168.1.10,10.0.0.1"
 
 
 @pytest.mark.anyio
