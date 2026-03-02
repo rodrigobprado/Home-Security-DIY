@@ -31,7 +31,7 @@ describe("AlertFeed", () => {
 
   it("requests initial alerts from REST API", async () => {
     render(<AlertFeed />);
-    await waitFor(() => expect(global.fetch).toHaveBeenCalledWith("/api/alerts?limit=30"));
+    await waitFor(() => expect(global.fetch).toHaveBeenCalledWith("/api/alerts?limit=30", { headers: {} }));
     await waitFor(() => expect(setAlertsIfEmpty).toHaveBeenCalledTimes(1));
   });
 
@@ -63,7 +63,7 @@ describe("AlertFeed", () => {
     });
 
     render(<AlertFeed />);
-    await waitFor(() => expect(global.fetch).toHaveBeenCalledWith("/api/alerts?limit=30"));
+    await waitFor(() => expect(global.fetch).toHaveBeenCalledWith("/api/alerts?limit=30", { headers: {} }));
     expect(setAlertsIfEmpty).not.toHaveBeenCalled();
   });
 
