@@ -12,3 +12,8 @@ def test_map_config_payload_has_size_and_format_validation():
     assert "floorplan image payload exceeds maximum allowed size" in content
     assert "data:image/" in content
     assert ";base64," in content
+
+
+def test_map_config_put_requires_admin_key_dependency():
+    content = ALERTS_ROUTER.read_text(encoding="utf-8")
+    assert '@router.put("/map/config", dependencies=[Depends(require_admin_key)])' in content

@@ -9,6 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.models import Alert, Asset, DashboardConfig, DevicePosition
 from app.db.session import get_db
+from app.security import require_admin_key
 
 router = APIRouter(prefix="/api", tags=["alerts"])
 MAP_FLOORPLAN_IMAGE_KEY = "map.floorplan_image_data_url"
@@ -127,7 +128,7 @@ async def get_map_config(db: AsyncSession = Depends(get_db)) -> dict:
     }
 
 
-@router.put("/map/config")
+@router.put("/map/config", dependencies=[Depends(require_admin_key)])
 async def upsert_map_config(payload: MapConfigPayload, db: AsyncSession = Depends(get_db)) -> dict:
     if payload.floorplan_image_data_url is not None:
         await db.merge(

@@ -300,6 +300,15 @@ export default function AssetsAdmin() {
     setFilterType(initialType)
   }, [initialType])
 
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    if (adminKey) {
+      window.sessionStorage.setItem('dashboard_admin_key', adminKey)
+      return
+    }
+    window.sessionStorage.removeItem('dashboard_admin_key')
+  }, [adminKey])
+
   function showFeedback(msg, isError = false) {
     setFeedback({ msg, isError })
     setTimeout(() => setFeedback(null), 4000)

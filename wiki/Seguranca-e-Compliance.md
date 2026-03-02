@@ -146,6 +146,13 @@ BACKUP_ENCRYPTION_PASSPHRASE=<senha forte>
 - Métricas de falha foram expostas em `/api/services/ws-metrics` para HA/Frigate/checagem de status.
 - Teste de contrato garante ausência de swallow genérico nos caminhos críticos de integração.
 
+## RBAC admin para configuração de mapa (Issue #720)
+
+- O endpoint `PUT /api/map/config` agora exige `require_admin_key`.
+- Leitura de mapa (`GET /api/map/config`) permanece disponível no perfil operator.
+- Testes cobrem cenários de autorização do `PUT` para 403, 503 e 200.
+- O frontend passou a enviar `X-Admin-Key` para mutações do mapa quando a chave admin está presente em sessão.
+
 ---
 
 ## Hardening do Servidor
