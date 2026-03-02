@@ -153,6 +153,12 @@ BACKUP_ENCRYPTION_PASSPHRASE=<senha forte>
 - Testes cobrem cenários de autorização do `PUT` para 403, 503 e 200.
 - O frontend passou a enviar `X-Admin-Key` para mutações do mapa quando a chave admin está presente em sessão.
 
+## Hardening K8s do dashboard (Issue #721)
+
+- Deployment da API do dashboard executa em modo non-root (`runAsNonRoot: true`, UID/GID dedicados).
+- Variáveis sensíveis do dashboard (`HA_TOKEN`, `DATABASE_URL`, `DASHBOARD_API_KEY`, `DASHBOARD_ADMIN_KEY`) são consumidas por `secretKeyRef`.
+- O CI executa `scripts/check-k8s-non-root-policy.sh` para bloquear novos `runAsNonRoot: false` em manifests alterados sem exceção documentada (`SECURITY_EXCEPTION_RUN_AS_NON_ROOT_FALSE`).
+
 ---
 
 ## Hardening do Servidor

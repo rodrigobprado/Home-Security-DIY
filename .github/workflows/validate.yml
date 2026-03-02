@@ -26,6 +26,9 @@ jobs:
       - name: Block hardcoded secrets/placeholders in changed YAML/CONF
         run: bash scripts/check-hardcoded-secrets.sh
 
+      - name: Enforce K8s non-root policy in changed manifests
+        run: bash scripts/check-k8s-non-root-policy.sh
+
   lint-yaml:
     name: Lint YAML
     runs-on: ubuntu-latest
