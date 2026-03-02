@@ -15,9 +15,6 @@ export default defineConfig({
         "src/**/*.test.*",
         "src/main.jsx",
         "src/test/**",
-        "src/pages/AssetsAdmin.jsx",
-        "src/components/OperationalMap.jsx",
-        "src/hooks/useWebSocket.js",
       ],
       thresholds: {
         lines: 90,
