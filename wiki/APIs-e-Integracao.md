@@ -266,6 +266,7 @@ Usada pelo dashboard para atualizações em tempo real sem polling.
 | Método | Rota | Descrição |
 |--------|------|-----------|
 | `GET` | `/health` | Healthcheck (Docker/K8s probe) |
+| `GET` | `/api/services/ws-metrics` | Métricas de fan-out WS e falhas de integração |
 | `WS` | `/ws` | WebSocket — fan-out de eventos HA |
 | `GET` | `/api/sensors` | Todos os estados de entidades HA |
 | `GET` | `/api/sensors/{entity_id}` | Estado de uma entidade |

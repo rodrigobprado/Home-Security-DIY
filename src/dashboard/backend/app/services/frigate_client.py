@@ -1,10 +1,22 @@
 """Cliente HTTP para o Frigate NVR."""
 
+import logging
+
 import httpx
 
 from app.config import settings
 
 _client: httpx.AsyncClient | None = None
+logger = logging.getLogger(__name__)
+_metrics = {
+    "snapshot_failures_total": 0,
+    "events_failures_total": 0,
+    "stats_failures_total": 0,
+}
+
+
+def get_metrics() -> dict[str, int]:
+    return dict(_metrics)
 
 
 async def get_client() -> httpx.AsyncClient:
@@ -32,8 +44,11 @@ async def get_snapshot(camera_name: str) -> bytes | None:
         resp = await client.get(url)
         if resp.status_code == 200:
             return resp.content
-    except httpx.RequestError:
-        pass
+        _metrics["snapshot_failures_total"] += 1
+        logger.warning("Frigate snapshot unavailable", extra={"camera": camera_name, "status_code": resp.status_code})
+    except httpx.RequestError as exc:
+        _metrics["snapshot_failures_total"] += 1
+        logger.warning("Frigate snapshot request failed", exc_info=True, extra={"camera": camera_name, "error": str(exc)})
     return None
 
 
@@ -53,8 +68,17 @@ async def get_events(
         resp = await client.get(f"{settings.frigate_url}/api/events", params=params)
         if resp.status_code == 200:
             return resp.json()
-    except httpx.RequestError:
-        pass
+        _metrics["events_failures_total"] += 1
+        logger.warning(
+            "Frigate events unavailable",
+            extra={"camera": camera, "label": label, "status_code": resp.status_code},
+        )
+    except httpx.RequestError as exc:
+        _metrics["events_failures_total"] += 1
+        logger.warning("Frigate events request failed", exc_info=True, extra={"camera": camera, "label": label, "error": str(exc)})
+    except ValueError as exc:
+        _metrics["events_failures_total"] += 1
+        logger.warning("Frigate events payload is not valid JSON", exc_info=True, extra={"camera": camera, "label": label, "error": str(exc)})
     return []
 
 
@@ -65,6 +89,12 @@ async def get_stats() -> dict:
         resp = await client.get(f"{settings.frigate_url}/api/stats")
         if resp.status_code == 200:
             return resp.json()
-    except httpx.RequestError:
-        pass
+        _metrics["stats_failures_total"] += 1
+        logger.warning("Frigate stats unavailable", extra={"status_code": resp.status_code})
+    except httpx.RequestError as exc:
+        _metrics["stats_failures_total"] += 1
+        logger.warning("Frigate stats request failed", exc_info=True, extra={"error": str(exc)})
+    except ValueError as exc:
+        _metrics["stats_failures_total"] += 1
+        logger.warning("Frigate stats payload is not valid JSON", exc_info=True, extra={"error": str(exc)})
     return {}

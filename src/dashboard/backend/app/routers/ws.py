@@ -54,7 +54,8 @@ async def websocket_endpoint(websocket: WebSocket) -> None:
 
     except WebSocketDisconnect:
         logger.info("Cliente WS desconectado.")
-    except Exception as exc:
-        logger.warning("Erro no WebSocket: %s", exc)
+    except (RuntimeError, ValueError, TypeError) as exc:
+        ha_client.record_ws_handler_failure()
+        logger.warning("Erro no WebSocket", exc_info=True, extra={"error": str(exc)})
     finally:
         ha_client.unsubscribe(enqueue)
