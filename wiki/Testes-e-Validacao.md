@@ -236,6 +236,10 @@ O gate de compliance inclui também contratos de documentação operacional:
   - statements >= 85
   - branches >= 60
 
+Atualização 2026-03-02 (Issue #723):
+- Os caminhos críticos `src/pages/AssetsAdmin.jsx`, `src/components/OperationalMap.jsx` e `src/hooks/useWebSocket.js` voltaram ao cálculo de cobertura (remoção de exclusões no `vitest.config.js`).
+- Foram adicionados testes cobrindo cenários de sucesso/erro em comandos e persistência do mapa operacional, além de reconexão e parsing no hook WebSocket.
+
 **Pipeline de segurança:**
 - Workflow `Snyk Security` com execução condicional quando `SNYK_TOKEN` está disponível.
 - Scans de SAST, SCA, IaC e imagens de container (modo não-bloqueante em cenários sem secret).
