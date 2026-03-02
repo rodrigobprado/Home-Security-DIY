@@ -24,6 +24,7 @@ export default [
         clearTimeout: "readonly",
         queueMicrotask: "readonly",
         global: "readonly",
+        File: "readonly",
       },
       parserOptions: {
         ecmaFeatures: { jsx: true },
