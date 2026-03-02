@@ -38,3 +38,4 @@ Registro cronológico de fechamento das issues de pendências documentais e de c
 | #719 | high | `src/dashboard/backend/app/services/ha_client.py`, `src/dashboard/backend/app/services/frigate_client.py`, `src/dashboard/backend/app/routers/services.py`, `src/dashboard/backend/app/routers/ws.py` | fechado | 2026-03-02 |
 | #720 | high | `src/dashboard/backend/app/routers/alerts.py`, `tests/backend/test_map_config_rbac.py`, `src/dashboard/frontend/src/components/OperationalMap.jsx` | fechado | 2026-03-02 |
 | #721 | high | `k8s/base/dashboard/dashboard.yaml`, `scripts/check-k8s-non-root-policy.sh`, `.github/workflows/validate.yml` | fechado | 2026-03-02 |
+| #722 | medium | `.gitignore`, `scripts/check-generated-artifacts.sh`, `.github/workflows/validate.yml` | fechado | 2026-03-02 |
