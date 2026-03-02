@@ -120,6 +120,18 @@ BACKUP_ENCRYPTION_PASSPHRASE=<senha forte>
 - O proxy frontend (`nginx.conf.template`) não injeta mais `X-API-Key` estático.
 - O pipeline de validação executa `scripts/check-hardcoded-secrets.sh` para bloquear placeholders e credenciais hardcoded em arquivos YAML/CONF alterados.
 
+## Autenticação WebSocket no browser (Issue #716)
+
+- O endpoint `/ws` aceita autenticação por query token (`?token=`) para navegadores que não conseguem enviar `X-API-Key` no handshake.
+- Fluxos não-browser continuam suportando `X-API-Key` e `Authorization: Bearer`.
+- Há teste automatizado cobrindo conexão autenticada com recebimento do evento inicial (`initial_state`).
+
+## Paridade de autenticação dev/prod (Issue #717)
+
+- Frontend passou a usar util único (`apiFetch` + token bearer) para chamadas REST e WebSocket.
+- O fluxo de autenticação agora é do cliente para backend em ambos os ambientes (Vite e Nginx), sem injeção de chave estática no proxy.
+- Teste de contrato valida que `vite.config.js` e `nginx.conf.template` não injetam headers de autenticação.
+
 ---
 
 ## Hardening do Servidor

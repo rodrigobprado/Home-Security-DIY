@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { apiFetch } from '../utils/auth'
 
 const SERVICE_LABELS = {
   home_assistant: 'Home Assistant',
@@ -12,7 +13,7 @@ export default function ServiceStatus() {
   useEffect(() => {
     async function fetch_status() {
       try {
-        const resp = await fetch('/api/services/status')
+        const resp = await apiFetch('/api/services/status')
         const data = await resp.json()
         setServices(data.services ?? {})
       } catch {

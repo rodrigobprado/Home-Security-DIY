@@ -15,6 +15,8 @@ export default [
         fetch: "readonly",
         WebSocket: "readonly",
         URLSearchParams: "readonly",
+        localStorage: "readonly",
+        sessionStorage: "readonly",
         FileReader: "readonly",
         setInterval: "readonly",
         clearInterval: "readonly",

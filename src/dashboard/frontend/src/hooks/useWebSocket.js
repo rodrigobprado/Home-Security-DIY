@@ -1,15 +1,6 @@
 import { useEffect, useRef } from 'react'
 import useStore from '../store/useStore'
-
-function buildWsUrl() {
-  if (typeof window === 'undefined') {
-    return 'ws://localhost:8000/ws'
-  }
-  const wsScheme = window.location.protocol === 'https:' ? 'wss' : 'ws'
-  return `${wsScheme}://${window.location.host}/ws`
-}
-
-const WS_URL = buildWsUrl()
+import { buildWsUrl } from '../utils/auth'
 
 export function useWebSocket() {
   const wsRef = useRef(null)
@@ -21,7 +12,7 @@ export function useWebSocket() {
 
     function connect() {
       setWsStatus('connecting')
-      const ws = new WebSocket(WS_URL)
+      const ws = new WebSocket(buildWsUrl())
       wsRef.current = ws
 
       ws.onopen = () => {

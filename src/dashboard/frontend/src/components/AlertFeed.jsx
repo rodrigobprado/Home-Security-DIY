@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import useStore from '../store/useStore'
+import { apiFetch } from '../utils/auth'
 
 const SEVERITY_STYLE = {
   critical: 'border-l-critical text-red-300',
@@ -25,7 +26,7 @@ export default function AlertFeed() {
 
   // Carrega histórico inicial via REST
   useEffect(() => {
-    fetch('/api/alerts?limit=30')
+    apiFetch('/api/alerts?limit=30')
       .then((r) => r.json())
       .then((data) => { if (Array.isArray(data)) setAlertsIfEmpty(data) })
       .catch(() => {})
