@@ -1,8 +1,11 @@
 import httpx
 from fastapi import APIRouter
+import logging
 
 from app.config import settings
-from app.services import ha_client
+from app.services import frigate_client, ha_client
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/services", tags=["services"])
 
@@ -12,6 +15,9 @@ SERVICES_TO_CHECK = {
 }
 
 _client: httpx.AsyncClient | None = None
+_metrics = {
+    "status_check_failures_total": 0,
+}
 
 
 async def get_client() -> httpx.AsyncClient:
@@ -41,7 +47,9 @@ async def _check_http(url: str) -> str:
             else {},
         )
         return "online" if resp.status_code < 500 else "degraded"
-    except Exception:
+    except (httpx.RequestError, httpx.TimeoutException) as exc:
+        _metrics["status_check_failures_total"] += 1
+        logger.warning("Service status check failed", exc_info=True, extra={"url": url, "error": str(exc)})
         return "offline"
 
 
@@ -61,4 +69,10 @@ async def services_status() -> dict:
 @router.get("/ws-metrics")
 async def ws_metrics() -> dict:
     """Retorna métricas operacionais do fan-out WebSocket."""
-    return {"ws_metrics": ha_client.get_ws_metrics()}
+    return {
+        "ws_metrics": ha_client.get_ws_metrics(),
+        "integration_metrics": {
+            "services_router": dict(_metrics),
+            "frigate_client": frigate_client.get_metrics(),
+        },
+    }

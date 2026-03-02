@@ -139,6 +139,13 @@ BACKUP_ENCRYPTION_PASSPHRASE=<senha forte>
 - A cadeia normalizada de forwarding (`X-Forwarded-For`) é persistida separadamente em `asset_audit.actor_ip_chain`.
 - Testes cobrem cenários com proxy confiável e sem proxy confiável.
 
+## Observabilidade de integrações críticas (Issue #719)
+
+- Rotas e clientes de integração (HA, Frigate e WebSocket) deixaram de usar `except Exception` genérico e `pass` silencioso.
+- Falhas de integração agora geram log estruturado com contexto de erro.
+- Métricas de falha foram expostas em `/api/services/ws-metrics` para HA/Frigate/checagem de status.
+- Teste de contrato garante ausência de swallow genérico nos caminhos críticos de integração.
+
 ---
 
 ## Hardening do Servidor

@@ -34,6 +34,10 @@ _metrics = {
     "messages_dropped_total": 0,
     "messages_fanout_total": 0,
     "fanout_failures_total": 0,
+    "ws_handler_failures_total": 0,
+    "initial_state_fetch_failures_total": 0,
+    "event_decode_failures_total": 0,
+    "unexpected_errors_total": 0,
 }
 
 
@@ -81,6 +85,10 @@ def get_ws_metrics() -> dict[str, int]:
     }
 
 
+def record_ws_handler_failure() -> None:
+    _metrics["ws_handler_failures_total"] += 1
+
+
 def _severity_for(entity_id: str, new_state: str) -> str:
     """Determina severidade de um evento com base na entidade e estado."""
     if entity_id == "alarm_control_panel.alarmo":
@@ -123,8 +131,9 @@ async def _fan_out(message: dict) -> None:
         try:
             await cb(payload)
             _metrics["messages_fanout_total"] += 1
-        except Exception:
+        except (RuntimeError, ValueError, TypeError) as exc:
             _metrics["fanout_failures_total"] += 1
+            logger.warning("Falha no fan-out para cliente WS", exc_info=True, extra={"error": str(exc)})
             dead.add(cb)
     _subscribers.difference_update(dead)
 
@@ -137,12 +146,22 @@ async def _fetch_initial_states() -> None:
             f"{settings.ha_url}/api/states",
             headers={"Authorization": f"Bearer {settings.ha_token}"},
         )
-        if resp.status_code == 200:
-            for state in resp.json():
-                _entity_states[state["entity_id"]] = state
-            logger.info("Estados iniciais carregados: %d entidades", len(_entity_states))
-    except Exception as exc:
-        logger.warning("Não foi possível carregar estados iniciais: %s", exc)
+        if resp.status_code != 200:
+            _metrics["initial_state_fetch_failures_total"] += 1
+            logger.warning(
+                "Não foi possível carregar estados iniciais",
+                extra={"status_code": resp.status_code},
+            )
+            return
+        for state in resp.json():
+            _entity_states[state["entity_id"]] = state
+        logger.info("Estados iniciais carregados: %d entidades", len(_entity_states))
+    except httpx.RequestError as exc:
+        _metrics["initial_state_fetch_failures_total"] += 1
+        logger.warning("Erro de rede ao carregar estados iniciais", exc_info=True, extra={"error": str(exc)})
+    except ValueError as exc:
+        _metrics["initial_state_fetch_failures_total"] += 1
+        logger.warning("Payload inválido ao carregar estados iniciais", exc_info=True, extra={"error": str(exc)})
 
 
 def _build_ws_url() -> str:
@@ -209,7 +228,12 @@ async def _process_event_message(msg: dict[str, Any]) -> None:
 
 async def _consume_events(ws: Any) -> None:
     async for raw in ws:
-        msg: dict[str, Any] = json.loads(raw)
+        try:
+            msg: dict[str, Any] = json.loads(raw)
+        except json.JSONDecodeError as exc:
+            _metrics["event_decode_failures_total"] += 1
+            logger.warning("Mensagem WS do HA com JSON inválido", exc_info=True, extra={"error": str(exc)})
+            continue
         if msg.get("type") != "event":
             continue
         await _process_event_message(msg)
@@ -249,6 +273,14 @@ async def run_forever() -> None:
         except (websockets.exceptions.ConnectionClosed, OSError, asyncio.TimeoutError) as exc:
             logger.warning("Conexão HA perdida: %s. Reconectando em %ds…", exc, backoff)
             backoff = await _sleep_with_backoff(backoff)
-        except Exception as exc:
-            logger.error("Erro inesperado no cliente HA: %s", exc, exc_info=True)
+        except (
+            websockets.exceptions.WebSocketException,
+            json.JSONDecodeError,
+            httpx.RequestError,
+            RuntimeError,
+            ValueError,
+            TypeError,
+        ) as exc:
+            _metrics["unexpected_errors_total"] += 1
+            logger.error("Erro no cliente HA", exc_info=True, extra={"error": str(exc)})
             backoff = await _sleep_with_backoff(backoff)
