@@ -23,6 +23,7 @@ class Settings(BaseSettings):
         "http://localhost:3000",
         "http://127.0.0.1:3000",
     ]
+    trusted_proxy_ips: list[str] = []
 
     # PostgreSQL (schema: dashboard)
     database_url: str = "postgresql+asyncpg://UNCONFIGURED:UNCONFIGURED@localhost/UNCONFIGURED"
@@ -54,6 +55,13 @@ class Settings(BaseSettings):
     def parse_origins(cls, value):
         if isinstance(value, str):
             return [origin.strip() for origin in value.split(",") if origin.strip()]
+        return value
+
+    @field_validator("trusted_proxy_ips", mode="before")
+    @classmethod
+    def parse_trusted_proxy_ips(cls, value):
+        if isinstance(value, str):
+            return [ip.strip() for ip in value.split(",") if ip.strip()]
         return value
 
     @field_validator("database_url")

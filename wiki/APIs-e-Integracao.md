@@ -255,6 +255,7 @@ Usada pelo dashboard para atualizações em tempo real sem polling.
 **Autenticação obrigatória**:
 - `X-API-Key: <DASHBOARD_API_KEY>`
 - ou `Authorization: Bearer <DASHBOARD_API_KEY>`
+- Para auditoria de IP atrás de proxy reverso, configurar `TRUSTED_PROXY_IPS` no backend.
 
 ### WebSocket do Dashboard (`/ws`)
 

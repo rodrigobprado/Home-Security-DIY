@@ -3,6 +3,7 @@
 import json
 import uuid
 from datetime import datetime, timezone
+from ipaddress import ip_address
 from typing import Literal
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
@@ -12,6 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.models import Asset, AssetAudit, AssetCredential
 from app.db.session import get_db
+from app.config import settings
 from app.security import require_admin_key
 
 router = APIRouter(prefix="/api/assets", tags=["assets"])
@@ -99,11 +101,45 @@ def _get_actor(request: Request) -> str:
     return request.headers.get("X-Actor", "api")
 
 
-def _get_actor_ip(request: Request) -> str:
+def _normalize_ip(value: str | None) -> str | None:
+    if value is None:
+        return None
+    candidate = value.strip()
+    if not candidate:
+        return None
+    try:
+        return str(ip_address(candidate))
+    except ValueError:
+        return None
+
+
+def _trusted_proxies() -> set[str]:
+    return {ip for ip in (_normalize_ip(raw) for raw in settings.trusted_proxy_ips) if ip}
+
+
+def _forwarded_chain(request: Request) -> str | None:
     forwarded = request.headers.get("X-Forwarded-For")
-    if forwarded:
-        return forwarded.split(",")[0].strip()
-    return request.client.host if request.client else "unknown"
+    if not forwarded:
+        return None
+    ips = []
+    for raw_ip in forwarded.split(","):
+        normalized = _normalize_ip(raw_ip)
+        if normalized:
+            ips.append(normalized)
+    if not ips:
+        return None
+    return ",".join(ips)
+
+
+def _get_actor_ip(request: Request) -> str:
+    direct_ip = _normalize_ip(request.client.host if request.client else None) or "unknown"
+    chain = _forwarded_chain(request)
+    if not chain:
+        return direct_ip
+    if direct_ip not in _trusted_proxies():
+        return direct_ip
+    forwarded_ips = chain.split(",")
+    return forwarded_ips[0] if forwarded_ips else direct_ip
 
 
 async def _write_audit(
@@ -115,6 +151,7 @@ async def _write_audit(
     after: dict | None,
     actor: str,
     actor_ip: str,
+    actor_ip_chain: str | None,
 ) -> None:
     audit = AssetAudit(
         asset_id=asset_id,
@@ -123,6 +160,7 @@ async def _write_audit(
         after_json=json.dumps(after, default=str) if after else None,
         actor=actor,
         actor_ip=actor_ip,
+        actor_ip_chain=actor_ip_chain,
     )
     db.add(audit)
 
@@ -204,6 +242,7 @@ async def create_asset(
 
     actor = _get_actor(request)
     actor_ip = _get_actor_ip(request)
+    actor_ip_chain = _forwarded_chain(request)
     now = datetime.now(timezone.utc)
     asset = Asset(
         id=uuid.uuid4(),
@@ -231,6 +270,7 @@ async def create_asset(
         after=_asset_to_dict(asset),
         actor=actor,
         actor_ip=actor_ip,
+        actor_ip_chain=actor_ip_chain,
     )
     await db.commit()
     await db.refresh(asset)
@@ -257,6 +297,7 @@ async def update_asset(
     before = _asset_to_dict(asset)
     actor = _get_actor(request)
     actor_ip = _get_actor_ip(request)
+    actor_ip_chain = _forwarded_chain(request)
 
     if payload.name is not None:
         asset.name = payload.name
@@ -281,6 +322,7 @@ async def update_asset(
         after=_asset_to_dict(asset),
         actor=actor,
         actor_ip=actor_ip,
+        actor_ip_chain=actor_ip_chain,
     )
     await db.commit()
     await db.refresh(asset)
@@ -306,6 +348,7 @@ async def delete_asset(
     before = _asset_to_dict(asset)
     actor = _get_actor(request)
     actor_ip = _get_actor_ip(request)
+    actor_ip_chain = _forwarded_chain(request)
 
     asset.is_active = False
     asset.status = "inactive"
@@ -320,6 +363,7 @@ async def delete_asset(
         after=_asset_to_dict(asset),
         actor=actor,
         actor_ip=actor_ip,
+        actor_ip_chain=actor_ip_chain,
     )
     await db.commit()
     return {"status": "deactivated", "id": str(asset_id)}
@@ -344,6 +388,7 @@ async def restore_asset(
     before = _asset_to_dict(asset)
     actor = _get_actor(request)
     actor_ip = _get_actor_ip(request)
+    actor_ip_chain = _forwarded_chain(request)
 
     asset.is_active = True
     asset.status = "active"
@@ -358,6 +403,7 @@ async def restore_asset(
         after=_asset_to_dict(asset),
         actor=actor,
         actor_ip=actor_ip,
+        actor_ip_chain=actor_ip_chain,
     )
     await db.commit()
     await db.refresh(asset)

@@ -132,6 +132,13 @@ BACKUP_ENCRYPTION_PASSPHRASE=<senha forte>
 - O fluxo de autenticação agora é do cliente para backend em ambos os ambientes (Vite e Nginx), sem injeção de chave estática no proxy.
 - Teste de contrato valida que `vite.config.js` e `nginx.conf.template` não injetam headers de autenticação.
 
+## Auditoria de IP com trusted proxies (Issue #718)
+
+- A trilha de auditoria de ativos passou a usar `TRUSTED_PROXY_IPS` para decidir quando aceitar `X-Forwarded-For`.
+- Quando a origem não é proxy confiável, o sistema registra `request.client.host` como IP efetivo.
+- A cadeia normalizada de forwarding (`X-Forwarded-For`) é persistida separadamente em `asset_audit.actor_ip_chain`.
+- Testes cobrem cenários com proxy confiável e sem proxy confiável.
+
 ---
 
 ## Hardening do Servidor

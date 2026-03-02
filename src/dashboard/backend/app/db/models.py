@@ -166,6 +166,7 @@ class AssetAudit(Base):
     after_json: Mapped[str | None] = mapped_column(Text)  # estado posterior (JSON)
     actor: Mapped[str | None] = mapped_column(String(100))  # usuário/sistema que executou
     actor_ip: Mapped[str | None] = mapped_column(String(45))  # IPv4 ou IPv6
+    actor_ip_chain: Mapped[str | None] = mapped_column(Text)  # cadeia X-Forwarded-For normalizada
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc),
