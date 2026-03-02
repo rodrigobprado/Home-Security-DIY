@@ -128,8 +128,12 @@ async def get_map_config(db: AsyncSession = Depends(get_db)) -> dict:
     }
 
 
-@router.put("/map/config", dependencies=[Depends(require_admin_key)])
-async def upsert_map_config(payload: MapConfigPayload, db: AsyncSession = Depends(get_db)) -> dict:
+@router.put("/map/config")
+async def upsert_map_config(
+    payload: MapConfigPayload,
+    _admin: None = Depends(require_admin_key),
+    db: AsyncSession = Depends(get_db),
+) -> dict:
     if payload.floorplan_image_data_url is not None:
         await db.merge(
             DashboardConfig(

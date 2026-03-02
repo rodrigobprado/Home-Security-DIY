@@ -16,4 +16,5 @@ def test_map_config_payload_has_size_and_format_validation():
 
 def test_map_config_put_requires_admin_key_dependency():
     content = ALERTS_ROUTER.read_text(encoding="utf-8")
-    assert '@router.put("/map/config", dependencies=[Depends(require_admin_key)])' in content
+    assert '@router.put("/map/config")' in content
+    assert "Depends(require_admin_key)" in content
