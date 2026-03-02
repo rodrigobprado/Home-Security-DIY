@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import useStore from '../store/useStore'
 import { useAssets } from '../hooks/useAssets'
+import { apiFetch } from '../utils/auth'
 
 const ASSET_TYPE_LABELS = {
   sensor: 'Sensor',
@@ -80,7 +81,7 @@ function AssetForm({ initial, onSave, onCancel, adminKey }) {
 
       const url = isEdit ? `/api/assets/${initial.id}` : '/api/assets'
       const method = isEdit ? 'PUT' : 'POST'
-      const resp = await fetch(url, {
+      const resp = await apiFetch(url, {
         method,
         headers: {
           'Content-Type': 'application/json',
@@ -324,7 +325,7 @@ export default function AssetsAdmin() {
     if (!confirmed) return
 
     try {
-      const resp = await fetch(`/api/assets/${asset.id}`, {
+      const resp = await apiFetch(`/api/assets/${asset.id}`, {
         method: 'DELETE',
         headers: { 'X-Admin-Key': adminKey },
       })
@@ -339,7 +340,7 @@ export default function AssetsAdmin() {
   async function handleRestore(asset) {
     if (!adminKey) { showFeedback('Informe a chave de administrador.', true); return }
     try {
-      const resp = await fetch(`/api/assets/${asset.id}/restore`, {
+      const resp = await apiFetch(`/api/assets/${asset.id}/restore`, {
         method: 'POST',
         headers: { 'X-Admin-Key': adminKey },
       })

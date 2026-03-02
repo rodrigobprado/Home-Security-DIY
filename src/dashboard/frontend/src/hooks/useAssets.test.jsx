@@ -30,7 +30,10 @@ describe("useAssets hook", () => {
       expect(result.current.assets).toHaveLength(2);
     });
 
-    expect(global.fetch).toHaveBeenCalledWith(expect.stringContaining("/api/assets"));
+    expect(global.fetch).toHaveBeenCalledWith(
+      expect.stringContaining("/api/assets"),
+      expect.any(Object),
+    );
     expect(result.current.assetsError).toBeNull();
     expect(result.current.assetsLoading).toBe(false);
   });

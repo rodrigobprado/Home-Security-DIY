@@ -4,6 +4,7 @@
  */
 import { useCallback, useEffect } from 'react'
 import useStore from '../store/useStore'
+import { apiFetch } from '../utils/auth'
 
 export function useAssets() {
   const { assets, assetsLoading, assetsError, setAssets, setAssetsLoading, setAssetsError } =
@@ -17,7 +18,7 @@ export function useAssets() {
       if (assetType) params.set('asset_type', assetType)
       if (isActive !== undefined) params.set('is_active', String(isActive))
 
-      const resp = await fetch(`/api/assets?${params}`)
+      const resp = await apiFetch(`/api/assets?${params}`)
       if (!resp.ok) throw new Error(`HTTP ${resp.status}`)
       const data = await resp.json()
       setAssets(data.items ?? [])

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import useStore from '../store/useStore'
+import { apiFetch } from '../utils/auth'
 
 const DEFAULT_DEVICES = [
   { entity_id: 'camera.cam_entrada', label: 'Câm Entrada', x: 50, y: 5, device_type: 'camera' },
@@ -78,12 +79,12 @@ export default function OperationalMap() {
   const [flash, setFlash] = useState('')
 
   useEffect(() => {
-    fetch('/api/map/devices')
+    apiFetch('/api/map/devices')
       .then((r) => r.json())
       .then((data) => { if (Array.isArray(data) && data.length > 0) setDevices(data) })
       .catch(() => {})
 
-    fetch('/api/map/config')
+    apiFetch('/api/map/config')
       .then((r) => r.json())
       .then((cfg) => {
         setMapConfig({
@@ -144,7 +145,7 @@ export default function OperationalMap() {
   }, [uavPosition?.x, uavPosition?.y])
 
   async function saveMapConfig(nextConfig) {
-    const resp = await fetch('/api/map/config', {
+    const resp = await apiFetch('/api/map/config', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(nextConfig),
@@ -174,7 +175,7 @@ export default function OperationalMap() {
     setBusy(true)
     setFlash('')
     try {
-      const resp = await fetch('/api/drones/command', {
+      const resp = await apiFetch('/api/drones/command', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ drone, action }),

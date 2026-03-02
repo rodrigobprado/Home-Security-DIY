@@ -35,6 +35,7 @@ O sistema expõe APIs REST, WebSocket e MQTT para comunicação entre componente
 | Mosquitto MQTT | TCP | 1883 | Usuário/senha |
 | Zigbee2MQTT REST | HTTP/JSON | 8080 | Nenhuma (VLAN) |
 | Dashboard API | HTTP/JSON | 8000 | `X-API-Key` ou Bearer |
+| Dashboard WebSocket | WebSocket | 8000 | Bearer/header ou `token` na query |
 
 ---
 
@@ -254,6 +255,12 @@ Usada pelo dashboard para atualizações em tempo real sem polling.
 **Autenticação obrigatória**:
 - `X-API-Key: <DASHBOARD_API_KEY>`
 - ou `Authorization: Bearer <DASHBOARD_API_KEY>`
+
+### WebSocket do Dashboard (`/ws`)
+
+- Browser sem suporte a header custom no handshake deve usar `wss://<host>/ws?token=<DASHBOARD_API_KEY>`.
+- Clientes não-browser podem usar `X-API-Key` ou `Authorization: Bearer`.
+- O endpoint envia `initial_state` imediatamente após autenticação e mantém stream de `state_changed`.
 
 | Método | Rota | Descrição |
 |--------|------|-----------|

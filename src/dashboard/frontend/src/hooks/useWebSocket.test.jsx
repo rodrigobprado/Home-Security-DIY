@@ -45,13 +45,17 @@ describe("useWebSocket", () => {
     updateState.mockClear();
     addAlert.mockClear();
     setWsStatus.mockClear();
+    window.sessionStorage.clear();
+    window.localStorage.clear();
     global.WebSocket = MockWebSocket;
   });
 
   it("opens socket and updates ws status", async () => {
+    window.sessionStorage.setItem("dashboard_api_key", "browser-token");
     render(<TestComponent />);
     await Promise.resolve();
     expect(MockWebSocket.instances.length).toBe(1);
+    expect(MockWebSocket.instances[0].url).toContain("/ws?token=browser-token");
     expect(setWsStatus).toHaveBeenCalledWith("connecting");
     expect(setWsStatus).toHaveBeenCalledWith("connected");
   });
