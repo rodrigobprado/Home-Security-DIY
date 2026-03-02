@@ -15,6 +15,17 @@ on:
     branches: [main]
 
 jobs:
+  secret-hygiene:
+    name: Secret Hygiene Gate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Block hardcoded secrets/placeholders in changed YAML/CONF
+        run: bash scripts/check-hardcoded-secrets.sh
+
   lint-yaml:
     name: Lint YAML
     runs-on: ubuntu-latest

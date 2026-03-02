@@ -31,3 +31,4 @@ Registro cronológico de fechamento das issues de pendências documentais e de c
 | #684 | critical | `docs/LEGALIDADE_MODULO_DEFESA_SP_RJ_MG.md` | fechado | 2026-02-24 |
 | #685 | medium | `prd/PRD_DRONE_DEFENSE_MODULE.md` | fechado | 2026-02-24 |
 | #686 | low | `rules/RULES_GENERAL.md` | fechado | 2026-02-24 |
+| #715 | high | `k8s/base/dashboard/dashboard.yaml`, `src/dashboard/frontend/nginx.conf.template`, `scripts/check-hardcoded-secrets.sh` | fechado | 2026-03-02 |

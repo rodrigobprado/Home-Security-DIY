@@ -14,15 +14,7 @@ metadata:
     app.kubernetes.io/name: dashboard
     app.kubernetes.io/component: credentials
 type: Opaque
-  # IMPORTANT: Never commit real values here.
-  # Use scripts/generate-k8s-secrets.sh or SealedSecrets/ESO for real deployments.
-stringData:
-  ha-token: "CHANGE_ME_ha_long_lived_token"
-  ha-url: "http://HOME_ASSISTANT_HOST_IP:8123"
-  database-url: "postgresql+asyncpg://dashboard_user:CHANGE_ME_dashboard_password@postgres:5432/homedb?options=-csearch_path%3Ddashboard"
-  dashboard-api-key: "CHANGE_ME_generate_with_openssl_rand_hex_32"
-  dashboard-admin-key: "CHANGE_ME_generate_with_openssl_rand_hex_32"
-  dashboard-allowed-origins: "https://dashboard.home.local"
+stringData: {}
 
 ---
 # --- ConfigMap: variáveis não-sensíveis ---
@@ -75,11 +67,20 @@ spec:
               name: http
           env:
             - name: HA_URL
-              value: "http://homeassistant:8123"
+              valueFrom:
+                secretKeyRef:
+                  name: dashboard-credentials
+                  key: ha-url
             - name: HA_TOKEN
-              value: "ha_token_validation_2026_secure"
+              valueFrom:
+                secretKeyRef:
+                  name: dashboard-credentials
+                  key: ha-token
             - name: DATABASE_URL
-              value: "postgresql+asyncpg://dashboard_user:HomeSec-PG-2026!@postgres:5432/homedb"
+              valueFrom:
+                secretKeyRef:
+                  name: dashboard-credentials
+                  key: database-url
             - name: FRIGATE_URL
               valueFrom:
                 configMapKeyRef:
@@ -91,18 +92,29 @@ spec:
                   name: dashboard-config
                   key: MQTT_BROKER
             - name: DASHBOARD_API_KEY
-              value: "HomeSec-Dashboard-ApiKey-2026"
+              valueFrom:
+                secretKeyRef:
+                  name: dashboard-credentials
+                  key: dashboard-api-key
             - name: DASHBOARD_ADMIN_KEY
-              value: "HomeSec-Dashboard-AdminKey-2026"
+              valueFrom:
+                secretKeyRef:
+                  name: dashboard-credentials
+                  key: dashboard-admin-key
             - name: DASHBOARD_ALLOWED_ORIGINS
-              value: '["https://dashboard-home-security.toca.lan"]'
+              valueFrom:
+                secretKeyRef:
+                  name: dashboard-credentials
+                  key: dashboard-allowed-origins
             - name: TZ
               valueFrom:
                 configMapKeyRef:
                   name: dashboard-config
                   key: TZ
           securityContext:
-            runAsNonRoot: false
+            runAsNonRoot: true
+            runAsUser: 10001
+            runAsGroup: 10001
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
             capabilities:
