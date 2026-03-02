@@ -18,8 +18,6 @@ function CameraFeed({ name, label }) {
   const intervalRef = useRef(null)
 
   useEffect(() => {
-    setError(false)
-    setErrorCount(0)
     intervalRef.current = setInterval(() => {
       setSrc(`/api/cameras/${name}/snapshot?t=${Date.now()}`)
     }, REFRESH_INTERVAL)

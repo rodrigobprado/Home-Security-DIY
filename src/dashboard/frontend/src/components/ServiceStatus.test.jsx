@@ -14,7 +14,7 @@ describe("ServiceStatus", () => {
 
     render(<ServiceStatus />);
 
-    await waitFor(() => expect(global.fetch).toHaveBeenCalledWith("/api/services/status"));
+    await waitFor(() => expect(global.fetch).toHaveBeenCalledWith("/api/services/status", { headers: {} }));
     expect(screen.getByText("Home Assistant")).toBeInTheDocument();
     expect(screen.getByText("Frigate NVR")).toBeInTheDocument();
     expect(screen.getByText("online")).toBeInTheDocument();
@@ -26,7 +26,7 @@ describe("ServiceStatus", () => {
 
     render(<ServiceStatus />);
 
-    await waitFor(() => expect(global.fetch).toHaveBeenCalledWith("/api/services/status"));
+    await waitFor(() => expect(global.fetch).toHaveBeenCalledWith("/api/services/status", { headers: {} }));
     expect(screen.getByText("Verificando...")).toBeInTheDocument();
   });
 
