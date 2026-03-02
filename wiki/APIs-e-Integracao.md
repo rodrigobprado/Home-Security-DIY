@@ -267,6 +267,7 @@ Usada pelo dashboard para atualizações em tempo real sem polling.
 |--------|------|-----------|
 | `GET` | `/health` | Healthcheck (Docker/K8s probe) |
 | `GET` | `/api/services/ws-metrics` | Métricas de fan-out WS e falhas de integração |
+| `PUT` | `/api/map/config` | Atualiza mapa operacional (requer `X-Admin-Key`) |
 | `WS` | `/ws` | WebSocket — fan-out de eventos HA |
 | `GET` | `/api/sensors` | Todos os estados de entidades HA |
 | `GET` | `/api/sensors/{entity_id}` | Estado de uma entidade |

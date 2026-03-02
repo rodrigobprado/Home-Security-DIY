@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import useStore from '../store/useStore'
-import { apiFetch } from '../utils/auth'
+import { apiFetch, withAdminHeaders } from '../utils/auth'
 
 const DEFAULT_DEVICES = [
   { entity_id: 'camera.cam_entrada', label: 'Câm Entrada', x: 50, y: 5, device_type: 'camera' },
@@ -147,7 +147,7 @@ export default function OperationalMap() {
   async function saveMapConfig(nextConfig) {
     const resp = await apiFetch('/api/map/config', {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      headers: withAdminHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify(nextConfig),
     })
     if (!resp.ok) throw new Error('failed to save map config')

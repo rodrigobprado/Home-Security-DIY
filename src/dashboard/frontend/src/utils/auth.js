@@ -1,4 +1,5 @@
 const TOKEN_STORAGE_KEY = "dashboard_api_key";
+const ADMIN_KEY_STORAGE = "dashboard_admin_key";
 
 function readTokenFromStorage() {
   if (typeof window === "undefined") return null;
@@ -29,6 +30,24 @@ export function withApiAuthHeaders(headers = {}) {
   return {
     ...headers,
     Authorization: `Bearer ${token}`,
+  };
+}
+
+export function getAdminKey() {
+  if (typeof window === "undefined") return null;
+  return (
+    window.sessionStorage.getItem(ADMIN_KEY_STORAGE) ||
+    window.localStorage.getItem(ADMIN_KEY_STORAGE) ||
+    null
+  );
+}
+
+export function withAdminHeaders(headers = {}) {
+  const adminKey = getAdminKey();
+  if (!adminKey) return headers;
+  return {
+    ...headers,
+    "X-Admin-Key": adminKey,
   };
 }
 
