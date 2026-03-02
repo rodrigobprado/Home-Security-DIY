@@ -8,6 +8,7 @@
     "checkJs": false,
     "strict": false,
     "noEmit": true,
+    "skipLibCheck": true,
     "types": ["vite/client"]
   },
   "include": ["src/**/*.js", "src/**/*.jsx", "vite.config.js", "vitest.config.js"]
