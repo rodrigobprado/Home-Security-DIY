@@ -29,6 +29,9 @@ jobs:
       - name: Enforce K8s non-root policy in changed manifests
         run: bash scripts/check-k8s-non-root-policy.sh
 
+      - name: Block generated artifacts in changed paths
+        run: bash scripts/check-generated-artifacts.sh
+
   lint-yaml:
     name: Lint YAML
     runs-on: ubuntu-latest

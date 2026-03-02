@@ -13,3 +13,10 @@ src/mosquitto/certs/server.crt
 # Sonar scanner local artifacts
 .scannerwork/
 .sonar-local/
+
+# Generated artifacts (Node/Python/tests)
+**/node_modules/
+**/coverage/
+**/__pycache__/
+.coverage
+**/.coverage

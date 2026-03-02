@@ -159,6 +159,11 @@ BACKUP_ENCRYPTION_PASSPHRASE=<senha forte>
 - Variáveis sensíveis do dashboard (`HA_TOKEN`, `DATABASE_URL`, `DASHBOARD_API_KEY`, `DASHBOARD_ADMIN_KEY`) são consumidas por `secretKeyRef`.
 - O CI executa `scripts/check-k8s-non-root-policy.sh` para bloquear novos `runAsNonRoot: false` em manifests alterados sem exceção documentada (`SECURITY_EXCEPTION_RUN_AS_NON_ROOT_FALSE`).
 
+## Higiene de artefatos no repositório (Issue #722)
+
+- `.gitignore` raiz passou a cobrir artefatos gerados de Node/Python/testes (`node_modules`, `coverage`, `__pycache__`, `.coverage`) em todo o monorepo.
+- O CI executa `scripts/check-generated-artifacts.sh` para bloquear artefatos gerados em arquivos alterados de PR/push.
+
 ---
 
 ## Hardening do Servidor
