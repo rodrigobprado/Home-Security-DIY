@@ -113,6 +113,13 @@ BACKUP_ENCRYPTION_PASSPHRASE=<senha forte>
 
 > **Atenção:** O sistema recusa inicialização se qualquer um desses valores estiver ausente ou contiver `CHANGE_ME`/`UNCONFIGURED`.
 
+## Gestão de segredos no Dashboard (Issue #715)
+
+- `k8s/base/dashboard/dashboard.yaml` não versiona mais valores sensíveis em texto claro.
+- A API do dashboard passa a consumir `HA_TOKEN`, `DATABASE_URL`, `DASHBOARD_API_KEY` e `DASHBOARD_ADMIN_KEY` exclusivamente por `secretKeyRef`.
+- O proxy frontend (`nginx.conf.template`) não injeta mais `X-API-Key` estático.
+- O pipeline de validação executa `scripts/check-hardcoded-secrets.sh` para bloquear placeholders e credenciais hardcoded em arquivos YAML/CONF alterados.
+
 ---
 
 ## Hardening do Servidor
