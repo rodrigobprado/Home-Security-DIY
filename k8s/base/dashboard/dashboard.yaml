@@ -29,6 +29,7 @@ metadata:
 data:
   FRIGATE_URL: "http://frigate:5000"
   MQTT_BROKER: "mosquitto"
+  REDIS_URL: "redis://redis:6379/0"
   TZ: "America/Sao_Paulo"
 
 ---
@@ -91,6 +92,11 @@ spec:
                 configMapKeyRef:
                   name: dashboard-config
                   key: MQTT_BROKER
+            - name: REDIS_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: dashboard-config
+                  key: REDIS_URL
             - name: DASHBOARD_API_KEY
               valueFrom:
                 secretKeyRef:

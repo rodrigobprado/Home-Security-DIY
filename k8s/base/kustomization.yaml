@@ -10,10 +10,12 @@ resources:
   - namespace.yaml
   - postgres/postgres.yaml
   - mosquitto/mosquitto.yaml
+  - redis/redis.yaml
   - zigbee2mqtt/zigbee2mqtt.yaml
   - frigate/frigate.yaml
   - homeassistant/homeassistant.yaml
   - dashboard/dashboard.yaml
+  - dashboard/ha-worker.yaml
   - pdb.yaml
 
 labels:

@@ -1,11 +1,7 @@
 """
-Cliente WebSocket permanente para o Home Assistant.
-Mantém uma única conexão, subscreve eventos state_changed e faz fan-out
-para todos os clientes WebSocket do dashboard conectados.
-Reconexão automática com backoff exponencial.
-
-IMPORTANTE: este módulo mantém estado global em memória de processo.
-A API deve rodar com apenas 1 worker de aplicação.
+Cliente de estado Home Assistant via MQTT.
+Subscreve ao tópico alimentado pelo ha-worker, mantém cache em memória
+e faz fan-out para clientes WebSocket do dashboard.
 """
 
 import asyncio
@@ -15,13 +11,10 @@ from datetime import datetime, timezone
 from typing import Any
 
 import httpx
-import websockets
-from sqlalchemy.ext.asyncio import AsyncSession
-
+import aiomqtt
 from app.config import settings
 from app.db.models import Alert
 from app.db.session import AsyncSessionLocal
-from app.utils.logging_utils import mask_url
 
 logger = logging.getLogger(__name__)
 
@@ -40,6 +33,8 @@ _metrics = {
     "event_decode_failures_total": 0,
     "unexpected_errors_total": 0,
 }
+
+MQTT_TOPIC = "home-security/ha/state_changed"
 
 
 async def _get_rest_client() -> httpx.AsyncClient:
@@ -165,42 +160,6 @@ async def _fetch_initial_states() -> None:
         logger.warning("Payload inválido ao carregar estados iniciais", exc_info=True, extra={"error": str(exc)})
 
 
-def _build_ws_url() -> str:
-    ws_base = settings.ha_url.replace("http://", "ws://").replace("https://", "wss://")
-    return f"{ws_base}/api/websocket"
-
-
-async def _authenticate(ws: Any) -> bool:
-    auth_required = json.loads(await ws.recv())
-    if auth_required.get("type") != "auth_required":
-        return True
-
-    await ws.send(json.dumps({"type": "auth", "access_token": settings.ha_token}))
-    auth_ok = json.loads(await ws.recv())
-    if auth_ok.get("type") != "auth_ok":
-        logger.error("Falha na autenticação HA: %s", auth_ok)
-        return False
-
-    logger.info("Autenticado no Home Assistant")
-    return True
-
-
-async def _subscribe_state_changed(
-    ws: Any,
-    msg_id: int,
-) -> int:
-    await ws.send(
-        json.dumps(
-            {
-                "id": msg_id,
-                "type": "subscribe_events",
-                "event_type": "state_changed",
-            }
-        )
-    )
-    return msg_id + 1
-
-
 async def _process_event_message(msg: dict[str, Any]) -> None:
     event = msg.get("event", {})
     data = event.get("data", {})
@@ -227,61 +186,36 @@ async def _process_event_message(msg: dict[str, Any]) -> None:
     )
 
 
-async def _consume_events(ws: Any) -> None:
-    async for raw in ws:
-        try:
-            msg: dict[str, Any] = json.loads(raw)
-        except json.JSONDecodeError as exc:
-            _metrics["event_decode_failures_total"] += 1
-            logger.warning("Mensagem WS do HA com JSON inválido", exc_info=True, extra={"error": str(exc)})
-            continue
-        if msg.get("type") != "event":
-            continue
-        await _process_event_message(msg)
-
-
-async def _connect_and_consume(ws_url: str, msg_id: int) -> tuple[bool, int]:
-    logger.info("Conectando ao HA WebSocket: %s", mask_url(ws_url))
-    async with websockets.connect(ws_url, ping_interval=30) as ws:
-        if not await _authenticate(ws):
-            return False, msg_id
-        next_msg_id = await _subscribe_state_changed(ws, msg_id)
-        await _consume_events(ws)
-        return True, next_msg_id
-
-
-async def _sleep_with_backoff(backoff: int) -> int:
-    await asyncio.sleep(backoff)
-    return min(backoff * 2, 60)
-
-
 async def run_forever() -> None:
-    """Loop principal de conexão ao HA WebSocket com reconexão automática."""
+    """Consome eventos do HA worker via MQTT."""
     await _fetch_initial_states()
 
-    ws_url = _build_ws_url()
-    msg_id = 1
     backoff = 1
-
     while True:
         try:
-            connected, msg_id = await _connect_and_consume(ws_url, msg_id)
-            if connected:
+            async with aiomqtt.Client(
+                hostname=settings.mqtt_broker,
+                port=settings.mqtt_port,
+                username=settings.mqtt_user,
+                password=settings.mqtt_password,
+            ) as client:
+                logger.info("Subscrito ao tópico MQTT de estados HA: %s", MQTT_TOPIC)
+                await client.subscribe(MQTT_TOPIC)
                 backoff = 1
-            else:
-                backoff = await _sleep_with_backoff(backoff)
+                async for message in client.messages:
+                    try:
+                        msg = json.loads(message.payload.decode())
+                        await _process_event_message(msg)
+                    except json.JSONDecodeError:
+                        _metrics["event_decode_failures_total"] += 1
+                        logger.warning("JSON inválido no MQTT HA")
 
-        except (websockets.exceptions.ConnectionClosed, OSError, asyncio.TimeoutError) as exc:
-            logger.warning("Conexão HA perdida: %s. Reconectando em %ds…", exc, backoff)
-            backoff = await _sleep_with_backoff(backoff)
-        except (
-            websockets.exceptions.WebSocketException,
-            json.JSONDecodeError,
-            httpx.RequestError,
-            RuntimeError,
-            ValueError,
-            TypeError,
-        ) as exc:
+        except aiomqtt.MqttError as exc:
+            logger.warning("Conexão MQTT HA perdida: %s. Reconectando em %ds…", exc, backoff)
+            await asyncio.sleep(backoff)
+            backoff = min(backoff * 2, 60)
+        except Exception as exc:
             _metrics["unexpected_errors_total"] += 1
-            logger.error("Erro no cliente HA", exc_info=True, extra={"error": str(exc)})
-            backoff = await _sleep_with_backoff(backoff)
+            logger.error("Erro inesperado no cliente HA MQTT", exc_info=True)
+            await asyncio.sleep(backoff)
+            backoff = min(backoff * 2, 60)

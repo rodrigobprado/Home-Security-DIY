@@ -40,6 +40,8 @@ async def lifespan(app: FastAPI):
     await frigate_client.close()
     await drones.close()
     await services.close()
+    from app.db.redis import close_redis
+    await close_redis()
 
 
 app = FastAPI(

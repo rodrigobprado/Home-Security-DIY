@@ -15,6 +15,11 @@ class Settings(BaseSettings):
     # MQTT
     mqtt_broker: str = "mosquitto"
     mqtt_port: int = 1883
+    mqtt_user: str = ""
+    mqtt_password: str = ""
+
+    # Redis
+    redis_url: str = "redis://redis:6379/0"
 
     # Dashboard API security
     dashboard_api_key: str = ""

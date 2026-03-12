@@ -1,26 +1,23 @@
 import secrets
 import time
-from collections import defaultdict, deque
-from collections.abc import MutableMapping
 from ipaddress import ip_address
 
 from fastapi import HTTPException, Request, Security, WebSocket, WebSocketException, status
 from fastapi.security import APIKeyHeader, HTTPAuthorizationCredentials, HTTPBearer
 
 from app.config import settings
+from app.db.redis import get_redis
 
 _api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
 _admin_key_header = APIKeyHeader(name="X-Admin-Key", auto_error=False)
 _bearer_scheme = HTTPBearer(auto_error=False)
-_api_auth_failures: MutableMapping[str, deque[float]] = defaultdict(deque)
-_ws_auth_attempts: MutableMapping[str, deque[float]] = defaultdict(deque)
+
 _AUTH_WINDOW_SECONDS = 60
 _AUTH_MAX_FAILURES_PER_WINDOW = 20
 _WS_AUTH_WINDOW_SECONDS = 60
 _WS_AUTH_MAX_ATTEMPTS_PER_WINDOW = 60
 
 # Rate limit para operações admin (menor tolerância)
-_admin_auth_failures: MutableMapping[str, deque[float]] = defaultdict(deque)
 _ADMIN_AUTH_WINDOW_SECONDS = 60
 _ADMIN_AUTH_MAX_FAILURES_PER_WINDOW = 10
 
@@ -85,20 +82,36 @@ def _get_authenticated_actor(request: Request) -> str:
     return "api-client"
 
 
-def _register_rate_event(
-    store: MutableMapping[str, deque[float]],
+async def _is_rate_limited(
+    category: str,
     key: str,
     *,
-    now: float,
     window_seconds: int,
     max_events: int,
 ) -> bool:
-    queue = store[key]
+    """
+    Verifica rate limit usando Redis (Sliding Window via List).
+    Retorna True se estiver limitado, False se permitido.
+    """
+    redis = get_redis()
+    redis_key = f"ratelimit:{category}:{key}"
+    now = time.time()
     cutoff = now - window_seconds
-    while queue and queue[0] < cutoff:
-        queue.popleft()
-    queue.append(now)
-    return len(queue) <= max_events
+
+    async with redis.pipeline(transaction=True) as pipe:
+        # 1. Remove timestamps fora da janela
+        await pipe.zremrangebyscore(redis_key, 0, cutoff)
+        # 2. Adiciona o timestamp atual
+        await pipe.zadd(redis_key, {str(now): now})
+        # 3. Conta quantos eventos existem na janela
+        await pipe.zcard(redis_key)
+        # 4. Define expiração para limpeza automática
+        await pipe.expire(redis_key, window_seconds + 10)
+        
+        results = await pipe.execute()
+        event_count = results[2]
+        
+    return event_count > max_events
 
 
 async def require_api_key(
@@ -112,10 +125,9 @@ async def require_api_key(
         return _get_authenticated_actor(request)
     
     ip = _get_request_ip(request)
-    if not _register_rate_event(
-        _api_auth_failures,
+    if await _is_rate_limited(
+        "api_auth_failures",
         ip,
-        now=time.time(),
         window_seconds=_AUTH_WINDOW_SECONDS,
         max_events=_AUTH_MAX_FAILURES_PER_WINDOW,
     ):
@@ -143,10 +155,9 @@ async def require_admin_key(
     if _is_valid_api_key(x_admin_key, admin_key):
         return _get_authenticated_actor(request)
 
-    if not _register_rate_event(
-        _admin_auth_failures,
+    if await _is_rate_limited(
+        "admin_auth_failures",
         ip,
-        now=time.time(),
         window_seconds=_ADMIN_AUTH_WINDOW_SECONDS,
         max_events=_ADMIN_AUTH_MAX_FAILURES_PER_WINDOW,
     ):
@@ -162,10 +173,9 @@ async def require_admin_key(
 
 async def require_ws_api_key(websocket: WebSocket) -> None:
     ip = _client_ip(websocket.client.host if websocket.client else None)
-    if not _register_rate_event(
-        _ws_auth_attempts,
+    if await _is_rate_limited(
+        "ws_auth_attempts",
         ip,
-        now=time.time(),
         window_seconds=_WS_AUTH_WINDOW_SECONDS,
         max_events=_WS_AUTH_MAX_ATTEMPTS_PER_WINDOW,
     ):

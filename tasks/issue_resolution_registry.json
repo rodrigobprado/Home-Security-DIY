@@ -287,6 +287,27 @@
       "target": "src/dashboard/frontend/src/components/OperationalMap.jsx",
       "type": "enhancement",
       "resolved_on": "2026-03-11"
+    },
+    {
+      "issue": 743,
+      "priority": "high",
+      "target": "src/dashboard/backend/app/security.py",
+      "type": "enhancement",
+      "resolved_on": "2026-03-11"
+    },
+    {
+      "issue": 747,
+      "priority": "medium",
+      "target": "src/dashboard/backend/app/ha_worker.py",
+      "type": "scalability",
+      "resolved_on": "2026-03-11"
+    },
+    {
+      "issue": 751,
+      "priority": "low",
+      "target": "src/dashboard/frontend/tsconfig.json",
+      "type": "refactor",
+      "resolved_on": "2026-03-11"
     }
   ]
 }

@@ -1,7 +1,7 @@
 const TOKEN_STORAGE_KEY = "dashboard_api_key";
 const ADMIN_KEY_STORAGE = "dashboard_admin_key";
 
-function readTokenFromStorage() {
+function readTokenFromStorage(): string | null {
   if (typeof window === "undefined") return null;
   return (
     window.sessionStorage.getItem(TOKEN_STORAGE_KEY) ||
@@ -10,7 +10,7 @@ function readTokenFromStorage() {
   );
 }
 
-export function getApiToken() {
+export function getApiToken(): string | null {
   if (typeof window === "undefined") return null;
 
   const fromStorage = readTokenFromStorage();
@@ -24,7 +24,7 @@ export function getApiToken() {
   return fromQuery;
 }
 
-export function withApiAuthHeaders(headers = {}) {
+export function withApiAuthHeaders(headers: Record<string, string> = {}): Record<string, string> {
   const token = getApiToken();
   if (!token) return headers;
   return {
@@ -33,7 +33,7 @@ export function withApiAuthHeaders(headers = {}) {
   };
 }
 
-export function getAdminKey() {
+export function getAdminKey(): string | null {
   if (typeof window === "undefined") return null;
   return (
     window.sessionStorage.getItem(ADMIN_KEY_STORAGE) ||
@@ -42,7 +42,7 @@ export function getAdminKey() {
   );
 }
 
-export function withAdminHeaders(headers = {}) {
+export function withAdminHeaders(headers: Record<string, string> = {}): Record<string, string> {
   const adminKey = getAdminKey();
   if (!adminKey) return headers;
   return {
@@ -51,12 +51,13 @@ export function withAdminHeaders(headers = {}) {
   };
 }
 
-export async function apiFetch(input, init = {}) {
-  const mergedHeaders = withApiAuthHeaders(init.headers || {});
+export async function apiFetch(input: RequestInfo | URL, init: RequestInit = {}): Promise<Response> {
+  const headers = (init.headers as Record<string, string>) || {};
+  const mergedHeaders = withApiAuthHeaders(headers);
   return fetch(input, { ...init, headers: mergedHeaders });
 }
 
-export function buildWsUrl() {
+export function buildWsUrl(): string {
   if (typeof window === "undefined") {
     return "ws://localhost:8000/ws";
   }

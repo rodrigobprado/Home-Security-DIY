@@ -1,0 +1,80 @@
+# =============================================================================
+# HA Worker — Home Security DIY (K8s Base)
+# =============================================================================
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ha-worker
+  namespace: home-security
+  labels:
+    app.kubernetes.io/name: dashboard
+    app.kubernetes.io/component: ha-worker
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: dashboard
+      app.kubernetes.io/component: ha-worker
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: dashboard
+        app.kubernetes.io/component: ha-worker
+    spec:
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: ha-worker
+          image: ${HA_WORKER_IMAGE:-ghcr.io/rodrigobprado/home-security-ha-worker:latest}
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: HA_URL
+              valueFrom:
+                secretKeyRef:
+                  name: dashboard-credentials
+                  key: ha-url
+            - name: HA_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: dashboard-credentials
+                  key: ha-token
+            - name: MQTT_BROKER
+              valueFrom:
+                configMapKeyRef:
+                  name: dashboard-config
+                  key: MQTT_BROKER
+            - name: MQTT_USER
+              valueFrom:
+                secretKeyRef:
+                  name: mqtt-credentials
+                  key: MQTT_USER
+            - name: MQTT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mqtt-credentials
+                  key: MQTT_PASSWORD
+            - name: TZ
+              valueFrom:
+                configMapKeyRef:
+                  name: dashboard-config
+                  key: TZ
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 10001
+            runAsGroup: 10001
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "64Mi"
+            limits:
+              cpu: "200m"
+              memory: "128Mi"

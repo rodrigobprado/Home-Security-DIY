@@ -92,6 +92,25 @@ services:
       start_period: 10s
 
   # ---------------------------------------------------------------------------
+  # Redis — Cache e Rate Limiting
+  # Armazenamento em memória persistente para contadores de rate limit e cache.
+  # ---------------------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: home-security-redis
+    restart: unless-stopped
+    command: redis-server --save 60 1 --loglevel warning
+    volumes:
+      - redis_data:/data
+    networks:
+      - home-security-net
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ---------------------------------------------------------------------------
   # Zigbee2MQTT
   # Bridge entre sensores Zigbee (abertura, PIR, sirene) e MQTT.
   # Requer coordenador USB (Sonoff ZBDongle-P ou compatível).
@@ -216,8 +235,12 @@ services:
       - HA_TOKEN=${HA_TOKEN}
       - FRIGATE_URL=http://home-security-frigate:5000
       - MQTT_BROKER=home-security-mosquitto
+      - MQTT_USER=${MQTT_USER}
+      - MQTT_PASSWORD=${MQTT_PASSWORD}
+      - REDIS_URL=redis://home-security-redis:6379/0
       - DATABASE_URL=postgresql+asyncpg://dashboard_user:${POSTGRES_DASHBOARD_PASSWORD}@home-security-postgres:5432/${POSTGRES_DB:-homedb}?options=-csearch_path%3Ddashboard
       - DASHBOARD_API_KEY=${DASHBOARD_API_KEY}
+      - DASHBOARD_ADMIN_KEY=${DASHBOARD_ADMIN_KEY}
       - DASHBOARD_ALLOWED_ORIGINS=${DASHBOARD_ALLOWED_ORIGINS:-http://localhost:3000,http://127.0.0.1:3000}
       - TZ=${TZ:-America/Sao_Paulo}
     networks:
@@ -227,12 +250,40 @@ services:
         condition: service_healthy
       mosquitto:
         condition: service_healthy
+      redis:
+        condition: service_healthy
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost:8000/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 15s
+
+  # ---------------------------------------------------------------------------
+  # HA Worker (Standalone)
+  # Worker dedicado para manter a conexão WebSocket com o Home Assistant e
+  # repassar eventos para o MQTT.
+  # ---------------------------------------------------------------------------
+  ha-worker:
+    build:
+      context: ./dashboard/backend
+      dockerfile: Dockerfile.worker
+    image: home-security-ha-worker:latest
+    container_name: home-security-ha-worker
+    restart: unless-stopped
+    environment:
+      - HA_URL=http://${HA_HOST:-host.docker.internal}:8123
+      - HA_TOKEN=${HA_TOKEN}
+      - MQTT_BROKER=home-security-mosquitto
+      - MQTT_PORT=1883
+      - MQTT_USER=${MQTT_USER}
+      - MQTT_PASSWORD=${MQTT_PASSWORD}
+      - TZ=${TZ:-America/Sao_Paulo}
+    networks:
+      - home-security-net
+    depends_on:
+      mosquitto:
+        condition: service_healthy
 
   # ---------------------------------------------------------------------------
   # Dashboard Frontend (React + Nginx)
@@ -369,3 +420,5 @@ volumes:
     name: home-security-mosquitto-data
   mosquitto_log:
     name: home-security-mosquitto-log
+  redis_data:
+    name: home-security-redis-data
