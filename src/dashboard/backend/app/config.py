@@ -42,14 +42,6 @@ class Settings(BaseSettings):
     # LGPD/CFTV baseline: retain operational alerts for 30 days by default.
     alert_retention_days: int = 30
 
-    # Câmeras disponíveis
-    cameras: list[str] = [
-        "cam_entrada",
-        "cam_fundos",
-        "cam_garagem",
-        "cam_lateral",
-    ]
-
     @field_validator("dashboard_allowed_origins", mode="before")
     @classmethod
     def parse_origins(cls, value):

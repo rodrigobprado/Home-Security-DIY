@@ -14,7 +14,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.models import Asset, AssetAudit, AssetCredential
 from app.db.session import get_db
 from app.config import settings
-from app.security import require_admin_key
+from app.security import require_admin_key, _get_request_ip
 
 router = APIRouter(prefix="/api/assets", tags=["assets"])
 ASSET_NOT_FOUND_DETAIL = "Asset not found."
@@ -95,51 +95,6 @@ def _asset_to_dict(a: Asset) -> dict:
         "created_by": a.created_by,
         "updated_by": a.updated_by,
     }
-
-
-def _get_actor(request: Request) -> str:
-    return request.headers.get("X-Actor", "api")
-
-
-def _normalize_ip(value: str | None) -> str | None:
-    if value is None:
-        return None
-    candidate = value.strip()
-    if not candidate:
-        return None
-    try:
-        return str(ip_address(candidate))
-    except ValueError:
-        return None
-
-
-def _trusted_proxies() -> set[str]:
-    return {ip for ip in (_normalize_ip(raw) for raw in settings.trusted_proxy_ips) if ip}
-
-
-def _forwarded_chain(request: Request) -> str | None:
-    forwarded = request.headers.get("X-Forwarded-For")
-    if not forwarded:
-        return None
-    ips = []
-    for raw_ip in forwarded.split(","):
-        normalized = _normalize_ip(raw_ip)
-        if normalized:
-            ips.append(normalized)
-    if not ips:
-        return None
-    return ",".join(ips)
-
-
-def _get_actor_ip(request: Request) -> str:
-    direct_ip = _normalize_ip(request.client.host if request.client else None) or "unknown"
-    chain = _forwarded_chain(request)
-    if not chain:
-        return direct_ip
-    if direct_ip not in _trusted_proxies():
-        return direct_ip
-    forwarded_ips = chain.split(",")
-    return forwarded_ips[0] if forwarded_ips else direct_ip
 
 
 async def _write_audit(
@@ -224,12 +179,12 @@ async def get_asset(asset_id: uuid.UUID, db: AsyncSession = Depends(get_db)) -> 
 @router.post(
     "",
     status_code=status.HTTP_201_CREATED,
-    dependencies=[Depends(require_admin_key)],
     summary="Criar novo ativo (admin)",
 )
 async def create_asset(
     payload: AssetCreate,
     request: Request,
+    actor: str = Depends(require_admin_key),
     db: AsyncSession = Depends(get_db),
 ) -> dict:
     """POST /api/assets — Cadastra novo ativo. Requer X-Admin-Key."""
@@ -240,9 +195,8 @@ async def create_asset(
             detail=f"Asset with entity_id '{payload.entity_id}' already exists.",
         )
 
-    actor = _get_actor(request)
-    actor_ip = _get_actor_ip(request)
-    actor_ip_chain = _forwarded_chain(request)
+    actor_ip = _get_request_ip(request)
+    actor_ip_chain = request.headers.get("X-Forwarded-For")
     now = datetime.now(timezone.utc)
     asset = Asset(
         id=uuid.uuid4(),
@@ -279,13 +233,13 @@ async def create_asset(
 
 @router.put(
     "/{asset_id}",
-    dependencies=[Depends(require_admin_key)],
     summary="Atualizar ativo (admin)",
 )
 async def update_asset(
     asset_id: uuid.UUID,
     payload: AssetUpdate,
     request: Request,
+    actor: str = Depends(require_admin_key),
     db: AsyncSession = Depends(get_db),
 ) -> dict:
     """PUT /api/assets/{id} — Atualiza campos de um ativo. Requer X-Admin-Key."""
@@ -295,9 +249,8 @@ async def update_asset(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=ASSET_NOT_FOUND_DETAIL)
 
     before = _asset_to_dict(asset)
-    actor = _get_actor(request)
-    actor_ip = _get_actor_ip(request)
-    actor_ip_chain = _forwarded_chain(request)
+    actor_ip = _get_request_ip(request)
+    actor_ip_chain = request.headers.get("X-Forwarded-For")
 
     if payload.name is not None:
         asset.name = payload.name
@@ -331,12 +284,12 @@ async def update_asset(
 
 @router.delete(
     "/{asset_id}",
-    dependencies=[Depends(require_admin_key)],
     summary="Desativar ativo (soft delete) (admin)",
 )
 async def delete_asset(
     asset_id: uuid.UUID,
     request: Request,
+    actor: str = Depends(require_admin_key),
     db: AsyncSession = Depends(get_db),
 ) -> dict:
     """DELETE /api/assets/{id} — Soft delete: marca is_active=False. Requer X-Admin-Key."""
@@ -346,9 +299,8 @@ async def delete_asset(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=ASSET_NOT_FOUND_DETAIL)
 
     before = _asset_to_dict(asset)
-    actor = _get_actor(request)
-    actor_ip = _get_actor_ip(request)
-    actor_ip_chain = _forwarded_chain(request)
+    actor_ip = _get_request_ip(request)
+    actor_ip_chain = request.headers.get("X-Forwarded-For")
 
     asset.is_active = False
     asset.status = "inactive"
@@ -371,12 +323,12 @@ async def delete_asset(
 
 @router.post(
     "/{asset_id}/restore",
-    dependencies=[Depends(require_admin_key)],
     summary="Restaurar ativo desativado (admin)",
 )
 async def restore_asset(
     asset_id: uuid.UUID,
     request: Request,
+    actor: str = Depends(require_admin_key),
     db: AsyncSession = Depends(get_db),
 ) -> dict:
     """POST /api/assets/{id}/restore — Reativa ativo. Requer X-Admin-Key."""
@@ -386,9 +338,8 @@ async def restore_asset(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=ASSET_NOT_FOUND_DETAIL)
 
     before = _asset_to_dict(asset)
-    actor = _get_actor(request)
-    actor_ip = _get_actor_ip(request)
-    actor_ip_chain = _forwarded_chain(request)
+    actor_ip = _get_request_ip(request)
+    actor_ip_chain = request.headers.get("X-Forwarded-For")
 
     asset.is_active = True
     asset.status = "active"

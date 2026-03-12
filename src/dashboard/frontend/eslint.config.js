@@ -42,7 +42,7 @@ export default [
       ...reactHooks.configs.recommended.rules,
       "react/react-in-jsx-scope": "off",
       "react/prop-types": "off",
-      "react-hooks/exhaustive-deps": "off",
+      "react-hooks/exhaustive-deps": "warn",
       "no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
     },
   },

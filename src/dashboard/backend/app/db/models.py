@@ -173,3 +173,22 @@ class AssetAudit(Base):
         nullable=False,
         index=True,
     )
+
+
+class CameraAccessLog(Base):
+    """LGPD/CFTV: Registro de acesso operacional às câmeras e eventos."""
+
+    __tablename__ = "camera_access_logs"
+    __table_args__ = (
+        Index("ix_dashboard_camera_access_logs_camera_timestamp", "camera_name", "timestamp"),
+        {"schema": "dashboard"},
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    timestamp: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), index=True
+    )
+    camera_name: Mapped[str] = mapped_column(String(200), nullable=False, index=True)
+    action: Mapped[str] = mapped_column(String(50), nullable=False)  # snapshot|events|stream
+    client_ip: Mapped[str] = mapped_column(String(45), nullable=False)
+    actor: Mapped[str | None] = mapped_column(String(100))

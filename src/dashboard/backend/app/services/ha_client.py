@@ -21,6 +21,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.config import settings
 from app.db.models import Alert
 from app.db.session import AsyncSessionLocal
+from app.utils.logging_utils import mask_url
 
 logger = logging.getLogger(__name__)
 
@@ -240,7 +241,7 @@ async def _consume_events(ws: Any) -> None:
 
 
 async def _connect_and_consume(ws_url: str, msg_id: int) -> tuple[bool, int]:
-    logger.info("Conectando ao HA WebSocket: %s", ws_url)
+    logger.info("Conectando ao HA WebSocket: %s", mask_url(ws_url))
     async with websockets.connect(ws_url, ping_interval=30) as ws:
         if not await _authenticate(ws):
             return False, msg_id

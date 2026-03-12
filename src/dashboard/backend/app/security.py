@@ -2,6 +2,7 @@ import secrets
 import time
 from collections import defaultdict, deque
 from collections.abc import MutableMapping
+from ipaddress import ip_address
 
 from fastapi import HTTPException, Request, Security, WebSocket, WebSocketException, status
 from fastapi.security import APIKeyHeader, HTTPAuthorizationCredentials, HTTPBearer
@@ -44,6 +45,46 @@ def _client_ip(value: str | None) -> str:
     return (value or "unknown").strip() or "unknown"
 
 
+def _normalize_ip(value: str | None) -> str | None:
+    if value is None:
+        return None
+    candidate = value.strip()
+    if not candidate:
+        return None
+    try:
+        return str(ip_address(candidate))
+    except ValueError:
+        return None
+
+
+def _trusted_proxies() -> set[str]:
+    return {ip for ip in (_normalize_ip(raw) for raw in settings.trusted_proxy_ips) if ip}
+
+
+def _get_request_ip(request: Request) -> str:
+    direct_ip = _normalize_ip(request.client.host if request.client else None) or "unknown"
+    forwarded = request.headers.get("X-Forwarded-For")
+    if not forwarded or direct_ip not in _trusted_proxies():
+        return direct_ip
+    
+    ips = [ip.strip() for ip in forwarded.split(",")]
+    return ips[0] if ips else direct_ip
+
+
+def _get_authenticated_actor(request: Request) -> str:
+    """
+    Determina o actor da requisição de forma segura.
+    Só confia no header X-Actor se a requisição vier de um proxy confiável.
+    """
+    direct_ip = _normalize_ip(request.client.host if request.client else None) or "unknown"
+    actor_header = request.headers.get("X-Actor")
+    
+    if actor_header and direct_ip in _trusted_proxies():
+        return actor_header
+    
+    return "api-client"
+
+
 def _register_rate_event(
     store: MutableMapping[str, deque[float]],
     key: str,
@@ -64,12 +105,13 @@ async def require_api_key(
     request: Request,
     x_api_key: str | None = Security(_api_key_header),
     credentials: HTTPAuthorizationCredentials | None = Security(_bearer_scheme),
-) -> None:
+) -> str:
     expected = _configured_api_key()
     bearer_key = credentials.credentials if credentials else None
     if _is_valid_api_key(x_api_key, expected) or _is_valid_api_key(bearer_key, expected):
-        return
-    ip = _client_ip(request.client.host if request.client else None)
+        return _get_authenticated_actor(request)
+    
+    ip = _get_request_ip(request)
     if not _register_rate_event(
         _api_auth_failures,
         ip,
@@ -84,11 +126,11 @@ async def require_api_key(
 async def require_admin_key(
     request: Request,
     x_admin_key: str | None = Security(_admin_key_header),
-) -> None:
+) -> str:
     """Exige chave de nível admin (DASHBOARD_ADMIN_KEY) para operações CRUD de ativos.
 
-    Se DASHBOARD_ADMIN_KEY não estiver configurado, todas as operações admin são bloqueadas
-    (fail-secure: sem chave admin configurada = sem acesso admin).
+    Se DASHBOARD_ADMIN_KEY não estiver configurado, todas as operações admin são bloqueadas.
+    Retorna o actor autenticado.
     """
     admin_key = (settings.dashboard_admin_key or "").strip()
     if not admin_key:
@@ -97,9 +139,9 @@ async def require_admin_key(
             detail="Admin key not configured. Set DASHBOARD_ADMIN_KEY to enable asset management.",
         )
 
-    ip = _client_ip(request.client.host if request.client else None)
+    ip = _get_request_ip(request)
     if _is_valid_api_key(x_admin_key, admin_key):
-        return
+        return _get_authenticated_actor(request)
 
     if not _register_rate_event(
         _admin_auth_failures,

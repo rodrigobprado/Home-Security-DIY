@@ -210,6 +210,83 @@
       "forbidden_patterns": [
         "> TODO"
       ]
+    },
+    {
+      "issue": 740,
+      "priority": "critical",
+      "target": "scripts/generate-k8s-secrets.sh",
+      "type": "bug",
+      "resolved_on": "2026-03-11"
+    },
+    {
+      "issue": 741,
+      "priority": "critical",
+      "target": "src/dashboard/backend/app/services/ha_client.py",
+      "type": "security",
+      "resolved_on": "2026-03-11"
+    },
+    {
+      "issue": 742,
+      "priority": "critical",
+      "target": "tests/backend/services/test_ha_client.py",
+      "type": "test",
+      "resolved_on": "2026-03-11"
+    },
+    {
+      "issue": 744,
+      "priority": "high",
+      "target": "src/dashboard/backend/app/security.py",
+      "type": "security",
+      "resolved_on": "2026-03-11"
+    },
+    {
+      "issue": 745,
+      "priority": "high",
+      "target": "src/dashboard/backend/app/routers/cameras.py",
+      "type": "refactor",
+      "resolved_on": "2026-03-11"
+    },
+    {
+      "issue": 746,
+      "priority": "high",
+      "target": "src/dashboard/backend/app/db/models.py",
+      "type": "database",
+      "resolved_on": "2026-03-11"
+    },
+    {
+      "issue": 748,
+      "priority": "medium",
+      "target": "k8s/base/dashboard/dashboard.yaml",
+      "type": "ci/cd",
+      "resolved_on": "2026-03-11"
+    },
+    {
+      "issue": 749,
+      "priority": "medium",
+      "target": ".github/workflows/snyk-security.yml",
+      "type": "ci/cd",
+      "resolved_on": "2026-03-11"
+    },
+    {
+      "issue": 750,
+      "priority": "medium",
+      "target": "src/dashboard/frontend/eslint.config.js",
+      "type": "lint",
+      "resolved_on": "2026-03-11"
+    },
+    {
+      "issue": 753,
+      "priority": "low",
+      "target": "src/.env.example",
+      "type": "security",
+      "resolved_on": "2026-03-11"
+    },
+    {
+      "issue": 752,
+      "priority": "low",
+      "target": "src/dashboard/frontend/src/components/OperationalMap.jsx",
+      "type": "enhancement",
+      "resolved_on": "2026-03-11"
     }
   ]
 }

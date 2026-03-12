@@ -27,6 +27,7 @@ required_vars=(
   HA_TOKEN
   HA_HOST
   DASHBOARD_API_KEY
+  DASHBOARD_ADMIN_KEY
 )
 
 for var_name in "${required_vars[@]}"; do
@@ -65,6 +66,7 @@ kubectl create secret generic dashboard-credentials \
   --from-literal=ha-url="http://${HA_HOST}:8123" \
   --from-literal=database-url="postgresql+asyncpg://dashboard_user:${POSTGRES_DASHBOARD_PASSWORD}@postgres:5432/${POSTGRES_DB}?options=-csearch_path%3Ddashboard" \
   --from-literal=dashboard-api-key="$DASHBOARD_API_KEY" \
+  --from-literal=dashboard-admin-key="$DASHBOARD_ADMIN_KEY" \
   --from-literal=dashboard-allowed-origins="$DASHBOARD_ALLOWED_ORIGINS_VAL" \
   --dry-run=client -o yaml > "$OUT_DIR/dashboard-credentials.yaml"
 

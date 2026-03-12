@@ -109,6 +109,13 @@ export default function OperationalMap() {
     if (ugvX !== null && ugvY !== null) {
       return { x: clamp(ugvX, 0, 100), y: clamp(ugvY, 0, 100) }
     }
+
+    const lat = parseNum(getState(states, ['sensor.ugv_latitude', 'binary_sensor.ugv_latitude']))
+    const lon = parseNum(getState(states, ['sensor.ugv_longitude', 'binary_sensor.ugv_longitude']))
+    if (lat !== null && lon !== null) {
+      return mapLatLonToPercent(lat, lon, mapConfig.geo_bounds)
+    }
+
     const patrol = ugvStatus.includes('patrol')
     if (!patrol) return { x: 14, y: 14 }
     const t = Date.now() / 1000

@@ -70,21 +70,18 @@ jobs:
         # Use || true to not fail the pipeline
       - name: Snyk Code test
         if: steps.snyk_token.outputs.enabled == 'true'
-        continue-on-error: true
-        run: snyk code test --sarif > snyk-code.sarif # || true
+        run: snyk code test --sarif --severity-threshold=high > snyk-code.sarif
 
         # Runs Snyk Open Source (SCA) analysis and uploads result to Snyk.
       - name: Snyk Open Source monitor
         if: steps.snyk_token.outputs.enabled == 'true'
-        continue-on-error: true
         run: snyk monitor --all-projects
 
         # Runs Snyk Infrastructure as Code (IaC) analysis and uploads result to Snyk.
         # Use || true to not fail the pipeline.
       - name: Snyk IaC test and report
         if: steps.snyk_token.outputs.enabled == 'true'
-        continue-on-error: true
-        run: snyk iac test --report # || true
+        run: snyk iac test --report --severity-threshold=high
 
         # Build and scan Dashboard API image
       - name: Build Dashboard API image
@@ -93,8 +90,7 @@ jobs:
 
       - name: Snyk Container monitor - Dashboard API
         if: steps.snyk_token.outputs.enabled == 'true'
-        continue-on-error: true
-        run: snyk container monitor home-security/dashboard-api:test --file=src/dashboard/backend/Dockerfile
+        run: snyk container monitor home-security/dashboard-api:test --file=src/dashboard/backend/Dockerfile --severity-threshold=high
 
         # Build and scan Dashboard Frontend image
       - name: Build Dashboard Frontend image
@@ -103,8 +99,7 @@ jobs:
 
       - name: Snyk Container monitor - Dashboard Frontend
         if: steps.snyk_token.outputs.enabled == 'true'
-        continue-on-error: true
-        run: snyk container monitor home-security/dashboard-frontend:test --file=src/dashboard/frontend/Dockerfile
+        run: snyk container monitor home-security/dashboard-frontend:test --file=src/dashboard/frontend/Dockerfile --severity-threshold=high
 
         # Push the Snyk Code results into GitHub Code Scanning tab
       - name: Upload result to GitHub Code Scanning
