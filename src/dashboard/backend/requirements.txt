@@ -6,6 +6,6 @@ sqlalchemy[asyncio]==2.0.47
 asyncpg==0.31.0
 alembic==1.18.4
 psycopg[binary]==3.3.3
-pydantic-settings==2.13.1
+pydantic-settings==2.14.2
 redis>=5.0.0
 aiomqtt>=2.0.0
