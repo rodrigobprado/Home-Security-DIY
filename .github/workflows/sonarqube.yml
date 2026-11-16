@@ -33,7 +33,7 @@ jobs:
       SONAR_PROJECT_KEY: Home-Security-DIY
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -109,7 +109,7 @@ jobs:
           fi
 
       - name: SonarQube Scan
-        uses: SonarSource/sonarqube-scan-action@v7
+        uses: SonarSource/sonarqube-scan-action@v8
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_SCANNER_OPTS: ${{ steps.truststore.outputs.sonar_scanner_opts }}
@@ -132,7 +132,7 @@ jobs:
       SONAR_PROJECT_KEY: Home-Security-DIY
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Check Python runtime
         run: |
